@@ -1,0 +1,24 @@
+name: Sidekick SKIF format contract
+
+on:
+  pull_request:
+    paths:
+      - "server/skif_document.py"
+      - "tools/test_skif_document.py"
+      - ".github/workflows/skif-compatibility.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  skif-v5:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify SKIF v5 contract (no additional dependencies)
+        run: python -m unittest discover -s tools -p test_skif_document.py -v
