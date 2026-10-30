@@ -33,5 +33,33 @@ class RealHomecomingContractTests(unittest.TestCase):
         self.assertFalse(report["ready_for_import"])
 
 
+    def test_real_boost_index_maps_crafted_attuned_generic_and_hamidon(self):
+        from sidekick_enhancements import EnhancementResolver
+        upstream = ROOT / "_sidekick_contract_fixture" / "contract/homecoming"
+        self.assertTrue((upstream / "boost-index.json").is_file(),
+                        "Pinned Sidekick enhancement data must be checked out")
+        # The real test uses Hero Companion's existing import catalog, not a
+        # mock UID list: a correct Sidekick identity can still be absent in HC.
+        sys.path.insert(0, str(ROOT / "tools"))
+        from preview_skif import _enhancement_lookups
+        bridge = EnhancementResolver(upstream, _enhancement_lookups())
+        cases = [
+            ({"type": "io-set", "setId": "achilles_heel", "pieceNum": 3,
+              "attuned": False, "level": 50}, "Crafted_Achilles_Heel_C"),
+            ({"type": "io-set", "setId": "achilles_heel", "pieceNum": 3,
+              "attuned": True}, "Attuned_Achilles_Heel_C"),
+            ({"type": "io-generic", "stat": "Recharge", "level": 50},
+             "Crafted_Recharge"),
+            ({"type": "special", "category": "hamidon", "id": "nucleolus",
+              "relativeLevel": 3}, "Hamidon_Damage_Accuracy"),
+        ]
+        for piece, source_uid in cases:
+            with self.subTest(piece=piece):
+                mapped, issue = bridge.resolve(piece)
+                self.assertIsNone(issue)
+                self.assertEqual(mapped["source_uid"], source_uid)
+                self.assertTrue(mapped["hero_slot"]["piece_uid"])
+
+
 if __name__ == "__main__":
     unittest.main()
