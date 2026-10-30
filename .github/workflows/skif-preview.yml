@@ -11,6 +11,10 @@ on:
       - "tools/test_skif_document.py"
       - "tools/test_skif_sidekick_contract.py"
       - "tools/preview_skif.py"
+      - "server/import_catalog.py"
+      - "tools/test_skif_import_catalog.py"
+      - "data/enhancement_sets.json"
+      - "data/common_ios.json"
       - ".github/workflows/skif-preview.yml"
   workflow_dispatch:
 permissions:
@@ -29,6 +33,7 @@ jobs:
           python -m unittest discover -s tools -p test_skif_document.py -v
           python -m unittest discover -s tools -p test_skif_preview.py -v
           python -m unittest discover -s tools -p test_skif_enhancements.py -v
+          python -m unittest discover -s tools -p test_skif_import_catalog.py -v
 
   real-sidekick-fixture:
     runs-on: ubuntu-latest

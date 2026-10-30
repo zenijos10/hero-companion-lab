@@ -74,6 +74,7 @@ import clr_loader, pythonnet                      # noqa: F401
 # server/ and ai/ modules are imported via runtime sys.path — name them explicitly.
 hiddenimports = [
     "server", "engine", "solver", "first_principles", "role_output", "converter",
+    "import_catalog",
     "leveling_schedule", "learn", "proc_pass", "mids_export", "mids_import",
     "ingame_import", "ai_build", "claude_bridge", "pulse_feed", "brotli",
     "requests",

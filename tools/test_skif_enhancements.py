@@ -115,6 +115,19 @@ class EnhancementBridgeTests(unittest.TestCase):
         self.assertIsNone(result)
         self.assertEqual(issue, "ambiguous_enhancement_identity")
 
+    def test_null_optional_fields_read_as_absent_never_none(self):
+        result, issue = self.bridge.resolve({
+            "type": "io-set", "setId": "achilles_heel", "pieceNum": 3,
+            "level": None, "booster": None})
+        self.assertIsNone(issue)
+        self.assertNotIn("io_level", result)
+        self.assertEqual(result["booster"], 0)
+        result, issue = self.bridge.resolve({
+            "type": "special", "category": "hamidon", "id": "nucleolus",
+            "relativeLevel": None})
+        self.assertIsNone(issue)
+        self.assertEqual(result["relative_level"], 0)
+
     def test_corrupt_or_missing_contract_is_a_hard_failure(self):
         (self.root / "boost-index.json").unlink()
         with self.assertRaises(EnhancementContractError):

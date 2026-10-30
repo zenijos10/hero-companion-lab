@@ -56,8 +56,10 @@ preview now maps a Sidekick slot to an explicit `boost-index.json` record
 and its HC UID, preserving slot **position**, source UID, attunement, IO
 level and booster or relative level separately. The source document is
 not rewritten, and a missing or ambiguous identity remains an issue, not
-an invented enhancement. The offline CLI constructs that lookup from
-the shipped HC enhancement and common-IO catalogs.
+an invented enhancement. The offline CLI builds that lookup with the
+server's own `server/import_catalog.py` (set pieces, special origins and the
+Crafted_/Attuned_ aliases), plus the shipped common IOs, so it cannot drift
+from what the app imports (pinned by `tools/test_skif_import_catalog.py`).
 
 This is identity mapping, **not yet an independently validated calculation
 of every boost**. It never claims a complete import; the editor/UI cannot

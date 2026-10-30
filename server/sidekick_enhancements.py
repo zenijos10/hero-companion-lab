@@ -101,11 +101,17 @@ class EnhancementResolver:
             return None, "missing_hero_enhancement"
         result = {"source_uid": uid, "hero_slot": copy.deepcopy(hero), "type": piece["type"]}
         if piece["type"] in ("io-set", "io-generic"):
-            if "level" in piece:
+            if piece.get("level") is not None:
                 result["io_level"] = piece["level"]
-            result["booster"] = piece.get("booster", 0)
+            result["booster"] = _present_or(piece, "booster", 0)
             if piece["type"] == "io-set":
-                result["attuned"] = piece.get("attuned", False)
+                result["attuned"] = _present_or(piece, "attuned", False)
         elif piece["type"] in ("special", "origin"):
-            result["relative_level"] = piece.get("relativeLevel", 0)
+            result["relative_level"] = _present_or(piece, "relativeLevel", 0)
         return result, None
+
+
+def _present_or(piece, key, default):
+    """SKIF optional fields may be absent or null; both mean the default."""
+    value = piece.get(key)
+    return default if value is None else value
