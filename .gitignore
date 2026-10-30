@@ -55,3 +55,6 @@ build_commit.txt
 version_info.txt
 version_info_lite.txt
 .aider*
+
+# Local sparse checkout used by tools/test_skif_sidekick_contract.py (external AGPL data)
+_sidekick_contract_fixture/

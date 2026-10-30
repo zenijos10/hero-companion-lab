@@ -3,7 +3,11 @@ on:
   pull_request:
     paths:
       - "server/sidekick_preview.py"
+      - "server/skif_document.py"
+      - "data/powers.json"
       - "tools/test_skif_preview.py"
+      - "tools/test_skif_document.py"
+      - "tools/test_skif_sidekick_contract.py"
       - "tools/preview_skif.py"
       - ".github/workflows/skif-preview.yml"
   workflow_dispatch:
