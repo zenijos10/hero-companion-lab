@@ -131,5 +131,42 @@ class SidekickPreviewTests(unittest.TestCase):
             preview_build(document(), self.powers, self.root)
 
 
+    def test_explicit_enhancement_bridge_retains_slot_identity_and_position(self):
+        self._put("boost-index.json", {
+            "Crafted_Recharge": {"kind": "common-io", "stats": ["Recharge"], "level": None},
+            "Hamidon_Damage_Accuracy": {"kind": "special", "family": "hamidon",
+                                         "id": "nucleolus"},
+        })
+        self._put("enhancements.json", {"commonIoTypes": ["Recharge"]})
+        doc = document([{"internalName": "Pistols", "level": 1, "slots": [
+            None, {"type": "io-generic", "stat": "Recharge", "level": 50},
+            {"type": "special", "category": "hamidon", "id": "nucleolus",
+             "relativeLevel": 3},
+        ]}])
+        result = preview_build(doc, self.powers, self.root, hero_piece_by_uid={
+            "Crafted_Recharge": {"piece_uid": "Crafted_Recharge"},
+            "Hamidon_Damage_Accuracy": {"piece_uid": "Hamidon_Damage_Accuracy"},
+        })
+        self.assertEqual(result["unresolved"], [])
+        self.assertEqual([x["location"] for x in result["resolved_enhancements"]],
+                         ["build.primary.powers[0].slots[1]",
+                          "build.primary.powers[0].slots[2]"])
+        self.assertEqual(result["resolved_enhancements"][0]["hero_slot"]["piece_uid"],
+                         "Crafted_Recharge")
+        self.assertEqual(result["resolved_enhancements"][1]["relative_level"], 3)
+        self.assertFalse(result["ready_for_import"])
+
+    def test_failed_enhancement_bridge_reports_source_location(self):
+        self._put("boost-index.json", {})
+        self._put("enhancements.json", {"commonIoTypes": ["Recharge"]})
+        doc = document([{"internalName": "Pistols", "level": 1, "slots": [
+            {"type": "io-generic", "stat": "Recharge", "level": 50},
+        ]}])
+        result = preview_build(doc, self.powers, self.root, hero_piece_by_uid={})
+        self.assertEqual(result["resolved_enhancements"], [])
+        self.assertEqual(result["unresolved"][0]["reason"], "unknown_enhancement_identity")
+        self.assertEqual(result["unresolved"][0]["location"], "build.primary.powers[0].slots[0]")
+
+
 if __name__ == "__main__":
     unittest.main()
