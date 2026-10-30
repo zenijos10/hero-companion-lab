@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - "server/sidekick_preview.py"
+      - "server/sidekick_enhancements.py"
+      - "tools/test_skif_enhancements.py"
       - "server/skif_document.py"
       - "data/powers.json"
       - "tools/test_skif_preview.py"
@@ -26,6 +28,7 @@ jobs:
         run: |
           python -m unittest discover -s tools -p test_skif_document.py -v
           python -m unittest discover -s tools -p test_skif_preview.py -v
+          python -m unittest discover -s tools -p test_skif_enhancements.py -v
 
   real-sidekick-fixture:
     runs-on: ubuntu-latest

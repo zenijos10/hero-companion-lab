@@ -48,3 +48,18 @@ python -m unittest discover -s tools -p test_skif_preview.py -v
 Prove enhancement semantics and whole-build handling (including inherent
 and cast-state choices) in a genuinely lossless importer; independently
 re-open emitted files in Sidekick before enabling import/export UI.
+
+## Enhancement-identity milestone
+
+With the optional Hero Companion enhancement lookup supplied, the offline
+preview now maps a Sidekick slot to an explicit `boost-index.json` record
+and its HC UID, preserving slot **position**, source UID, attunement, IO
+level and booster or relative level separately. The source document is
+not rewritten, and a missing or ambiguous identity remains an issue, not
+an invented enhancement. The offline CLI constructs that lookup from
+the shipped HC enhancement and common-IO catalogs.
+
+This is identity mapping, **not yet an independently validated calculation
+of every boost**. It never claims a complete import; the editor/UI cannot
+consume the preview directly. Unsupported character state is still called
+out under `unresolved`.

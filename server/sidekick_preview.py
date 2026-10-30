@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 
 from skif_document import load_document
+from sidekick_enhancements import EnhancementResolver
 
 
 class PreviewContractError(ValueError):
@@ -95,12 +96,15 @@ def _resolve_power(name, set_path, shard, mids, by_folded, where, issues):
     return matches[0]
 
 
-def preview_build(document, hero_powers_by_full, contract_root):
+def preview_build(document, hero_powers_by_full, contract_root, hero_piece_by_uid=None):
     """Return verifiable power matches and unresolved facts, never an editable build.
 
     document: Sidekick v5 dict or JSON string.
     hero_powers_by_full: HC's POWER_BY_FULL mapping (or equivalent test mapping).
     contract_root: offline Sidekick contract/homecoming directory.
+    hero_piece_by_uid: optional HC import lookup; if absent, enhancements
+        remain explicitly unresolved. When present, all identities must be
+        provable from Sidekick boost-index.json and HC's own import catalogue.
     """
     doc = load_document(document)
     build = doc["build"]
@@ -111,8 +115,11 @@ def preview_build(document, hero_powers_by_full, contract_root):
 
     paths, mids = _contract(contract_root)
     hero_index = _index_powers(hero_powers_by_full)
+    enhancement_bridge = (EnhancementResolver(contract_root, hero_piece_by_uid)
+                          if hero_piece_by_uid is not None else None)
     issues = []
     resolved = []
+    enhancements = []
 
     def visit(bucket, selection, position=None):
         if selection is None:
@@ -152,9 +159,18 @@ def preview_build(document, hero_powers_by_full, contract_root):
                     "level": power["level"], "slot_count": len(power["slots"]),
                 })
             for j, slot in enumerate(power["slots"]):
-                if slot is not None:
-                    issues.append(_issue("enhancement_not_mapped", f"{location}.slots[{j}]",
-                                         slot["type"]))
+                if slot is None:
+                    continue
+                slot_where = f"{location}.slots[{j}]"
+                if enhancement_bridge is None:
+                    issues.append(_issue("enhancement_not_mapped", slot_where, slot["type"]))
+                    continue
+                identity, problem = enhancement_bridge.resolve(
+                    slot, character_origin=build.get("origin"))
+                if problem:
+                    issues.append(_issue(problem, slot_where, slot["type"]))
+                else:
+                    enhancements.append({"location": slot_where, **identity})
             for key in ("isActive", "activeSubPower"):
                 if power.get(key):
                     issues.append(_issue("state_not_mapped", f"{location}.{key}", key))
@@ -178,5 +194,6 @@ def preview_build(document, hero_powers_by_full, contract_root):
     return {
         "format": "skif-v5", "dataset": "homecoming",
         "name": build.get("name", ""), "resolved": resolved,
+        "resolved_enhancements": enhancements,
         "unresolved": issues, "ready_for_import": False,
     }
