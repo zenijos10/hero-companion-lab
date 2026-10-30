@@ -84,12 +84,25 @@ class SkifDocumentTests(unittest.TestCase):
         with self.assertRaises(SkifFormatError):
             load_document(doc)
 
-    def test_optional_fields_treat_null_as_absent_consistently(self):
+    def test_optional_strings_accept_null_and_optional_booleans_may_be_omitted(self):
         doc = sample()
         power = doc["build"]["primary"]["powers"][0]
-        power.update(isActive=None, powerset=None, activeSubPower=None)
-        power["slots"][1]["attuned"] = None
+        power.update(powerset=None, activeSubPower=None)
+        power.pop("isActive", None)
+        power["slots"][1].pop("attuned", None)
         self.assertEqual(load_document(dump_document(doc)), doc)
+
+    def test_optional_boolean_null_is_invalid_in_sidekick_v5(self):
+        # Sidekick defines both as bool with serde(default), not Option<bool>.
+        for field in ("isActive", "attuned"):
+            doc = sample()
+            power = doc["build"]["primary"]["powers"][0]
+            if field == "isActive":
+                power[field] = None
+            else:
+                power["slots"][1][field] = None
+            with self.subTest(field=field), self.assertRaises(SkifFormatError):
+                load_document(doc)
 
     def test_rejects_non_boolean_optional_flag(self):
         doc = sample()

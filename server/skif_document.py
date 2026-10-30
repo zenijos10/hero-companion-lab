@@ -45,7 +45,7 @@ def _optional_string(record, key, where):
 
 
 def _optional_bool(record, key, where):
-    if record.get(key) is not None and type(record[key]) is not bool:
+    if key in record and type(record[key]) is not bool:
         _fail(f"{where}.{key}", "boolean")
 
 

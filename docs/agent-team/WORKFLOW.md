@@ -14,6 +14,16 @@ These definitions are reusable prompts and roles, **not an automatically running
 
 A human may assign a different rotation explicitly. Never report planned review as performed review.
 
+## Delivery cadence (project owner decision, 2026-10-29)
+
+This is a hobby project. Favor useful progress over process overhead:
+- Work a complete, reviewable **feature milestone** before opening a new PR. Aim for about **3–5 substantive commits per PR**, not a PR per test/fix; use judgment when a coherent feature needs more.
+- Keep **RED → GREEN → REFACTOR** and targeted regression checks within the milestone. Small internal commits are fine.
+- Codex/Claude alternate blue/red roles **per feature**. Reviewers inspect the milestone diff, not every micro-commit. Red's findings should ordinarily be fixed on that same PR branch, without a second fix PR.
+- Batch status communication into meaningful milestone summaries; don't require the owner to shepherd inter-agent exchanges. If the independent model isn't executable in the current environment, disclose that once and proceed with local tests instead of inventing review.
+- When a PR has merged, clean up its obsolete head branch; never delete open-PR work or a branch with unmerged commits. Never touch `master` without explicit merge approval.
+- Only ask the owner about consequential product choices or approval to merge, not routine engineering decisions.
+
 ## Example prompts
 Codex blue: `Use $hc-tdd. Implement [neutral brief] using RED/GREEN/REFACTOR. Report test evidence and risks.`
 Claude red: `Use @agent-hc-red to independently review [brief] and the actual diff, seeking reproducible counterexamples.`
