@@ -84,6 +84,19 @@ class SkifDocumentTests(unittest.TestCase):
         with self.assertRaises(SkifFormatError):
             load_document(doc)
 
+    def test_optional_fields_treat_null_as_absent_consistently(self):
+        doc = sample()
+        power = doc["build"]["primary"]["powers"][0]
+        power.update(isActive=None, powerset=None, activeSubPower=None)
+        power["slots"][1]["attuned"] = None
+        self.assertEqual(load_document(dump_document(doc)), doc)
+
+    def test_rejects_non_boolean_optional_flag(self):
+        doc = sample()
+        doc["build"]["primary"]["powers"][0]["isActive"] = "yes"
+        with self.assertRaises(SkifFormatError):
+            load_document(doc)
+
     def test_retains_new_vocabulary_in_known_structural_fields(self):
         doc = sample()
         doc["build"]["stances"]["new-ammo-mode"] = False

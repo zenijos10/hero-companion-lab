@@ -28,7 +28,10 @@ python tools/preview_skif.py path/to/character.skif --sidekick-contract path/to/
 The command reads Hero Companion's own data and the supplied Sidekick
 contract on disk. Nothing is downloaded. Nonempty unresolved results exit
 with status 2 (a preview can still show partial identity matches).
-Invalid JSON/schema or a bad contract exits with a clear error.
+Invalid JSON/schema or a bad contract exits with a clear error. A shard file
+that the manifest lists but that is missing or unreadable counts as a bad
+contract: the whole preview is refused rather than reported as unresolved,
+because the contract itself can no longer be trusted.
 
 This code is original and does not redistribute Sidekick's AGPL source or
 published game-data bundle. Sidekick remains the external format authority.
