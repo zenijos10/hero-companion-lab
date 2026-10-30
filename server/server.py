@@ -36,6 +36,7 @@ import proc_pass                   # noqa: E402
 import solver                      # noqa: E402
 import leveling_schedule          # noqa: E402
 import converter                   # noqa: E402
+import import_catalog              # noqa: E402
 import role_output                 # noqa: E402
 
 # Packaged (PyInstaller) build: bundled read-only assets (data/, static/, VERSION,
@@ -295,62 +296,11 @@ for c in COMMON_IOS.get("special_ios", []):
         PIECE_IMAGE[c["uid"]] = c.get("image") or ""
 
 # Import lookups: resolve a Mids enhancement (by "Set: Piece" name or uid) -> slot.
-PIECE_BY_UID = {}        # piece uid -> slot dict
-ENH_NAME_TO_PIECE = {}   # "set name: piece name" (lower) -> slot dict
-for s in ENH_SETS:
-    for pc in s["pieces"]:
-        if not pc.get("uid"):
-            continue
-        slot = {"set_uid": s["uid"], "set_name": s["name"],
-                "piece_uid": pc["uid"], "piece_name": pc["name"],
-                "category_id": s.get("category_id"),
-                "image": pc.get("image") or s.get("image") or ""}
-        PIECE_BY_UID[pc["uid"]] = slot
-        ENH_NAME_TO_PIECE[f"{s['name']}: {pc['name']}".lower()] = slot
-
-# ⚠ SPECIAL ORIGINS ARE SLOTTABLE PIECES AND MUST RESOLVE BY NAME (2026-08-05).
-# They live in common_ios.json, not ENH_SETS, so the loop above never saw them —
-# and both importers' uid rung missed, fell through to the generic common-IO
-# fallback, and labelled the slot with its own uid: a re-imported .mbd showed
-# "Hamidon_Damage_Accuracy" where the app had written "Nucleolus Exposure", with
-# the set line blank. Math was never affected (the engine prices by piece_uid,
-# proven by identical totals across a round trip) — this is the naming rule:
-# never label a piece from its internal name. Registered HERE because that is
-# where both importers AND the ⓘ image lookup already read; the labels match the
-# ones proc_pass/solver already emit, so a hand-placed HO and an imported one are
-# the same object. No PIECE_REF_LEVEL — see the loop above for why.
-_SPECIAL_ORIGIN_SETS = {"Hamidon": ("Hamidon_Origin", "Hamidon Origin"),
-                        "Hydra": ("Hydra_Origin", "Hydra Origin"),
-                        "Titan": ("Titan_Origin", "Titan Origin"),
-                        "Dsync": ("DSync_Origin", "D-Sync Origin"),
-                        "DSync": ("DSync_Origin", "D-Sync Origin")}
-for c in COMMON_IOS.get("special_ios", []):
-    if not c.get("uid"):
-        continue
-    _suid, _sname = _SPECIAL_ORIGIN_SETS.get(c["uid"].split("_")[0], (None, None))
-    if not _suid:
-        continue
-    PIECE_BY_UID[c["uid"]] = {"set_uid": _suid, "set_name": _sname,
-                              "piece_uid": c["uid"], "piece_name": c.get("name") or c["uid"],
-                              "category_id": None, "image": c.get("image") or ""}
-
-# ⚠ ATTUNED COPIES MUST RESOLVE (field report 2026-09-19, ChainsawHands): the
-# in-game export writes an attuned piece as "Attuned_Touch_of_Death_F" while our
-# catalog carries only "Crafted_Touch_of_Death_F" (the parser keeps whichever
-# prefix it saw) — both importers missed the uid and the slot rendered EMPTY.
-# Alias the Crafted_/Attuned_ pair in BOTH directions; never across Superior_
-# (Superior Winter's Bite is a DIFFERENT set with different values). A slot's
-# "attuned" flag still comes from the original uid at the call site.
-# This is a SEPARATE, IMPORT-ONLY map on purpose: aliases share the same slot
-# object, so folding them into PIECE_BY_UID would make .values() yield every
-# piece twice — and the solver/test helpers that enumerate pieces would slot
-# duplicates. Nothing else may read it.
-PIECE_BY_UID_IMPORT = {}
-for _uid, _slot in PIECE_BY_UID.items():
-    for _a, _b in (("Crafted_", "Attuned_"), ("Attuned_", "Crafted_")):
-        if _uid.startswith(_a):
-            PIECE_BY_UID_IMPORT[_b + _uid[len(_a):]] = _slot
-PIECE_BY_UID_IMPORT.update(PIECE_BY_UID)     # a real uid always outranks an alias
+# One copy in import_catalog.py (special-origin registration and the import-only
+# Crafted_/Attuned_ aliases live there, with their field-report history); offline
+# tools reuse it so they never drift from what the app imports.
+PIECE_BY_UID, ENH_NAME_TO_PIECE = import_catalog.build_piece_lookups(ENH_SETS, COMMON_IOS)
+PIECE_BY_UID_IMPORT = import_catalog.build_import_aliases(PIECE_BY_UID)  # import-only; nothing else reads it
 
 # Exemplar-exempt sets: bonuses live at EVERY level (wiki-pinned 2026-08-03) —
 # purples, PvP, Winter-O and Archetype sets. The purple/Winter/PvP rosters are
