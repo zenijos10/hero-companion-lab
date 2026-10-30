@@ -1,0 +1,49 @@
+name: Sidekick preview contract
+on:
+  pull_request:
+    paths:
+      - "server/sidekick_preview.py"
+      - "tools/test_skif_preview.py"
+      - "tools/preview_skif.py"
+      - ".github/workflows/skif-preview.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  read-only-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify codec and mapping preview
+        run: |
+          python -m unittest discover -s tools -p test_skif_document.py -v
+          python -m unittest discover -s tools -p test_skif_preview.py -v
+
+  real-sidekick-fixture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Fetch pinned upstream Sidekick v5 contract evidence
+        uses: actions/checkout@v4
+        with:
+          repository: wednesdaywoe/coh-sidekick
+          ref: 90e9b8eeaf59a2350e62587968f523a1e1371f88
+          path: _sidekick_contract_fixture
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            contract/homecoming/manifest.json
+            contract/homecoming/mids-names.json
+            contract/homecoming/powersets/stalker/primary/energy-melee.json
+            contract/homecoming/powersets/stalker/secondary/energy-aura.json
+            fixtures/skif/v5/rb5d_browser_pass.skif
+          persist-credentials: false
+      - name: Check seven upstream power IDs against shipped Hero Companion data
+        run: python -m unittest discover -s tools -p test_skif_sidekick_contract.py -v
