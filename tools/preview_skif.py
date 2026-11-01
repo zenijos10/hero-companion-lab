@@ -8,6 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "server"))
 from sidekick_preview import PreviewContractError, preview_build
 from sidekick_enhancements import EnhancementContractError
+from sidekick_reconstruct import reconstruct_build
 import import_catalog
 from skif_document import SkifFormatError
 
@@ -38,6 +39,10 @@ def main(argv=None):
     parser.add_argument("skif", type=Path)
     parser.add_argument("--sidekick-contract", type=Path, required=True,
                         help="Local Sidekick contract/homecoming folder; no network access")
+    parser.add_argument("--reconstruct", action="store_true",
+                        help="Fail-closed native build structure; no editor/save mutation")
+    parser.add_argument("--default-io-level", type=int,
+                        help="Explicit Sidekick session IO level when a crafted IO omits its level")
     args = parser.parse_args(argv)
 
     try:
@@ -45,15 +50,24 @@ def main(argv=None):
         with (ROOT / "data" / "powers.json").open(encoding="utf-8") as handle:
             powers = json.load(handle)
         by_full = {p["full_name"]: p for group in powers.values() for p in group}
-        report = preview_build(document, by_full, args.sidekick_contract,
-                               hero_piece_by_uid=_enhancement_lookups())
+        catalog = _enhancement_lookups()
+        if args.reconstruct:
+            with (ROOT / "data" / "powersets.json").open(encoding="utf-8") as handle:
+                powersets = json.load(handle)
+            report = reconstruct_build(
+                document, by_full, powersets, args.sidekick_contract, catalog,
+                default_io_level=args.default_io_level)
+        else:
+            report = preview_build(document, by_full, args.sidekick_contract,
+                                   hero_piece_by_uid=catalog)
     except (OSError, ValueError, SkifFormatError, PreviewContractError,
             EnhancementContractError, KeyError) as exc:
         print(f"Sidekick preview refused: {exc}", file=sys.stderr)
         return 1
 
     print(json.dumps(report, ensure_ascii=False, indent=2))
-    return 2 if report["unresolved"] else 0
+    return (0 if report["ok"] else 2) if args.reconstruct else (
+        2 if report["unresolved"] else 0)
 
 
 if __name__ == "__main__":

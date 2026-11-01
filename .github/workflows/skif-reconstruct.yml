@@ -3,12 +3,18 @@ on:
   pull_request:
     paths:
       - "server/sidekick_reconstruct.py"
-      - "tools/test_skif_reconstruct.py"
-      - ".github/workflows/skif-reconstruct.yml"
+      - "server/skif_document.py"
       - "server/sidekick_preview.py"
       - "server/sidekick_enhancements.py"
+      - "server/import_catalog.py"
+      - "tools/preview_skif.py"
+      - "tools/test_skif_reconstruct.py"
+      - "tools/test_skif_reconstruct_sidekick.py"
+      - ".github/workflows/skif-reconstruct.yml"
       - "data/powers.json"
       - "data/powersets.json"
+      - "data/enhancement_sets.json"
+      - "data/common_ios.json"
   workflow_dispatch:
 permissions:
   contents: read
@@ -22,4 +28,34 @@ jobs:
         with:
           python-version: "3.12"
       - name: Verify native build reconstruction
-        run: python -m unittest discover -s tools -p test_skif_reconstruct.py -v
+        run: |
+          python -m unittest discover -s tools -p test_skif_reconstruct.py -v
+          python -m unittest discover -s tools -p test_skif_enhancements.py -v
+          python -m unittest discover -s tools -p test_skif_preview.py -v
+  real-sidekick-reconstruction:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Fetch pinned upstream Sidekick v5 native-format evidence
+        uses: actions/checkout@v4
+        with:
+          repository: wednesdaywoe/coh-sidekick
+          ref: 90e9b8eeaf59a2350e62587968f523a1e1371f88
+          path: _sidekick_contract_fixture
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            contract/homecoming/manifest.json
+            contract/homecoming/mids-names.json
+            contract/homecoming/archetypes.json
+            contract/homecoming/boost-index.json
+            contract/homecoming/enhancements.json
+            contract/homecoming/powersets/stalker/primary/energy-melee.json
+            contract/homecoming/powersets/stalker/secondary/energy-aura.json
+            fixtures/skif/v5/rb5d_browser_pass.skif
+          persist-credentials: false
+      - name: Verify actual Sidekick fixture against shipped Hero Companion powersets
+        run: python -m unittest discover -s tools -p test_skif_reconstruct_sidekick.py -v
