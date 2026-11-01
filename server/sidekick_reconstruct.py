@@ -189,7 +189,12 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
     doc = load_document(skif)
     preview = preview_build(doc, hero_powers_by_full, contract_root,
                             hero_piece_by_uid=hero_piece_by_uid)
-    issues = copy.deepcopy(preview["unresolved"])
+    # The identity-only preview predates reconstruction and flags origin as
+    # unmapped. This layer retains that declared origin verbatim in HC's
+    # native build metadata; no other preview issue may be waived.
+    issues = [copy.deepcopy(issue) for issue in preview["unresolved"]
+              if not (issue["reason"] == "state_not_mapped"
+                      and issue["location"] == "build.origin")]
     issues.extend(_source_state_issues(doc))
     body = doc["build"]
     class_name = _resolve_class(body, contract_root, hero_powersets, issues)
