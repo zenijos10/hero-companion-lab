@@ -211,6 +211,34 @@ class ReconstructionTests(unittest.TestCase):
         self.assertNotIn("boost", result["build"]["powers"][0]["slots"][1])
         self.assertNotIn("io_level", result["build"]["powers"][0]["slots"][3])
 
+    def test_special_origin_grade_outside_50_to_53_refuses(self):
+        # The game's HOs exist at 50..53; a -3 would price at x0.70 and a +5
+        # as a level-55 HO the game cannot produce. Neither may convert.
+        for relative in (-3, -1, 4, 5):
+            doc = fixture()
+            doc["build"]["primary"]["powers"][0]["slots"][3]["relativeLevel"] = relative
+            with self.subTest(relative=relative):
+                result = self.convert(doc)
+                self.assertFalse(result["ok"])
+                self.assertIn("unsupported_special_relative_level",
+                              [p["reason"] for p in result["issues"]])
+        doc = fixture()
+        doc["build"]["primary"]["powers"][0]["slots"][3]["relativeLevel"] = 0
+        result = self.convert(doc)
+        self.assertTrue(result["ok"], result["issues"])
+        self.assertNotIn("boost", result["build"]["powers"][0]["slots"][3])
+
+    def test_booster_on_attuned_io_refuses_rather_than_vanishing(self):
+        # Attuned IOs take no boosters (the engine ignores one), so carrying
+        # it would silently drop source state.
+        doc = fixture()
+        doc["build"]["primary"]["powers"][0]["slots"][2]["booster"] = 3
+        result = self.convert(doc)
+        self.assertFalse(result["ok"])
+        self.assertIn("booster_on_attuned_io", [p["reason"] for p in result["issues"]])
+        doc["build"]["primary"]["powers"][0]["slots"][2]["booster"] = 0
+        self.assertTrue(self.convert(doc)["ok"])
+
 
 if __name__ == "__main__":
     unittest.main()

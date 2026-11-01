@@ -153,23 +153,27 @@ def _native_slot(slot, mapping, where, default_io_level, issues):
         if level is not None:
             native["io_level"] = level
         booster = mapping.get("booster", 0)
+        attuned = mapping.get("attuned", False)
         if not isinstance(booster, int) or booster > 5:
             issues.append(_issue("unsupported_booster", where, booster))
+        elif booster and attuned:
+            # Attuned IOs take no boosters; the engine would ignore it silently.
+            issues.append(_issue("booster_on_attuned_io", where, booster))
         elif booster:
             native["boost"] = booster
-        native["attuned"] = mapping.get("attuned", False)
+        native["attuned"] = attuned
     elif kind in ("special", "origin"):
         relative = mapping.get("relative_level", 0)
         uid = mapping["source_uid"]
         if kind == "origin":
             issues.append(_issue("origin_enhancement_not_modeled", where, uid))
         elif uid.startswith(_SPECIAL_WITH_LEVEL):
-            # Mirror mids_import's HO convention: +3 is a level-53 HO.
-            # For a negative offset, the engine reads a signed boost.
-            if relative > 0:
+            # Mirror mids_import's HO convention: +3 is a level-53 HO. The game's
+            # HOs exist only at 50..53, so any other grade is refused, never priced.
+            if not 0 <= relative <= 3:
+                issues.append(_issue("unsupported_special_relative_level", where, relative))
+            elif relative:
                 native["io_level"] = 50 + relative
-            elif relative < 0:
-                native["boost"] = relative
         elif relative:
             issues.append(_issue("unmodeled_special_relative_level", where, uid))
         native["attuned"] = False

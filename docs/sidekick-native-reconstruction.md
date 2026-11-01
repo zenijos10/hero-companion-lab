@@ -19,7 +19,9 @@ which is provenance, **not an export of any later edits**.
 Any unresolved power or enhancement, unsupported Sidekick state (including
 inherents with slots, active power mode, attack chains, proc overrides,
 incarnates and progress), unknown schema field, wrong powerset classification,
-or inability to determine an ordinary crafted IO's level produces
+inability to determine an ordinary crafted IO's level, a booster on an attuned
+IO (the game allows none), or a Hamidon/Titan/Hydra/D-Sync grade outside +0..+3
+(the game's 50..53 range) produces
 `ok: false` with issues and **no native build**.
 
 Sidekick SKIF may omit an IO level because Sidekick has a session-wide
