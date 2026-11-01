@@ -1,0 +1,272 @@
+"""Fail-closed reconstruction of supported SKIF v5 builds into HC's native shape.
+
+Power and enhancement identities must first be proven by sidekick_preview.
+This is a *library conversion*, never a save, editor mutation, or claim that
+the resulting build has passed Homecoming's complete slot/pick legality rules.
+
+The original file is returned separately as source_skif for provenance. It
+must not be mistaken for an export of later edits to the HC build.
+"""
+
+import copy
+from pathlib import Path
+
+from sidekick_preview import _contract, _read_json, preview_build
+from skif_document import load_document
+
+
+# The native HC editor cannot express these Sidekick state dimensions yet.
+# Refuse *non-empty* values; empty state is equivalent to the reader's default.
+_UNSUPPORTED = (
+    "inherents", "accolades", "incarnates", "slotOrder", "stances", "modes",
+    "powerState", "procOverrides", "disabledProcCategories", "attackChains",
+    "progress", "whatIfBuffs",
+)
+_KNOWN_BUILD = frozenset((
+    "name", "dataset", "archetype", "origin", "level", "primary", "secondary",
+    "pools", "epicPool",
+) + _UNSUPPORTED)
+_KNOWN_POWER = frozenset(("internalName", "level", "slots", "powerset",
+                          "isActive", "activeSubPower"))
+_KNOWN_SLOT = {
+    "io-set": frozenset(("type", "setId", "pieceNum", "attuned", "level", "booster")),
+    "io-generic": frozenset(("type", "stat", "level", "booster")),
+    "special": frozenset(("type", "category", "id", "relativeLevel")),
+    "origin": frozenset(("type", "stat", "tier", "relativeLevel")),
+}
+_SPECIAL_WITH_LEVEL = ("Hamidon_", "Synthetic_Hamidon_", "Titan_", "Hydra_",
+                       "DSync_", "Dsync_")
+
+
+def _issue(reason, where, detail):
+    return {"reason": reason, "location": where, "detail": str(detail)}
+
+
+def _positive_level(value):
+    return type(value) is int and 1 <= value <= 50
+
+
+def _resolve_class(build, root, hero_powersets, issues):
+    catalog = _read_json(Path(root) / "archetypes.json", "Sidekick archetypes")
+    entries = catalog.get("archetypes") if isinstance(catalog, dict) else None
+    entry = entries.get(build.get("archetype")) if isinstance(entries, dict) else None
+    class_name = (entry.get("stats") or {}).get("className") if isinstance(entry, dict) else None
+    if not isinstance(class_name, str) or class_name not in hero_powersets.get("by_archetype", {}):
+        issues.append(_issue("unknown_archetype", "build.archetype", build.get("archetype")))
+        return None
+    return class_name
+
+
+def _resolve_sets(build, class_name, root, hero_powersets, issues):
+    paths, _ = _contract(root)
+    by_class = hero_powersets.get("by_archetype", {}).get(class_name, {})
+    roles = (("primary", "primary"), ("secondary", "secondary"),
+             ("epicPool", "epic"))
+    mapped = {"primary": None, "secondary": None, "epic": None, "pools": []}
+
+    def resolve(selection, role, where):
+        if selection is None:
+            return None
+        source_id = selection["id"]
+        path = paths.get(source_id)
+        if not path:
+            issues.append(_issue("unknown_source_set", where, source_id))
+            return None
+        shard = _read_json(path, f"Sidekick powerset {source_id}")
+        if not isinstance(shard, dict) or shard.get("id") != source_id:
+            issues.append(_issue("source_identity_mismatch", where, source_id))
+            return None
+        full = shard.get("setPath")
+        if role == "pool":
+            candidates = hero_powersets.get("pools") or []
+        else:
+            candidates = by_class.get(role) or []
+        if (not isinstance(full, str)
+                or sum(v.get("full_name") == full for v in candidates) != 1):
+            issues.append(_issue("invalid_powerset_for_role", where, source_id))
+            return None
+        return full
+
+    for source_key, native_key in roles:
+        selected = build.get(source_key)
+        mapped[native_key] = resolve(selected, native_key, f"build.{source_key}")
+    for index, selection in enumerate(build.get("pools", [])):
+        full = resolve(selection, "pool", f"build.pools[{index}]")
+        if full:
+            if full in mapped["pools"]:
+                issues.append(_issue("duplicate_powerset", f"build.pools[{index}]", full))
+            else:
+                mapped["pools"].append(full)
+    for mandatory in ("primary", "secondary"):
+        if mapped[mandatory] is None:
+            issues.append(_issue("required_selection_missing", f"build.{mandatory}", mandatory))
+    if len(mapped["pools"]) > 4:
+        issues.append(_issue("too_many_pools", "build.pools", len(mapped["pools"])))
+    return mapped
+
+
+def _source_state_issues(doc):
+    issues = []
+    build = doc["build"]
+    for key, value in build.items():
+        if key not in _KNOWN_BUILD or (key in _UNSUPPORTED and value):
+            issues.append(_issue("unsupported_source_state", f"build.{key}", key))
+    for bucket in ("primary", "secondary", "epicPool"):
+        selection = build.get(bucket)
+        if selection:
+            _power_field_issues(issues, selection, f"build.{bucket}")
+    for i, selection in enumerate(build.get("pools", [])):
+        _power_field_issues(issues, selection, f"build.pools[{i}]")
+    return issues
+
+
+def _power_field_issues(issues, selection, where):
+    unknown_set_fields = set(selection) - {"id", "powers"}
+    for field in sorted(unknown_set_fields):
+        issues.append(_issue("unsupported_source_state", f"{where}.{field}", field))
+    for i, power in enumerate(selection.get("powers", [])):
+        power_where = f"{where}.powers[{i}]"
+        for key in sorted(set(power) - _KNOWN_POWER):
+            issues.append(_issue("unsupported_source_state", f"{power_where}.{key}", key))
+        if power.get("isActive") is True or power.get("activeSubPower"):
+            issues.append(_issue("unsupported_source_state", power_where, "active power mode"))
+        for j, slot in enumerate(power["slots"]):
+            if slot is None:
+                continue
+            for key in sorted(set(slot) - _KNOWN_SLOT[slot["type"]]):
+                issues.append(_issue("unsupported_source_state",
+                                     f"{power_where}.slots[{j}].{key}", key))
+
+
+def _native_slot(slot, mapping, where, default_io_level, issues):
+    """Translate validated HC UID evidence without losing level semantics."""
+    native = copy.deepcopy(mapping["hero_slot"])
+    kind = mapping["type"]
+    if kind in ("io-set", "io-generic"):
+        level = mapping.get("io_level")
+        if level is None and (kind == "io-generic" or not mapping.get("attuned")):
+            if default_io_level is None:
+                issues.append(_issue("io_level_not_embedded", where,
+                                     "provide default_io_level from the Sidekick session"))
+            else:
+                level = default_io_level
+        if level is not None:
+            native["io_level"] = level
+        booster = mapping.get("booster", 0)
+        if not isinstance(booster, int) or booster > 5:
+            issues.append(_issue("unsupported_booster", where, booster))
+        elif booster:
+            native["boost"] = booster
+        native["attuned"] = mapping.get("attuned", False)
+    elif kind in ("special", "origin"):
+        relative = mapping.get("relative_level", 0)
+        uid = mapping["source_uid"]
+        if kind == "origin":
+            issues.append(_issue("origin_enhancement_not_modeled", where, uid))
+        elif uid.startswith(_SPECIAL_WITH_LEVEL):
+            # Mirror mids_import's HO convention: +3 is a level-53 HO.
+            # For a negative offset, the engine reads a signed boost.
+            if relative > 0:
+                native["io_level"] = 50 + relative
+            elif relative < 0:
+                native["boost"] = relative
+        elif relative:
+            issues.append(_issue("unmodeled_special_relative_level", where, uid))
+        native["attuned"] = False
+    return native
+
+
+def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
+                      contract_root, hero_piece_by_uid, *, default_io_level=None):
+    """Reconstruct only when no known source semantics would be lost.
+
+    Returns {ok, name, issues, preview, source_skif}; on success also build.
+    A successful *structural* conversion still needs HC's legality validation
+    before an editor or solver may accept it.
+    """
+    if default_io_level is not None and not _positive_level(default_io_level):
+        raise ValueError("default_io_level must be an integer from 1 through 50")
+    doc = load_document(skif)
+    preview = preview_build(doc, hero_powers_by_full, contract_root,
+                            hero_piece_by_uid=hero_piece_by_uid)
+    issues = copy.deepcopy(preview["unresolved"])
+    issues.extend(_source_state_issues(doc))
+    body = doc["build"]
+    class_name = _resolve_class(body, contract_root, hero_powersets, issues)
+    sets = _resolve_sets(body, class_name, contract_root, hero_powersets, issues)
+
+    native_powers = []
+    matches = {p["location"]: p for p in preview["resolved"]}
+    enhancements = {p["location"]: p for p in preview["resolved_enhancements"]}
+    encountered = set()
+    for bucket in ("primary", "secondary", "epicPool", "pools"):
+        selections = body.get(bucket, []) if bucket == "pools" else [body.get(bucket)]
+        for index, selection in enumerate(selections):
+            if selection is None:
+                continue
+            location = (f"build.pools[{index}]" if bucket == "pools"
+                        else f"build.{bucket}")
+            role = ("epic" if bucket == "epicPool" else
+                    "pool" if bucket == "pools" else bucket)
+            selected_set = (sets["pools"][index] if role == "pool" and
+                            index < len(sets["pools"]) else sets.get(role))
+            for i, power in enumerate(selection.get("powers", [])):
+                where = f"{location}.powers[{i}]"
+                matched = matches.get(where)
+                if not matched:
+                    continue
+                full = matched["hero_power"]
+                if full in encountered:
+                    issues.append(_issue("duplicate_power", where, full))
+                    continue
+                encountered.add(full)
+                rec = hero_powers_by_full.get(full)
+                if (not isinstance(rec, dict)
+                        or rec.get("full_name") != full
+                        or rec.get("powerset_full_name") != selected_set):
+                    issues.append(_issue("inconsistent_power_identity", where, full))
+                    continue
+                slots = []
+                for j, source_slot in enumerate(power["slots"]):
+                    if source_slot is None:
+                        slots.append(None)
+                        continue
+                    slot_where = f"{where}.slots[{j}]"
+                    resolved = enhancements.get(slot_where)
+                    slots.append(_native_slot(source_slot, resolved, slot_where,
+                                              default_io_level, issues)
+                                 if resolved else None)
+                native_powers.append({
+                    "full_name": full,
+                    "display_name": rec["display_name"],
+                    "powerset_full_name": selected_set,
+                    "accepted_set_category_ids": copy.deepcopy(
+                        rec.get("accepted_set_category_ids", [])),
+                    "accepted_set_categories": copy.deepcopy(
+                        rec.get("accepted_set_categories", [])),
+                    "power_type": rec.get("power_type"),
+                    "level_available": rec.get("level_available"),
+                    "pick_level": power["level"],
+                    "earned_slot_count": len(slots),
+                    "slotCount": len(slots),
+                    "slots": slots,
+                })
+    result = {
+        "ok": not issues,
+        "name": body.get("name") or "Imported Sidekick build",
+        "issues": issues,
+        "preview": preview,
+        "source_skif": doc,
+        "editor_imported": False,
+    }
+    if issues:
+        return result
+
+    result["build"] = {
+        "archetype": class_name, **sets,
+        "char_level": body["level"],
+        "origin": body.get("origin"),
+        "incarnates": {},
+        "powers": native_powers,
+    }
+    return result

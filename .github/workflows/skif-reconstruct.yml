@@ -1,0 +1,25 @@
+name: Sidekick native build reconstruction
+on:
+  pull_request:
+    paths:
+      - "server/sidekick_reconstruct.py"
+      - "tools/test_skif_reconstruct.py"
+      - ".github/workflows/skif-reconstruct.yml"
+      - "server/sidekick_preview.py"
+      - "server/sidekick_enhancements.py"
+      - "data/powers.json"
+      - "data/powersets.json"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  safe-reconstruction:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify native build reconstruction
+        run: python -m unittest discover -s tools -p test_skif_reconstruct.py -v
