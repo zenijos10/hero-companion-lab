@@ -3,12 +3,16 @@ on:
   pull_request:
     paths:
       - "server/sidekick_web_import.py"
+      - "server/sidekick_contract.py"
       - "server/sidekick_reconstruct.py"
       - "server/sidekick_preview.py"
       - "server/server.py"
       - "server/import_catalog.py"
       - "tools/preview_skif.py"
       - "tools/test_sidekick_web_import.py"
+      - "tools/test_sidekick_contract.py"
+      - "tools/test_sidekick_contract_sidekick.py"
+      - "tools/test_skif_web_endpoint.py"
       - "tools/test_skif_import_catalog.py"
       - "static/app.js"
       - "static/index.html"
@@ -28,6 +32,7 @@ jobs:
       - name: Run guarded import and identity lookup tests
         run: |
           python -m unittest discover -s tools -p test_sidekick_web_import.py -v
+          python -m unittest discover -s tools -p test_sidekick_contract.py -v
           python -m unittest discover -s tools -p test_skif_import_catalog.py -v
           python -m unittest discover -s tools -p test_skif_reconstruct.py -v
       - name: Verify browser javascript syntax and server compilation
@@ -54,6 +59,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             contract/homecoming/manifest.json
+            contract/homecoming/bundle.json.gz
             contract/homecoming/mids-names.json
             contract/homecoming/archetypes.json
             contract/homecoming/boost-index.json
@@ -63,4 +69,6 @@ jobs:
             fixtures/skif/v5/rb5d_browser_pass.skif
           persist-credentials: false
       - name: Exercise real Flask endpoint and original Sidekick data
-        run: python -m unittest discover -s tools -p test_skif_web_endpoint.py -v
+        run: |
+          python -m unittest discover -s tools -p test_skif_web_endpoint.py -v
+          python -m unittest discover -s tools -p test_sidekick_contract_sidekick.py -v

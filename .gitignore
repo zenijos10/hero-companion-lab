@@ -58,3 +58,5 @@ version_info_lite.txt
 
 # Local sparse checkout used by tools/test_skif_sidekick_contract.py (external AGPL data)
 _sidekick_contract_fixture/
+# Downloaded CoH Sidekick ID map in dev (frozen builds use %APPDATA%\HeroCompanion\sidekick)
+sidekick-data/
