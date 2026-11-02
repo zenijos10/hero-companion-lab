@@ -69,5 +69,25 @@ class SidekickFlaskEndpointTests(unittest.TestCase):
         self.assertTrue(response["ok"], response.get("response"))
 
 
+class ValidateReadsGameRestrictionsTests(unittest.TestCase):
+    """/build/validate must enforce exclusions on the payload the app sends.
+
+    buildPayload() ships full_name/pick_level/slots only, never `excludes`;
+    before the shared validator enriched from the game data, a mutually
+    exclusive pair passed /build/validate from the real app.
+    """
+
+    def test_bare_app_payload_still_reports_mutually_exclusive_pair(self):
+        first, second = next(
+            (name, other) for name, record in app_server.POWER_BY_FULL.items()
+            for other in (record.get("excludes") or []) if other in app_server.POWER_BY_FULL)
+        bare = {"archetype": "Class_Arachnos_Soldier", "powers": [
+            {"full_name": first, "pick_level": 1, "slots": []},
+            {"full_name": second, "pick_level": 2, "slots": []}]}
+        response = app_server.app.test_client().post("/build/validate", json=bare)
+        errors = response.get_json()["errors"]
+        self.assertTrue(any("mutually exclusive" in e for e in errors), errors)
+
+
 if __name__ == "__main__":
     unittest.main()
