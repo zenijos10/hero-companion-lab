@@ -37,6 +37,7 @@ import solver                      # noqa: E402
 import leveling_schedule          # noqa: E402
 import converter                   # noqa: E402
 import import_catalog              # noqa: E402
+import sidekick_web_import          # noqa: E402
 import role_output                 # noqa: E402
 
 # Packaged (PyInstaller) build: bundled read-only assets (data/, static/, VERSION,
@@ -2838,10 +2839,17 @@ def _epic_prereq_errors(powers):
     return out
 
 
-@app.route("/build/validate", methods=["POST"])
-def build_validate():
-    build = request.get_json(force=True) or {}
-    res = engine.validate_build(build)
+def _complete_build_validation(build):
+    """The exact legality checks shared by /build/validate and the SKIF importer."""
+    # Enrich a validation-only copy with game-source restrictions even if the
+    # incoming file omitted those optional power-record fields.
+    validate_input = copy.deepcopy(build)
+    for power in validate_input.get("powers") or []:
+        game = POWER_BY_FULL.get(power.get("full_name")) or {}
+        for key in ("excludes", "archetype_excluded"):
+            if key in game:
+                power[key] = copy.deepcopy(game[key])
+    res = engine.validate_build(validate_input)
     prereq = _epic_prereq_errors(build.get("powers") or [])
     if prereq:
         res.setdefault("errors", []).extend(prereq)
@@ -2886,7 +2894,12 @@ def build_validate():
             f"(you have {', '.join(ps.split('.')[-1].replace('_', ' ') for ps in _origin)}).")
     # Common-build-mistakes coaching (soft, HC-accurate) — a distinct stream from hard errors/warnings.
     res["coaching"] = _build_coaching(build.get("archetype"), build.get("powers") or [])
-    return jsonify(res)
+    return res
+
+
+@app.route("/build/validate", methods=["POST"])
+def build_validate():
+    return jsonify(_complete_build_validation(request.get_json(force=True) or {}))
 
 
 @app.route("/build/calculate", methods=["POST"])
@@ -6413,27 +6426,8 @@ def _gamelog_insights():
             "character": first.get("character"), "fit": first.get("fit")}
 
 
-@app.route("/build/import", methods=["POST"])
-def build_import():
-    """Import a Mids Reborn .mbd: parse -> resolve -> totals -> quick critique.
-    The frontend then offers goal/role/tier + Solve to produce an improved build."""
-    body = request.get_json(force=True) or {}
-    data = body.get("mbd")
-    # Two import formats share this endpoint: Mids .mbd (JSON) and the in-game
-    # /build_save_file text export. Detect the in-game text first by its header.
-    if ingame_import.looks_like_ingame(data):
-        parsed = ingame_import.parse_ingame_build(data, _import_lookups())
-    else:
-        if isinstance(data, str):
-            try:
-                data = json.loads(data)
-            except Exception:  # noqa: BLE001
-                diag.swallowed("mbd import: JSON parse")
-                return jsonify({"ok": False, "response": "That file isn't valid .mbd JSON "
-                                "— re-export it from Mids Reborn and try again."})
-        if not isinstance(data, dict):
-            return jsonify({"ok": False, "response": "No build content provided."})
-        parsed = mids_import.parse_build(data, _import_lookups())
+def _build_import_response(parsed, body):
+    """Shared successful import response for Mids, in-game, and Sidekick builds."""
     if not parsed.get("ok"):
         return jsonify({"ok": False, "response": parsed.get("error", "Parse failed.")})
 
@@ -6461,6 +6455,51 @@ def build_import():
                     "totals": totals, "critique": critique, "note": note,
                     "unresolved_enh": parsed["unresolved_enh"],
                     "unresolved_powers": parsed["unresolved_powers"]})
+
+
+@app.route("/build/import", methods=["POST"])
+def build_import():
+    """Import a Mids Reborn .mbd: parse -> resolve -> totals -> quick critique.
+    The frontend then offers goal/role/tier + Solve to produce an improved build."""
+    body = request.get_json(force=True) or {}
+    data = body.get("mbd")
+    # Two import formats share this endpoint: Mids .mbd (JSON) and the in-game
+    # /build_save_file text export. Detect the in-game text first by its header.
+    if ingame_import.looks_like_ingame(data):
+        parsed = ingame_import.parse_ingame_build(data, _import_lookups())
+    else:
+        if isinstance(data, str):
+            try:
+                data = json.loads(data)
+            except Exception:  # noqa: BLE001
+                diag.swallowed("mbd import: JSON parse")
+                return jsonify({"ok": False, "response": "That file isn't valid .mbd JSON "
+                                "— re-export it from Mids Reborn and try again."})
+        if not isinstance(data, dict):
+            return jsonify({"ok": False, "response": "No build content provided."})
+        parsed = mids_import.parse_build(data, _import_lookups())
+    return _build_import_response(parsed, body)
+
+
+@app.route("/build/import-sidekick", methods=["POST"])
+def build_import_sidekick():
+    """Import a supported SKIF v5 only after identity + HC legality gates.
+
+    The contract location is trusted server configuration, never a client path.
+    No save, current build, or user file is changed by this route.
+    """
+    body = request.get_json(silent=True)
+    configured = (os.environ.get("HC_SIDEKICK_CONTRACT_DIR") or "").strip()
+    contract = configured if configured and os.path.isdir(configured) else None
+    attempt = sidekick_web_import.prepare_sidekick_import(
+        body, contract, POWER_BY_FULL, POWERSETS,
+        import_catalog.build_sidekick_piece_lookups(ENH_SETS, COMMON_IOS),
+        _complete_build_validation)
+    if not attempt.get("ok"):
+        return jsonify(attempt)
+    parsed = {"ok": True, "build": attempt["build"], "name": attempt["name"],
+              "unresolved_enh": [], "unresolved_powers": []}
+    return _build_import_response(parsed, body)
 
 
 @app.route("/ai/query", methods=["POST"])
