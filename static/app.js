@@ -3931,6 +3931,7 @@ async function init() {
   if ($("ingame-browse-go")) $("ingame-browse-go").addEventListener("click", browseGameFolder);
   $("ingame-pick-go").addEventListener("click", () => $("import-file").click());
   $("ingame-mbd-go").addEventListener("click", () => $("import-file").click());
+  $("ingame-skif-go").addEventListener("click", () => $("import-file").click());
   $("entry-scratch").addEventListener("click", () => { hideEntry(); startFromScratch(); });
   $("entry-respec").addEventListener("click", () => { hideEntry(); startNew50(); });
   $("entry-continue").addEventListener("click", () => showEntry("saves"));
@@ -9850,29 +9851,75 @@ async function importMids(e) {
       + reportThisBtn(`Import failed while reading the file "${file.name}": ${err}`);
     return;
   }
-  importBuildText(text);
+  importBuildText(text, file.name.toLowerCase().endsWith(".skif") ? "sidekick" : "other");
 }
 
 // Shared tail of every import route (file picker, auto-found in-game save):
 // parse server-side, load into the builder, snapshot for diff/reset, critique.
-async function importBuildText(text) {
+async function importBuildText(text, format = "other") {
   const report = $("import-report");
   report.classList.remove("hidden");
   let res;
   try {
-    res = await api("/build/import", postJson({ mbd: text, pvp: build.pvp }));
+    const sidekickDefault = $("sidekick-default-io")?.value?.trim() || "";
+    const args = format === "sidekick"
+      ? { skif: text, pvp: !!build.pvp,
+          ...(sidekickDefault ? { default_io_level: Number(sidekickDefault) } : {}) }
+      : { mbd: text, pvp: build.pvp };
+    res = await api(format === "sidekick" ? "/build/import-sidekick" : "/build/import",
+                    postJson(args));
   } catch (err) {
     report.innerHTML = `<p class="v-err">Import failed: ${escHtml(String(err))}</p>`
       + reportThisBtn(`Import failed: ${err}`);
     return;
   }
   if (!res.ok) {
+    const reasons = [
+      ...(res.issues || []).map(x => `${x.location || "build"}: ${x.reason || x.detail || "unresolved"}`),
+      ...(res.errors || []),
+    ];
+    const explain = reasons.length
+      ? "<ul>" + reasons.slice(0, 6).map(x => "<li>" + escHtml(String(x)) + "</li>").join("")
+          + (reasons.length > 6 ? "<li>…and " + (reasons.length - 6) + " more</li>" : "")
+          + "</ul>" : "";
     report.innerHTML = `<p class="v-err">${escHtml(res.response || "Import failed.")}</p>`
+      + explain
       + reportThisBtn(`Import was refused: ${res.response || "Import failed."}`);
     return;
   }
 
-  await applyImportedBuild(res.build);
+  // Sidekick is an additional import source, not a licence to overwrite a
+  // current character without the owner's action. Server rejects are above:
+  // no part of the current editor has been touched at that point.
+  if (format === "sidekick" && build.powers.length) {
+    const choice = await askDialog({
+      title: "Replace the current character?",
+      body: "The Sidekick build passed the import checks. Loading it will replace "
+        + "the currently open build in this editor. Your saved characters are not deleted.",
+      actions: [{ key: "replace", label: "Import Sidekick build", kind: "primary" },
+                { key: "cancel", label: "Keep current build", kind: "ghost" }],
+      safe: "cancel",
+    });
+    if (choice !== "replace") {
+      report.innerHTML = "<p class='muted small'>Sidekick import cancelled; current build unchanged.</p>";
+      return;
+    }
+  }
+  const beforeSidekick = format === "sidekick"
+    ? JSON.parse(JSON.stringify(build)) : null;
+  try {
+    await applyImportedBuild(res.build);
+  } catch (err) {
+    // Unexpected UI failure during a validated Sidekick load: restore the
+    // previous editor state rather than leaving the partially loaded build.
+    if (beforeSidekick) {
+      try { await applyImportedBuild(beforeSidekick); } catch (rollbackError) {
+        console.error("Sidekick import rollback also failed", rollbackError);
+      }
+    }
+    report.innerHTML = `<p class="v-err">Import could not update the editor: ${escHtml(String(err))}</p>`;
+    return;
+  }
   build._mode = "import";        // a real, created character → lock its archetype/powersets
   applyIdentityLock();
   // snapshot the imported build for a later before/after diff + reset/try-again
