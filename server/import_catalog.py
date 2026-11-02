@@ -69,3 +69,19 @@ def build_import_aliases(piece_by_uid):
                 aliases[b + uid[len(a):]] = slot
     aliases.update(piece_by_uid)     # a real uid always outranks an alias
     return aliases
+
+
+def build_sidekick_piece_lookups(enh_sets, common_ios):
+    """Use exactly the server's set/special import catalog plus real common IOs.
+
+    Common IOs have no attuned aliases; only set pieces get import aliases.
+    Kept outside Flask so CLI and the in-app SKIF importer cannot diverge.
+    """
+    pieces, _ = build_piece_lookups(enh_sets, common_ios)
+    lookup = build_import_aliases(pieces)
+    for item in common_ios.get("common_ios", []):
+        uid = item.get("uid")
+        if uid and uid not in lookup:
+            lookup[uid] = {"piece_uid": uid,
+                           "piece_name": item.get("name") or uid}
+    return lookup

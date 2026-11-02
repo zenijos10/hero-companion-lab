@@ -25,13 +25,7 @@ def _enhancement_lookups():
         sets = json.load(stream)
     with (ROOT / "data" / "common_ios.json").open(encoding="utf-8") as stream:
         commons = json.load(stream)
-    pieces, _ = import_catalog.build_piece_lookups(sets, commons)
-    lookup = import_catalog.build_import_aliases(pieces)
-    for entry in commons.get("common_ios", []):
-        uid = entry.get("uid")
-        if uid and uid not in lookup:
-            lookup[uid] = {"piece_uid": uid, "piece_name": entry.get("name") or uid}
-    return lookup
+    return import_catalog.build_sidekick_piece_lookups(sets, commons)
 
 
 def main(argv=None):
