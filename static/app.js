@@ -10,6 +10,7 @@ const build = {
   pools: [], pools_display: [],
   epic: null, epic_display: null,
   incarnates: {},   // slot -> {full_name, display_name}
+  sidekick_attack_chains: [], // original Sidekick cast-order reference, not simulated
   include_incarnates: false,  // peak totals: fold incarnate buffs into totals
   // ⚠ v34 RECONCILIATION (Joel spotted this on the panel screenshot, 2026-07-16):
   // this global "Include accolades + amplifiers" toggle and the accolade
@@ -448,7 +449,8 @@ let _lastSavedSnapshot = null;
 function buildSnapshot() {
   return JSON.stringify({
     a: build.archetype, p: build.primary, s: build.secondary, pl: build.pools, e: build.epic,
-    inc: build.incarnates, pw: (build.powers || []).map(pw => [pw.full_name, pw.slots]),
+    inc: build.incarnates, sc: build.sidekick_attack_chains,
+    pw: (build.powers || []).map(pw => [pw.full_name, pw.slots]),
     fl: [build.include_incarnates, build.pvp, build.tier, build.level_reached],
   });
 }
@@ -552,6 +554,8 @@ function resetBuildScopedState() {
   // 2026-08-16, second report). Bumping the epoch makes recompute discard any
   // response that started before the swap.
   _BUILD_EPOCH++;
+  build.sidekick_attack_chains = [];
+  renderSidekickChainReference();
   build._custom_targets = null;
   build._exposure = null;
   build._travel = null;
@@ -10201,6 +10205,11 @@ async function _applyImportedBuild(b) {
     slots: p.slots || [], slotCount: (p.slots || []).length,
     _locked: !!p._locked,     // v35: lock choices ride saves (resume = same choices)
   }));
+  // Sidekick cast order is source reference metadata, NOT a DPS simulation.
+  // Keep it with the native build so ordinary Save and Resume preserve it.
+  build.sidekick_attack_chains = Array.isArray(b.sidekick_attack_chains)
+    ? JSON.parse(JSON.stringify(b.sidekick_attack_chains)) : [];
+  renderSidekickChainReference();
   // incarnates
   build.incarnates = {};
   for (const [slot, v] of Object.entries(b.incarnates || {})) build.incarnates[slot] = v;
@@ -10219,6 +10228,25 @@ async function _applyImportedBuild(b) {
   syncPreserveFromLocks();
   renderPowers();
   recompute();
+}
+
+function renderSidekickChainReference() {
+  const panel = $("sidekick-chains-panel");
+  if (!panel) return;
+  const chains = build.sidekick_attack_chains || [];
+  panel.hidden = !chains.length;
+  if (!chains.length) { panel.innerHTML = ""; return; }
+  const lines = chains.map(chain => {
+    const powers = (chain.powers || []).map(p =>
+      escHtml(String(p).split(".").pop().replace(/_/g, " "))).join(" → ");
+    return `<li><strong>${escHtml(chain.name || chain.id)}</strong>:
+      ${powers || "(empty chain)"}</li>`;
+  }).join("");
+  panel.innerHTML = `<details><summary>Sidekick attack chains (${chains.length}) — reference only</summary>
+    <p class="muted small">Saved from the original Sidekick build. These do not change
+    Hero Companion's damage calculations or optimizer. If you change powers, these
+    notes may no longer describe your new build.</p>
+    <ol>${lines}</ol></details>`;
 }
 
 function renderImportReport(res) {
