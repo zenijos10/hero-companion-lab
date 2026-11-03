@@ -19,12 +19,12 @@ from skif_document import load_document
 # Refuse *non-empty* values; empty state is equivalent to the reader's default.
 _UNSUPPORTED = (
     "inherents", "accolades", "incarnates", "slotOrder", "stances", "modes",
-    "powerState", "procOverrides", "disabledProcCategories", "attackChains",
+    "powerState", "procOverrides", "disabledProcCategories",
     "progress", "whatIfBuffs",
 )
 _KNOWN_BUILD = frozenset((
     "name", "dataset", "archetype", "origin", "level", "primary", "secondary",
-    "pools", "epicPool",
+    "pools", "epicPool", "attackChains",
 ) + _UNSUPPORTED)
 _KNOWN_POWER = frozenset(("internalName", "level", "slots", "powerset",
                           "isActive", "activeSubPower"))
@@ -180,6 +180,47 @@ def _native_slot(slot, mapping, where, default_io_level, issues):
     return native
 
 
+
+def _translate_attack_chains(body, preview, issues):
+    """Preserve Sidekick's saved cast order as reference metadata only.
+
+    A chain is NOT simulated or optimized. Every power address must resolve
+    to exactly one of the imported powers, otherwise reject the whole build.
+    Both Sidekick's stable address and HC's full name travel with the save.
+    """
+    selected = {}
+    for power in preview["resolved"]:
+        key = (power["sidekick_set"], power["sidekick_power"])
+        selected.setdefault(key, set()).add(power["hero_power"])
+
+    seen_ids = set()
+    translated = []
+    for i, chain in enumerate(body.get("attackChains") or []):
+        where = f"build.attackChains[{i}]"
+        unknown = set(chain) - {"id", "name", "powers"}
+        for field in sorted(unknown):
+            issues.append(_issue("unsupported_attack_chain_field",
+                                 f"{where}.{field}", field))
+        if chain["id"] in seen_ids:
+            issues.append(_issue("duplicate_attack_chain_id", f"{where}.id", chain["id"]))
+        seen_ids.add(chain["id"])
+        mapped = []
+        for j, address in enumerate(chain["powers"]):
+            powerset, sep, name = address.partition(":")
+            matches = selected.get((powerset, name), set()) if sep else set()
+            if len(matches) != 1:
+                issues.append(_issue("unknown_attack_chain_power",
+                                     f"{where}.powers[{j}]", address))
+            else:
+                mapped.append(next(iter(matches)))
+        translated.append({
+            "id": chain["id"],
+            "name": chain["name"],
+            "powers": mapped,
+            "source_powers": copy.deepcopy(chain["powers"]),
+        })
+    return translated
+
 def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
                       contract_root, hero_piece_by_uid, *, default_io_level=None):
     """Reconstruct only when no known source semantics would be lost.
@@ -198,9 +239,10 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
     # native build metadata; no other preview issue may be waived.
     issues = [copy.deepcopy(issue) for issue in preview["unresolved"]
               if not (issue["reason"] == "state_not_mapped"
-                      and issue["location"] == "build.origin")]
+                      and issue["location"] in ("build.origin", "build.attackChains"))]
     issues.extend(_source_state_issues(doc))
     body = doc["build"]
+    attack_chains = _translate_attack_chains(body, preview, issues)
     class_name = _resolve_class(body, contract_root, hero_powersets, issues)
     sets = _resolve_sets(body, class_name, contract_root, hero_powersets, issues)
 
@@ -276,6 +318,7 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
         "char_level": body["level"],
         "origin": body.get("origin"),
         "incarnates": {},
+        "sidekick_attack_chains": attack_chains,
         "powers": native_powers,
     }
     return result
