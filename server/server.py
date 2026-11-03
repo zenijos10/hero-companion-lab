@@ -38,6 +38,7 @@ import leveling_schedule          # noqa: E402
 import converter                   # noqa: E402
 import import_catalog              # noqa: E402
 import sidekick_web_import          # noqa: E402
+import sidekick_contract            # noqa: E402
 import role_output                 # noqa: E402
 
 # Packaged (PyInstaller) build: bundled read-only assets (data/, static/, VERSION,
@@ -6489,17 +6490,55 @@ def build_import_sidekick():
     No save, current build, or user file is changed by this route.
     """
     body = request.get_json(silent=True)
-    configured = (os.environ.get("HC_SIDEKICK_CONTRACT_DIR") or "").strip()
-    contract = configured if configured and os.path.isdir(configured) else None
+    providers = _sidekick_providers()
+    contract, _ = sidekick_contract.locate_contract(providers)
     attempt = sidekick_web_import.prepare_sidekick_import(
         body, contract, POWER_BY_FULL, POWERSETS,
         import_catalog.build_sidekick_piece_lookups(ENH_SETS, COMMON_IOS),
         _complete_build_validation)
     if not attempt.get("ok"):
+        download = sidekick_contract.installer(providers)
+        if attempt.get("code") == "sidekick_contract_unavailable" and download:
+            attempt.update(can_download=True,
+                           download_bytes=download.snapshot.size_bytes)
         return jsonify(attempt)
     parsed = {"ok": True, "build": attempt["build"], "name": attempt["name"],
               "unresolved_enh": [], "unresolved_powers": []}
     return _build_import_response(parsed, body)
+
+
+def _sidekick_cache_dir():
+    """Where a downloaded Sidekick ID map lives (writable, like _saves_dir)."""
+    if getattr(sys, "frozen", False):
+        base = os.environ.get("APPDATA") or os.path.expanduser("~")
+        return os.path.join(base, "HeroCompanion", "sidekick")
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "sidekick-data")
+
+
+def _sidekick_providers():
+    """The one place that decides where Sidekick's ID map comes from."""
+    return sidekick_contract.default_providers(_sidekick_cache_dir())
+
+
+@app.route("/sidekick/data/download", methods=["POST"])
+def sidekick_data_download():
+    """Fetch the pinned Sidekick ID map once, only after the person agreed."""
+    body = request.get_json(silent=True) or {}
+    if body.get("consent") is not True:
+        return jsonify({"ok": False, "code": "sidekick_download_needs_consent",
+                        "response": "Nothing was downloaded."})
+    providers = _sidekick_providers()
+    download = sidekick_contract.installer(providers)
+    if download is None:
+        return jsonify({"ok": False, "code": "sidekick_download_unavailable",
+                        "response": "No download source is configured."})
+    try:
+        download.install()
+    except sidekick_contract.ContractUnavailable as exc:
+        return jsonify({"ok": False, "code": "sidekick_download_failed",
+                        "response": f"{exc} Nothing was installed; try again later."})
+    _, source = sidekick_contract.locate_contract(providers)
+    return jsonify({"ok": True, "source": source, "version": download.snapshot.version})
 
 
 @app.route("/ai/query", methods=["POST"])

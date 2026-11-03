@@ -3,37 +3,45 @@
 The Character → Import screen now accepts `.skif` v5 files alongside the
 existing Mids `.mbd` and Homecoming `/build_save_file` exports.
 
-**This is a deliberately conservative, opt-in compatibility path.** It
-does not download a game-data contract automatically or silently substitute
-abilities the planner doesn't understand.
+**This is a deliberately conservative compatibility path.** It never
+silently substitutes abilities the planner doesn't understand.
 
-## One-time local contract setup
+## Where Sidekick's ID map comes from
 
-Sidekick publishes the Homecoming contract in its own repository.
-Use a *separate* checkout of the Sidekick project. For example:
+A `.skif` names powers and enhancements with CoH Sidekick's own IDs, so the
+importer needs Sidekick's ID map (its "contract"). `server/sidekick_contract.py`
+decides where that map comes from through one ordered **provider list**
+(`server._sidekick_providers`); the importer only ever receives a folder.
 
-```sh
-git clone https://github.com/wednesdaywoe/coh-sidekick.git
-```
+1. **Configured folder** (`HC_SIDEKICK_CONTRACT_DIR`), for developers with
+   their own Sidekick checkout. Server-side only; the browser cannot choose
+   a path.
+2. **Downloaded snapshot** (the normal path). The first `.skif` import asks
+   before downloading Sidekick's published `bundle.json.gz` (about 2.4 MB,
+   once) from GitHub at a **pinned commit**. Only bytes matching the pinned
+   SHA-256 install. The slim ID map is unpacked atomically into
+   `%APPDATA%\HeroCompanion\sidekick` (dev: `sidekick-data/`) and works
+   offline from then on. "Not now" stores nothing, so the next import asks
+   again. Nothing about the user's build is sent.
 
-Then configure the directory of its `contract/homecoming` files as the
-environment variable `HC_SIDEKICK_CONTRACT_DIR` in the environment that
-launches Hero Companion. It needs `manifest.json`, `mids-names.json`,
-`archetypes.json`, `boost-index.json`, `enhancements.json`, and
-the referenced powerset shard files. If you update Sidekick's checkout,
-run the tests again; the consumer was verified against the pinned fixture
-in this PR and other versions may introduce incompatible vocabulary.
+CI proves the pinned checksum matches the published bundle and that the slim
+download imports the real Sidekick fixture exactly like Sidekick's full
+contract folder (`tools/test_sidekick_contract_sidekick.py`).
 
-Example for PowerShell (source checkout):
+### If CoH Sidekick ever stops
 
-```powershell
-$env:HC_SIDEKICK_CONTRACT_DIR = "C:\path\to\coh-sidekick\contract\homecoming"
-python run_app.py
-```
+Nothing downstream of the provider list changes. Either:
 
-The configured path is **server-side only**. The browser cannot request
-a different filesystem directory. No third-party contract is copied into
-the Hero Companion repository, and the import itself makes no network calls.
+- **Point the snapshot elsewhere**: update `SIDEKICK_SNAPSHOT` (url, sha256,
+  size) to any other copy of the same bundle, or to a newer Sidekick commit
+  after re-running the pinned tests; or
+- **Add a provider**: any class with `name` and `locate()` returning a folder
+  in the same layout (`manifest.json`, `powersets/...`, `archetypes.json`,
+  `boost-index.json`, `enhancements.json`, `mids-names.json`), for example
+  one generated from Hero Companion's own game data. Add `install()` if it
+  must fetch or build its data first.
+
+Already-downloaded copies keep working regardless, since they live on disk.
 
 ## What happens on import
 

@@ -6,6 +6,7 @@ import copy
 import json
 import os
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -13,6 +14,7 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "server"), str(ROOT / "ai")]
 import server as app_server
+import sidekick_contract
 
 
 class SidekickFlaskEndpointTests(unittest.TestCase):
@@ -26,6 +28,16 @@ class SidekickFlaskEndpointTests(unittest.TestCase):
         cls.source = json.loads(fixture.read_text(encoding="utf-8"))
         cls.client = app_server.app.test_client()
 
+    def setUp(self):
+        # An empty download cache per test: a real download on this machine
+        # must never decide what these tests see.
+        cache = tempfile.TemporaryDirectory()
+        self.addCleanup(cache.cleanup)
+        self.cache = Path(cache.name)
+        patcher = patch.object(app_server, "_sidekick_cache_dir", return_value=self.cache)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
     def send(self, source, *, configured=True, **extra):
         config = {"HC_SIDEKICK_CONTRACT_DIR": str(self.contract_root) if configured else ""}
         with patch.dict(os.environ, config):
@@ -33,6 +45,36 @@ class SidekickFlaskEndpointTests(unittest.TestCase):
                                         json={"skif": json.dumps(source), **extra})
         self.assertEqual(response.status_code, 200)
         return response.get_json()
+
+    def download(self, body):
+        pinned = (ROOT / "_sidekick_contract_fixture/contract/homecoming/bundle.json.gz").read_bytes()
+        with patch.object(sidekick_contract, "_https_fetch", lambda url, limit: pinned), \
+                patch.dict(os.environ, {"HC_SIDEKICK_CONTRACT_DIR": ""}):
+            response = self.client.post("/sidekick/data/download", json=body)
+        self.assertEqual(response.status_code, 200)
+        return response.get_json()
+
+    def test_unavailable_data_offers_the_one_time_download(self):
+        response = self.send(self.source, configured=False)
+        self.assertEqual(response["code"], "sidekick_contract_unavailable")
+        self.assertTrue(response["can_download"])
+        self.assertGreater(response["download_bytes"], 0)
+
+    def test_download_needs_explicit_consent(self):
+        response = self.download({})
+        self.assertFalse(response["ok"])
+        self.assertEqual(response["code"], "sidekick_download_needs_consent")
+        self.assertEqual(list(self.cache.iterdir()), [])
+
+    def test_consented_download_makes_import_work_without_any_folder_setting(self):
+        response = self.download({"consent": True})
+        self.assertTrue(response["ok"], response)
+        self.assertEqual(response["source"], "sidekick-download")
+        supported = copy.deepcopy(self.source)
+        supported["build"].pop("attackChains")
+        imported = self.send(supported, configured=False, pvp=False)
+        self.assertTrue(imported["ok"], imported.get("response"))
+        self.assertEqual(len(imported["build"]["powers"]), 7)
 
     def test_without_external_contract_never_returns_a_build(self):
         response = self.send(self.source, configured=False)

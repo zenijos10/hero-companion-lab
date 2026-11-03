@@ -9856,6 +9856,40 @@ async function importMids(e) {
 
 // Shared tail of every import route (file picker, auto-found in-game save):
 // parse server-side, load into the builder, snapshot for diff/reset, critique.
+// One-time, consented download of CoH Sidekick's ID map. Returns true once
+// the map is installed; false (with the reason shown) on No or a failure.
+async function offerSidekickDownload(bytes, report) {
+  const size = bytes ? ` (about ${(bytes / 1e6).toFixed(1)} MB)` : "";
+  const choice = await askDialog({
+    title: "Download Sidekick's ID map?",
+    body: "To read a .skif file, Hero Companion needs CoH Sidekick's map of its "
+      + `power and enhancement names. It downloads once${size} from the CoH Sidekick `
+      + "project on GitHub, is checked against a pinned copy, and stays on this PC. "
+      + "Nothing about your build is sent.",
+    actions: [{ key: "download", label: "Download and import", kind: "primary" },
+              { key: "cancel", label: "Not now", kind: "ghost" }],
+    safe: "cancel",
+  });
+  if (choice !== "download") {
+    report.innerHTML = "<p class='muted small'>Sidekick import cancelled; nothing was downloaded "
+      + "and your current build is unchanged.</p>";
+    return false;
+  }
+  report.innerHTML = "<p class='muted small'>Downloading Sidekick's ID map…</p>";
+  let res;
+  try {
+    res = await api("/sidekick/data/download", postJson({ consent: true }));
+  } catch (err) {
+    res = { ok: false, response: String(err) };
+  }
+  if (!res.ok) {
+    report.innerHTML = `<p class="v-err">${escHtml(res.response || "Download failed.")}</p>`
+      + reportThisBtn(`Sidekick data download failed: ${res.response || ""}`);
+    return false;
+  }
+  return true;
+}
+
 async function importBuildText(text, format = "other") {
   const report = $("import-report");
   report.classList.remove("hidden");
@@ -9871,6 +9905,13 @@ async function importBuildText(text, format = "other") {
   } catch (err) {
     report.innerHTML = `<p class="v-err">Import failed: ${escHtml(String(err))}</p>`
       + reportThisBtn(`Import failed: ${err}`);
+    return;
+  }
+  if (!res.ok && res.code === "sidekick_contract_unavailable" && res.can_download) {
+    // Ask once (the Choice doctrine): "No" stores nothing, so the next .skif asks again.
+    if (await offerSidekickDownload(res.download_bytes, report)) {
+      return importBuildText(text, format);
+    }
     return;
   }
   if (!res.ok) {

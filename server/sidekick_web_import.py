@@ -23,9 +23,8 @@ def prepare_sidekick_import(payload, contract_root, power_index, powersets,
     if not contract_root:
         return _refusal(
             "sidekick_contract_unavailable",
-            "Sidekick import requires local Homecoming compatibility data. "
-            "Configure HC_SIDEKICK_CONTRACT_DIR to a Sidekick contract/homecoming "
-            "folder and restart Hero Companion. Existing builds were not changed.")
+            "Sidekick import needs CoH Sidekick's ID map, which is not on this "
+            "PC yet. Existing builds were not changed.")
     if not isinstance(payload, dict):
         return _refusal("sidekick_invalid_request", "Expected a Sidekick import request.")
     skif = payload.get("skif")
