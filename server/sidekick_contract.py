@@ -18,10 +18,12 @@ import os
 import shutil
 import tempfile
 import urllib.request
+import threading
 from dataclasses import dataclass
 from pathlib import Path
 
 
+_PUBLISH_LOCK = threading.Lock()  # Flask's threaded desktop server
 MAX_DOWNLOAD_BYTES = 20_000_000
 _MAX_UNPACKED_BYTES = 200_000_000
 
@@ -77,10 +79,32 @@ class DownloadedSnapshot:
         return self._cache_root / self.snapshot.version
 
     def locate(self):
-        return self._target if (self._target / "manifest.json").is_file() else None
+        """Never treat a manifest alone as proof of a complete cached ID map."""
+        target = self._target
+        essential = ("manifest.json", "archetypes.json", "boost-index.json",
+                     "enhancements.json", "mids-names.json")
+        try:
+            if not all((target / name).is_file() for name in essential):
+                return None
+            manifest = json.loads((target / "manifest.json").read_text(encoding="utf-8"))
+            if not isinstance(manifest, dict) or manifest.get("dataset") != "homecoming":
+                return None
+            entries = manifest.get("shards")
+            if not isinstance(entries, list) or not entries:
+                return None
+            root = target.resolve()
+            for entry in entries:
+                if not isinstance(entry, dict) or not isinstance(entry.get("path"), str):
+                    return None
+                path = (root / entry["path"]).resolve()
+                if not path.is_relative_to(root) or not path.is_file():
+                    return None
+            return target
+        except (OSError, ValueError, TypeError):
+            return None
 
     def install(self):
-        """Fetch, verify and unpack; the folder appears whole or not at all."""
+        """Fetch verified bytes and publish a complete cache without racing peers."""
         ready = self.locate()
         if ready:
             return ready
@@ -90,14 +114,30 @@ class DownloadedSnapshot:
         if hashlib.sha256(raw).hexdigest() != self.snapshot.sha256:
             raise ContractUnavailable("Sidekick data did not match the pinned version.")
         bundle = _read_bundle(raw)
-        self._cache_root.mkdir(parents=True, exist_ok=True)
-        staging = Path(tempfile.mkdtemp(prefix=".staging-", dir=self._cache_root))
+        staging = None
         try:
+            self._cache_root.mkdir(parents=True, exist_ok=True)
+            staging = Path(tempfile.mkdtemp(prefix=".staging-", dir=self._cache_root))
             write_contract_from_bundle(bundle, staging)
-            os.replace(staging, self._target)
+            # A second request may finish during the network fetch or unpack.
+            # The published target is owned by Hero Companion, never a user's
+            # chosen folder; repairing an incomplete old cache is safe here.
+            with _PUBLISH_LOCK:
+                ready = self.locate()
+                if ready:
+                    return ready
+                if self._target.exists():
+                    shutil.rmtree(self._target)
+                os.replace(staging, self._target)
+            return self._target
+        except OSError as exc:
+            ready = self.locate()
+            if ready:
+                return ready  # another process finished publishing the same pin
+            raise ContractUnavailable(f"Could not install Sidekick data: {exc}") from exc
         finally:
-            shutil.rmtree(staging, ignore_errors=True)
-        return self._target
+            if staging is not None:
+                shutil.rmtree(staging, ignore_errors=True)
 
 
 def locate_contract(providers):
@@ -146,11 +186,15 @@ def _write_shard(entry, powersets, target):
     destination = (target / path).resolve()
     if not destination.is_relative_to(target) or destination == target:
         raise ContractUnavailable(f"Sidekick powerset {shard_id!r} has an unsafe path.")
+    powers = shard.get("powers")
+    if not isinstance(powers, list) or any(
+            not isinstance(p, dict) or not isinstance(p.get("internalName"), str)
+            for p in powers):
+        raise ContractUnavailable(f"Sidekick powerset {shard_id!r} is malformed.")
     _write_json(destination, {
         "id": shard.get("id"), "setPath": shard.get("setPath"),
         "archetype": shard.get("archetype"), "category": shard.get("category"),
-        "powers": [{"internalName": p.get("internalName")}
-                   for p in shard.get("powers") or [] if isinstance(p, dict)],
+        "powers": [{"internalName": p["internalName"]} for p in powers],
     })
 
 
