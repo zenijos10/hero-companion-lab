@@ -108,6 +108,22 @@ class SidekickFlaskEndpointTests(unittest.TestCase):
         self.assertNotIn("editor_imported", response)
         self.assertEqual(supported["build"]["primary"]["powers"][0]["slots"], [])
 
+    def test_imported_chains_survive_a_real_save_and_resume(self):
+        imported = self.send(self.source)
+        self.assertTrue(imported["ok"], imported.get("response"))
+        chains = imported["build"]["sidekick_attack_chains"]
+        with tempfile.TemporaryDirectory() as tmp, patch.object(
+                app_server, "_saves_dir", return_value=tmp):
+            saved = self.client.post("/saves", json={
+                "name": "SKIF Chain test (isolated temp directory)",
+                "build": imported["build"],
+            }).get_json()
+            self.assertTrue(saved["ok"], saved)
+            resumed = self.client.get("/saves/" + saved["id"]).get_json()
+            self.assertTrue(resumed["ok"], resumed)
+        self.assertEqual(resumed["save"]["build"]["sidekick_attack_chains"], chains)
+        self.assertEqual(len(chains), 5)
+
     def test_client_cannot_override_contract_directory(self):
         supported = copy.deepcopy(self.source)
         supported["build"].pop("attackChains")
