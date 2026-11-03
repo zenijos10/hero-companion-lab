@@ -149,6 +149,20 @@ class DownloadTests(unittest.TestCase):
         self.assertFalse(any(p.name.startswith(".staging-")
                              for p in self.cache.iterdir()))
 
+    def test_damaged_json_cache_is_rejected_and_healed(self):
+        for filename in ("boost-index.json", "powersets/blaster/primary/dual-pistols.json"):
+            with self.subTest(filename=filename):
+                with tempfile.TemporaryDirectory() as tmp:
+                    cache = Path(tmp)
+                    raw = bundle()
+                    fetch = FakeFetch(raw)
+                    provider = sc.DownloadedSnapshot(cache, snapshot_for(raw), fetch=fetch)
+                    root = provider.install()
+                    (root / filename).write_text("{ broken JSON", encoding="utf-8")
+                    self.assertIsNone(provider.locate())
+                    self.assertEqual(provider.install(), root)
+                    self.assertEqual(len(fetch.calls), 2)
+
     def test_simultaneous_install_returns_the_healthy_winner(self):
         raw = bundle()
         pin = snapshot_for(raw)
