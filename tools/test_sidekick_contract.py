@@ -138,6 +138,44 @@ class DownloadTests(unittest.TestCase):
                 self.install(raw)
         self.assert_nothing_installed()
 
+    def test_missing_cache_member_is_not_accepted_and_is_repaired(self):
+        provider, fetch, root = self.install(bundle())
+        (root / "boost-index.json").unlink()
+        self.assertIsNone(provider.locate(), "A manifest alone is not a valid contract")
+        repaired = provider.install()
+        self.assertEqual(repaired, root)
+        self.assertTrue((root / "boost-index.json").is_file())
+        self.assertEqual(len(fetch.calls), 2)
+        self.assertFalse(any(p.name.startswith(".staging-")
+                             for p in self.cache.iterdir()))
+
+    def test_simultaneous_install_returns_the_healthy_winner(self):
+        raw = bundle()
+        pin = snapshot_for(raw)
+        peer = sc.DownloadedSnapshot(self.cache, pin, fetch=FakeFetch(raw))
+
+        def interleaved_fetch(url, max_bytes):
+            # The other request finishes after this one checked locate()
+            # but before this one attempts to publish its staging folder.
+            peer.install()
+            return raw
+
+        participant = sc.DownloadedSnapshot(self.cache, pin, fetch=interleaved_fetch)
+        result = participant.install()
+        self.assertEqual(result, peer.locate())
+        self.assertTrue((result / "boost-index.json").is_file())
+        self.assertFalse(any(p.name.startswith(".staging-")
+                             for p in self.cache.iterdir()))
+
+    def test_malformed_shard_is_a_clean_refusal(self):
+        bad = bundle(powersets={"blaster/dual-pistols": {
+            "id": "blaster/dual-pistols", "setPath": "Blaster_Ranged.Dual_Pistols",
+            "archetype": "blaster", "category": "primary",
+            "powers": "not an array"}})
+        with self.assertRaises(sc.ContractUnavailable):
+            self.install(bad)
+        self.assert_nothing_installed()
+
     def test_installed_contract_drives_the_existing_preview(self):
         _, _, root = self.install(bundle())
         doc = {"version": 5, "build": {
