@@ -81,23 +81,34 @@ class DownloadedSnapshot:
     def locate(self):
         """Never treat a manifest alone as proof of a complete cached ID map."""
         target = self._target
-        essential = ("manifest.json", "archetypes.json", "boost-index.json",
+        essential = ("archetypes.json", "boost-index.json",
                      "enhancements.json", "mids-names.json")
         try:
-            if not all((target / name).is_file() for name in essential):
-                return None
             manifest = json.loads((target / "manifest.json").read_text(encoding="utf-8"))
             if not isinstance(manifest, dict) or manifest.get("dataset") != "homecoming":
                 return None
+            for name in essential:
+                if not isinstance(json.loads((target / name).read_text(encoding="utf-8")), dict):
+                    return None
             entries = manifest.get("shards")
             if not isinstance(entries, list) or not entries:
                 return None
             root = target.resolve()
             for entry in entries:
-                if not isinstance(entry, dict) or not isinstance(entry.get("path"), str):
+                if (not isinstance(entry, dict)
+                        or not isinstance(entry.get("id"), str)
+                        or not isinstance(entry.get("path"), str)):
                     return None
                 path = (root / entry["path"]).resolve()
                 if not path.is_relative_to(root) or not path.is_file():
+                    return None
+                # The extracted contract is only ~0.9 MB: validating every
+                # shard on reuse prevents a damaged cache from masquerading
+                # as an invalid character file later during import.
+                shard = json.loads(path.read_text(encoding="utf-8"))
+                if (not isinstance(shard, dict) or shard.get("id") != entry["id"]
+                        or not isinstance(shard.get("setPath"), str)
+                        or not isinstance(shard.get("powers"), list)):
                     return None
             return target
         except (OSError, ValueError, TypeError):
