@@ -82,13 +82,17 @@ class SidekickFlaskEndpointTests(unittest.TestCase):
         self.assertEqual(response["code"], "sidekick_contract_unavailable")
         self.assertNotIn("build", response)
 
-    def test_unsupported_attack_chain_refuses_without_a_partial_build(self):
+    def test_real_attack_chains_import_without_being_used_for_simulation(self):
         response = self.send(self.source)
-        self.assertFalse(response["ok"])
-        self.assertEqual(response["code"], "sidekick_unresolved")
-        self.assertNotIn("build", response)
-        self.assertTrue(any(x["location"] == "build.attackChains"
-                            for x in response["issues"]))
+        self.assertTrue(response["ok"], response.get("response"))
+        self.assertEqual(len(response["build"]["powers"]), 7)
+        chains = response["build"]["sidekick_attack_chains"]
+        self.assertEqual(len(chains), 5)
+        self.assertEqual(chains[0]["name"], "S1 banked charge")
+        self.assertEqual(chains[0]["source_powers"],
+                         self.source["build"]["attackChains"][0]["powers"])
+        self.assertIn("totals", response)
+        self.assertNotIn("source_skif", response)
 
     def test_derived_supported_subset_reaches_same_import_response_as_mids(self):
         supported = copy.deepcopy(self.source)

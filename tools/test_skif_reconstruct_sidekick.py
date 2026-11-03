@@ -33,13 +33,22 @@ class RealSidekickReconstructionTests(unittest.TestCase):
         return reconstruct_build(doc, cls.hero, cls.hero_sets, cls.contract,
                                  cls.enhancements)
 
-    def test_actual_sidekick_attack_chain_remains_a_blocker(self):
+    def test_actual_sidekick_attack_chains_import_as_non_simulated_metadata(self):
         original = copy.deepcopy(self.source)
         result = self.reconstruct(original)
-        self.assertFalse(result["ok"])
-        self.assertNotIn("build", result)
-        self.assertIn("unsupported_source_state", [v["reason"] for v in result["issues"]])
+        self.assertTrue(result["ok"], result["issues"])
         self.assertEqual(original, self.source)
+        chains = result["build"]["sidekick_attack_chains"]
+        self.assertEqual(len(chains), 5)
+        self.assertEqual([c["id"] for c in chains],
+                         [c["id"] for c in original["build"]["attackChains"]])
+        for source, mapped in zip(original["build"]["attackChains"], chains):
+            self.assertEqual(mapped["source_powers"], source["powers"])
+            self.assertEqual(len(mapped["powers"]), len(source["powers"]))
+        self.assertEqual(chains[0]["powers"], [
+            "Stalker_Melee.Energy_Melee.Total_Focus",
+            "Stalker_Melee.Energy_Melee.Energy_Transfer",
+        ])
 
     def test_actual_game_data_resolves_all_seven_selected_powers(self):
         supported = copy.deepcopy(self.source)
