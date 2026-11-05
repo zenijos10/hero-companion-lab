@@ -76,6 +76,26 @@ class SidekickFlaskEndpointTests(unittest.TestCase):
         self.assertTrue(imported["ok"], imported.get("response"))
         self.assertEqual(len(imported["build"]["powers"]), 7)
 
+    def test_downloaded_contract_rejects_illegal_health_io_without_partial_import(self):
+        installed = self.download({"consent": True})
+        self.assertTrue(installed["ok"], installed)
+        for stat, expected in (("Recharge", False), ("Healing", True)):
+            with self.subTest(stat=stat):
+                doc = copy.deepcopy(self.source)
+                doc["build"]["inherents"] = [{
+                    "internalName": "Health", "level": 1,
+                    "slots": [{"type": "io-generic", "stat": stat, "level": 50}],
+                }]
+                response = self.send(doc, configured=False)
+                self.assertEqual(response["ok"], expected, response)
+                if expected:
+                    self.assertTrue(any(p["full_name"] == "Inherent.Fitness.Health"
+                                        for p in response["build"]["powers"]))
+                else:
+                    self.assertNotIn("build", response)
+                    self.assertIn("invalid_generic_enhancement",
+                                  [issue["reason"] for issue in response["issues"]])
+
     def test_without_external_contract_never_returns_a_build(self):
         response = self.send(self.source, configured=False)
         self.assertFalse(response["ok"])
