@@ -76,3 +76,25 @@ node --check static/app.js
 
 The PR also has a Flask test-client job using real shipped game data and
 an actual pinned Sidekick v5 fixture.
+
+## Sidekick attack chains (reference only)
+
+Sidekick v5's named attack chains (ordered power addresses) now import when
+every referenced power belongs to the selected, verified build. The converter
+retains **both** original Sidekick power addresses and mapped Hero Companion
+full names, including duplicates and order. Duplicate chain IDs, unsupported
+chain attributes, or unknown/unselected powers cause the entire import to be
+refused — there is no partial conversion.
+
+A collapsible *Sidekick attack chains* panel in the build editor displays the
+names and cast order. Chain records are carried in the native build under
+`sidekick_attack_chains` so ordinary Save/Resume retain them; changing to a
+new character clears the previous character's chains.
+
+**This is provenance, not a rotation simulator.** Hero Companion does not yet
+use these chains to calculate damage, optimize attacks, or generate a new SKIF
+file. After you change the selected powers, the original chains may become
+stale; the panel labels them as notes from the original build, not the current
+simulation. Other Sidekick state that the editor does not represent (active
+power modes, incarnates, proc choices, progress, and slotted inherents) is
+still blocked rather than silently ignored.

@@ -82,13 +82,17 @@ class SidekickFlaskEndpointTests(unittest.TestCase):
         self.assertEqual(response["code"], "sidekick_contract_unavailable")
         self.assertNotIn("build", response)
 
-    def test_unsupported_attack_chain_refuses_without_a_partial_build(self):
+    def test_real_attack_chains_import_without_being_used_for_simulation(self):
         response = self.send(self.source)
-        self.assertFalse(response["ok"])
-        self.assertEqual(response["code"], "sidekick_unresolved")
-        self.assertNotIn("build", response)
-        self.assertTrue(any(x["location"] == "build.attackChains"
-                            for x in response["issues"]))
+        self.assertTrue(response["ok"], response.get("response"))
+        self.assertEqual(len(response["build"]["powers"]), 7)
+        chains = response["build"]["sidekick_attack_chains"]
+        self.assertEqual(len(chains), 5)
+        self.assertEqual(chains[0]["name"], "S1 banked charge")
+        self.assertEqual(chains[0]["source_powers"],
+                         self.source["build"]["attackChains"][0]["powers"])
+        self.assertIn("totals", response)
+        self.assertNotIn("source_skif", response)
 
     def test_derived_supported_subset_reaches_same_import_response_as_mids(self):
         supported = copy.deepcopy(self.source)
@@ -103,6 +107,22 @@ class SidekickFlaskEndpointTests(unittest.TestCase):
         self.assertNotIn("source_skif", response)
         self.assertNotIn("editor_imported", response)
         self.assertEqual(supported["build"]["primary"]["powers"][0]["slots"], [])
+
+    def test_imported_chains_survive_a_real_save_and_resume(self):
+        imported = self.send(self.source)
+        self.assertTrue(imported["ok"], imported.get("response"))
+        chains = imported["build"]["sidekick_attack_chains"]
+        with tempfile.TemporaryDirectory() as tmp, patch.object(
+                app_server, "_saves_dir", return_value=tmp):
+            saved = self.client.post("/saves", json={
+                "name": "SKIF Chain test (isolated temp directory)",
+                "build": imported["build"],
+            }).get_json()
+            self.assertTrue(saved["ok"], saved)
+            resumed = self.client.get("/saves/" + saved["id"]).get_json()
+            self.assertTrue(resumed["ok"], resumed)
+        self.assertEqual(resumed["save"]["build"]["sidekick_attack_chains"], chains)
+        self.assertEqual(len(chains), 5)
 
     def test_client_cannot_override_contract_directory(self):
         supported = copy.deepcopy(self.source)

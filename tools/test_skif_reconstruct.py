@@ -149,7 +149,6 @@ class ReconstructionTests(unittest.TestCase):
 
     def test_nonrepresentable_state_is_explicitly_blocked_never_partially_imported(self):
         alterations = [
-            ("attackChains", [{"id": "rotation", "name": "Chain", "powers": ["x:y"]}]),
             ("stances", {"ammo": True}),
             ("incarnates", {"alpha": {"power": "Alpha.Example", "active": True}}),
             ("inherents", [{"internalName": "Health", "level": 0, "slots": []}]),
@@ -166,6 +165,57 @@ class ReconstructionTests(unittest.TestCase):
                 self.assertNotIn("build", result)
                 self.assertIn("unsupported_source_state",
                               [p["reason"] for p in result["issues"]])
+
+    def test_attack_chains_preserve_source_order_and_verified_power_mappings(self):
+        doc = fixture()
+        doc["build"]["attackChains"] = [
+            {"id": "opener", "name": "The opener", "powers": [
+                "blaster/dual-pistols:Pistols", "blaster/dual-pistols:Pistols"]},
+            {"id": "idle", "name": "No powers", "powers": []},
+        ]
+        before = copy.deepcopy(doc)
+        res = self.convert(doc)
+        self.assertTrue(res["ok"], res["issues"])
+        self.assertEqual(doc, before)
+        self.assertEqual(res["build"]["sidekick_attack_chains"], [
+            {"id": "opener", "name": "The opener",
+             "powers": ["Blaster_Ranged.Dual_Pistols.Pistols"] * 2,
+             "source_powers": ["blaster/dual-pistols:Pistols"] * 2},
+            {"id": "idle", "name": "No powers", "powers": [], "source_powers": []},
+        ])
+
+    def test_unknown_or_unselected_chain_powers_block_the_entire_build(self):
+        for ref in ("blaster/dual-pistols:Imaginary",
+                    "blaster/fire-manipulation:Some_Unselected",
+                    "madeup"):
+            doc = fixture()
+            doc["build"]["attackChains"] = [
+                {"id": "chain", "name": "Bad", "powers": [ref]}]
+            with self.subTest(ref=ref):
+                res = self.convert(doc)
+                self.assertFalse(res["ok"])
+                self.assertNotIn("build", res)
+                self.assertIn("unknown_attack_chain_power",
+                              [i["reason"] for i in res["issues"]])
+
+    def test_duplicate_ids_or_unrepresented_chain_fields_are_refused(self):
+        doc = fixture()
+        doc["build"]["attackChains"] = [
+            {"id": "same", "name": "One", "powers": []},
+            {"id": "same", "name": "Two", "powers": []},
+        ]
+        result = self.convert(doc)
+        self.assertFalse(result["ok"])
+        self.assertNotIn("build", result)
+        self.assertIn("duplicate_attack_chain_id", [i["reason"] for i in result["issues"]])
+        doc = fixture()
+        doc["build"]["attackChains"] = [
+            {"id": "safe", "name": "One", "powers": [], "futureSwitch": True},
+        ]
+        result = self.convert(doc)
+        self.assertFalse(result["ok"])
+        self.assertIn("unsupported_attack_chain_field",
+                      [i["reason"] for i in result["issues"]])
 
     def test_active_subpower_and_unknown_power_fields_refuse(self):
         for changes in ({"isActive": True}, {"activeSubPower": "ModeX"},
