@@ -3,6 +3,10 @@ on:
   pull_request:
     paths:
       - "server/sidekick_reconstruct.py"
+      - "server/engine.py"
+      - "server/sidekick_contract.py"
+      - "tools/test_slot_legality.py"
+      - "tools/test_sidekick_contract.py"
       - "server/skif_document.py"
       - "server/sidekick_preview.py"
       - "server/sidekick_enhancements.py"
@@ -32,6 +36,8 @@ jobs:
           python -m unittest discover -s tools -p test_skif_reconstruct.py -v
           python -m unittest discover -s tools -p test_skif_enhancements.py -v
           python -m unittest discover -s tools -p test_skif_preview.py -v
+          python -m unittest discover -s tools -p test_slot_legality.py -v
+          python -m unittest discover -s tools -p test_sidekick_contract.py -v
   real-sidekick-reconstruction:
     runs-on: ubuntu-latest
     timeout-minutes: 12
@@ -53,9 +59,11 @@ jobs:
             contract/homecoming/archetypes.json
             contract/homecoming/boost-index.json
             contract/homecoming/enhancements.json
+            contract/homecoming/levels.json
             contract/homecoming/powersets/stalker/primary/energy-melee.json
             contract/homecoming/powersets/stalker/secondary/energy-aura.json
             fixtures/skif/v5/rb5d_browser_pass.skif
+            fixtures/skif/v4/homecoming-troller.skif
           persist-credentials: false
       - name: Verify actual Sidekick fixture against shipped Hero Companion powersets
         run: python -m unittest discover -s tools -p test_skif_reconstruct_sidekick.py -v

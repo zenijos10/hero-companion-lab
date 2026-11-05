@@ -11,20 +11,20 @@ must not be mistaken for an export of later edits to the HC build.
 import copy
 from pathlib import Path
 
-from sidekick_preview import _contract, _read_json, preview_build
+from sidekick_preview import PreviewContractError, _contract, _read_json, preview_build
 from skif_document import load_document
 
 
 # The native HC editor cannot express these Sidekick state dimensions yet.
 # Refuse *non-empty* values; empty state is equivalent to the reader's default.
 _UNSUPPORTED = (
-    "inherents", "accolades", "incarnates", "slotOrder", "stances", "modes",
+    "accolades", "incarnates", "slotOrder", "stances", "modes",
     "powerState", "procOverrides", "disabledProcCategories",
     "progress", "whatIfBuffs",
 )
 _KNOWN_BUILD = frozenset((
     "name", "dataset", "archetype", "origin", "level", "primary", "secondary",
-    "pools", "epicPool", "attackChains",
+    "pools", "epicPool", "attackChains", "inherents",
 ) + _UNSUPPORTED)
 _KNOWN_POWER = frozenset(("internalName", "level", "slots", "powerset",
                           "isActive", "activeSubPower"))
@@ -34,6 +34,16 @@ _KNOWN_SLOT = {
     "special": frozenset(("type", "category", "id", "relativeLevel")),
     "origin": frozenset(("type", "stat", "tier", "relativeLevel")),
 }
+# The seven inherents Hero Companion grants every character: one copy of
+# app.js GRANTED_INHERENTS (tools/test_skif_reconstruct.py pins them equal).
+HC_GRANTED_INHERENTS = frozenset((
+    "Inherent.Inherent.Brawl", "Inherent.Inherent.Sprint", "Inherent.Inherent.Rest",
+    "Inherent.Fitness.Swift", "Inherent.Fitness.Hurdle",
+    "Inherent.Fitness.Health", "Inherent.Fitness.Stamina",
+))
+# Sidekick's own name -> full-name tables for the powers the game grants.
+_SIDEKICK_INHERENT_TABLES = ("BASIC_INHERENT_POWERS", "INHERENT_FITNESS_POWERS",
+                             "PRESTIGE_SPRINT_POWERS")
 _SPECIAL_WITH_LEVEL = ("Hamidon_", "Synthetic_Hamidon_", "Titan_", "Hydra_",
                        "DSync_", "Dsync_")
 
@@ -117,6 +127,8 @@ def _source_state_issues(doc):
             _power_field_issues(issues, selection, f"build.{bucket}")
     for i, selection in enumerate(build.get("pools", [])):
         _power_field_issues(issues, selection, f"build.pools[{i}]")
+    for i, power in enumerate(build.get("inherents", [])):
+        _one_power_issues(issues, power, f"build.inherents[{i}]")
     return issues
 
 
@@ -125,17 +137,90 @@ def _power_field_issues(issues, selection, where):
     for field in sorted(unknown_set_fields):
         issues.append(_issue("unsupported_source_state", f"{where}.{field}", field))
     for i, power in enumerate(selection.get("powers", [])):
-        power_where = f"{where}.powers[{i}]"
-        for key in sorted(set(power) - _KNOWN_POWER):
-            issues.append(_issue("unsupported_source_state", f"{power_where}.{key}", key))
-        if power.get("isActive") is True or power.get("activeSubPower"):
-            issues.append(_issue("unsupported_source_state", power_where, "active power mode"))
-        for j, slot in enumerate(power["slots"]):
-            if slot is None:
-                continue
-            for key in sorted(set(slot) - _KNOWN_SLOT[slot["type"]]):
-                issues.append(_issue("unsupported_source_state",
-                                     f"{power_where}.slots[{j}].{key}", key))
+        _one_power_issues(issues, power, f"{where}.powers[{i}]")
+
+
+def _one_power_issues(issues, power, power_where):
+    for key in sorted(set(power) - _KNOWN_POWER):
+        issues.append(_issue("unsupported_source_state", f"{power_where}.{key}", key))
+    if power.get("isActive") is True or power.get("activeSubPower"):
+        issues.append(_issue("unsupported_source_state", power_where, "active power mode"))
+    for j, slot in enumerate(power["slots"]):
+        if slot is None:
+            continue
+        for key in sorted(set(slot) - _KNOWN_SLOT[slot["type"]]):
+            issues.append(_issue("unsupported_source_state",
+                                 f"{power_where}.slots[{j}].{key}", key))
+
+
+def _sidekick_inherent_names(root, issues):
+    """Sidekick's own internalName -> fullName table, or None (with an issue)."""
+    try:
+        levels = _read_json(Path(root) / "levels.json", "Sidekick inherent table")
+    except PreviewContractError as exc:
+        issues.append(_issue("inherent_contract_missing", "build.inherents", exc))
+        return None
+    names = {}
+    for table in _SIDEKICK_INHERENT_TABLES:
+        for entry in (levels.get(table) or []) if isinstance(levels, dict) else []:
+            if isinstance(entry, dict) and isinstance(entry.get("internalName"), str):
+                names.setdefault(entry["internalName"], set()).add(entry.get("fullName"))
+    return names
+
+
+def _translate_inherents(body, root, hero_powers_by_full, enhancements,
+                         default_io_level, issues, encountered):
+    """Seat Sidekick's slotted inherents on the inherents HC grants.
+
+    Identity comes from Sidekick's own name table, and must land on one of
+    HC_GRANTED_INHERENTS; anything else (prestige runs, archetype inherents)
+    refuses. The shape mirrors app.js ensureInherents: granted, never picked.
+    """
+    inherents = body.get("inherents") or []
+    if not inherents:
+        return []
+    names = _sidekick_inherent_names(root, issues)
+    if names is None:
+        return []
+    native = []
+    for i, power in enumerate(inherents):
+        where = f"build.inherents[{i}]"
+        full_names = names.get(power["internalName"], set())
+        if len(full_names) != 1:
+            issues.append(_issue("unknown_inherent", where, power["internalName"]))
+            continue
+        full = next(iter(full_names))
+        rec = hero_powers_by_full.get(full)
+        if full not in HC_GRANTED_INHERENTS or not isinstance(rec, dict):
+            issues.append(_issue("unsupported_inherent", where, full))
+            continue
+        if full in encountered:
+            issues.append(_issue("duplicate_power", where, full))
+            continue
+        encountered.add(full)
+        slots = []
+        for j, source_slot in enumerate(power["slots"]):
+            resolved = enhancements.get(f"{where}.slots[{j}]")
+            slots.append(_native_slot(source_slot, resolved, f"{where}.slots[{j}]",
+                                      default_io_level, issues)
+                         if source_slot is not None and resolved else None)
+        # Sidekick may omit an unenhanced inherent's base slot. Hero
+        # Companion always exposes that granted slot (ensureInherents).
+        if not slots:
+            slots = [None]
+        native.append({
+            "full_name": full,
+            "display_name": rec["display_name"],
+            "powerset_full_name": rec["powerset_full_name"],
+            "accepted_set_category_ids": copy.deepcopy(rec.get("accepted_set_category_ids", [])),
+            "accepted_set_categories": copy.deepcopy(rec.get("accepted_set_categories", [])),
+            "power_type": rec.get("power_type"),
+            "include_in_totals": rec.get("power_type") == 1,
+            "earned_slot_count": len(slots),
+            "slotCount": len(slots),
+            "slots": slots,
+        })
+    return native
 
 
 def _native_slot(slot, mapping, where, default_io_level, issues):
@@ -221,6 +306,101 @@ def _translate_attack_chains(body, preview, issues):
         })
     return translated
 
+def _source_generic_eligibility(body, root, issues):
+    """Validate generic IOs against the receiving Sidekick *power*, not catalog.
+
+    Sidekick's commonIoTypes proves only that an IO exists. It does NOT prove
+    the power accepts that stat. The source Homecoming powerset shards and
+    inherent level tables carry the per-power allowedEnhancements vocabulary.
+    We reject missing rules instead of guessing from a displayed name.
+    """
+    def generic_slots(power):
+        return [(j, slot) for j, slot in enumerate(power["slots"])
+                if slot is not None and slot["type"] == "io-generic"]
+
+    def check(power, where, source):
+        generic = generic_slots(power)
+        if not generic:
+            return
+        allowed = source.get("allowedEnhancements") if isinstance(source, dict) else None
+        if not isinstance(allowed, list) or any(
+                not isinstance(stat, str) for stat in allowed):
+            issues.append(_issue("source_enhancement_rules_missing", where,
+                                 power["internalName"]))
+            return
+        for i, slot in generic:
+            if slot["stat"] not in allowed:
+                issues.append(_issue("invalid_generic_enhancement",
+                                     f"{where}.slots[{i}]",
+                                     f"{slot['stat']} is not allowed in {power['internalName']}"))
+
+    selections = []
+    for bucket in ("primary", "secondary", "epicPool", "pools"):
+        entries = body.get(bucket, []) if bucket == "pools" else [body.get(bucket)]
+        for i, selection in enumerate(entries):
+            if selection and any(generic_slots(p) for p in selection.get("powers", [])):
+                location = f"build.pools[{i}]" if bucket == "pools" else f"build.{bucket}"
+                selections.append((selection, location))
+    if selections:
+        paths, _ = _contract(root)
+        for selection, location in selections:
+            path = paths.get(selection["id"])
+            if path is None:
+                continue  # identity preview reports the missing source set
+            shard = _read_json(path, f"Sidekick generic IO rules {selection['id']}")
+            source_powers = shard.get("powers", []) if isinstance(shard, dict) else []
+            for i, power in enumerate(selection.get("powers", [])):
+                generic = generic_slots(power)
+                if not generic:
+                    continue
+                source_matches = [p for p in source_powers
+                                  if isinstance(p, dict)
+                                  and p.get("internalName") == power["internalName"]]
+                source = source_matches[0] if len(source_matches) == 1 else None
+                check(power, f"{location}.powers[{i}]", source)
+
+    inherents = body.get("inherents") or []
+    if any(generic_slots(p) for p in inherents):
+        levels = _read_json(Path(root) / "levels.json", "Sidekick inherent IO rules")
+        by_name = {}
+        for table in _SIDEKICK_INHERENT_TABLES:
+            for entry in levels.get(table, []):
+                if isinstance(entry, dict):
+                    by_name.setdefault(entry.get("internalName"), []).append(entry)
+        for i, power in enumerate(inherents):
+            generic = generic_slots(power)
+            if not generic:
+                continue
+            matched = by_name.get(power["internalName"], [])
+            source = matched[0] if len(matched) == 1 else None
+            check(power, f"build.inherents[{i}]", source)
+
+
+def _source_slot_budget(body, issues):
+    """The game has at most six slots/power and 67 added slots at level 50."""
+    added = 0
+    for bucket in ("primary", "secondary", "epicPool", "pools"):
+        entries = body.get(bucket, []) if bucket == "pools" else [body.get(bucket)]
+        for i, selection in enumerate(entries):
+            if not selection:
+                continue
+            location = f"build.pools[{i}]" if bucket == "pools" else f"build.{bucket}"
+            for j, power in enumerate(selection.get("powers", [])):
+                count = len(power["slots"])
+                if count > 6:
+                    issues.append(_issue("too_many_power_slots",
+                                         f"{location}.powers[{j}].slots", count))
+                added += max(0, count - 1)
+    for i, power in enumerate(body.get("inherents") or []):
+        count = len(power["slots"])
+        if count > 6:
+            issues.append(_issue("too_many_power_slots",
+                                 f"build.inherents[{i}].slots", count))
+        added += max(0, count - 1)
+    if added > 67:
+        issues.append(_issue("slot_budget_exceeded", "build", f"{added} > 67"))
+
+
 def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
                       contract_root, hero_piece_by_uid, *, default_io_level=None):
     """Reconstruct only when no known source semantics would be lost.
@@ -239,9 +419,13 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
     # native build metadata; no other preview issue may be waived.
     issues = [copy.deepcopy(issue) for issue in preview["unresolved"]
               if not (issue["reason"] == "state_not_mapped"
-                      and issue["location"] in ("build.origin", "build.attackChains"))]
+                      and issue["location"] in ("build.origin", "build.attackChains"))
+              # Inherent identity is decided below from Sidekick's own table.
+              and issue["reason"] != "inherent_not_mapped"]
     issues.extend(_source_state_issues(doc))
     body = doc["build"]
+    _source_generic_eligibility(body, contract_root, issues)
+    _source_slot_budget(body, issues)
     attack_chains = _translate_attack_chains(body, preview, issues)
     class_name = _resolve_class(body, contract_root, hero_powersets, issues)
     sets = _resolve_sets(body, class_name, contract_root, hero_powersets, issues)
@@ -302,6 +486,9 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
                     "slotCount": len(slots),
                     "slots": slots,
                 })
+    native_powers.extend(_translate_inherents(
+        body, contract_root, hero_powers_by_full, enhancements,
+        default_io_level, issues, encountered))
     result = {
         "ok": not issues,
         "name": body.get("name") or "Imported Sidekick build",

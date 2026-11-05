@@ -60,7 +60,7 @@ Already-downloaded copies keep working regardless, since they live on disk.
 
 **Limitations:** This does not import arbitrary Sidekick characters.
 The current Hero Companion editor cannot yet preserve Sidekick's active
-power state, incarnates, slotted inherents, proc overrides, attack chains,
+power state, incarnates, prestige or archetype inherents, proc overrides,
 shopping progress, or all future fields. These block import rather than
 being silently ignored. Successful conversion is not a Sidekick export
 or evidence of round-trip parity. No automatically downloaded data or
@@ -96,5 +96,37 @@ use these chains to calculate damage, optimize attacks, or generate a new SKIF
 file. After you change the selected powers, the original chains may become
 stale; the panel labels them as notes from the original build, not the current
 simulation. Other Sidekick state that the editor does not represent (active
-power modes, incarnates, proc choices, progress, and slotted inherents) is
-still blocked rather than silently ignored.
+power modes, incarnates, proc choices and progress) is still blocked rather
+than silently ignored.
+
+## Slotted inherents
+
+Slots and enhancements on the seven inherents every character gets (Brawl,
+Sprint, Rest, Swift, Hurdle, Health, Stamina) import onto Hero Companion's own
+copies of those powers. The name comes from Sidekick's own inherent table
+(`levels.json`: `Health` -> `Inherent.Fitness.Health`), never from guessing,
+and must be one of Hero Companion's granted inherents. Their enhancements pass
+the same checks as any other slot, and the slots count against the normal 67
+(Homecoming grants no free inherent slots). A toggled-on inherent (for example
+Sprint switched on), a prestige run or sprint, or an archetype inherent is
+still refused, because the editor cannot represent it.
+
+## Enhancement legality and slot budgets
+
+An IO being present in the Homecoming database does not mean every power
+can slot it. The SKIF converter checks each **generic IO** against Sidekick's
+per-power `allowedEnhancements` list, including inherent powers. For example,
+Health accepts Healing, not Recharge. Missing per-power rules or illegal
+generic enhancement types **reject the entire file**, with the precise slot
+reported; nothing in the editor is overwritten.
+
+Homecoming allows at most six enhancement slots in a power and 67 **added**
+slots across all powers, including the seven granted inherents. The source
+converter checks these constraints before reconstruction, and Hero Companion's
+shared build validator enforces the same limits for normal import and editor
+requests. Inherents' one base slot is not an extra slot.
+
+The one-time downloaded compatibility cache now includes the game's
+per-power enhancement restrictions. An older cache lacking those restrictions
+is identified as incomplete and repaired by another user-consented download.
+A developer-supplied Sidekick checkout uses the original authoritative rules.

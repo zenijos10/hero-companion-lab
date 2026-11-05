@@ -31,6 +31,12 @@ def bundle(**overrides):
                                              "stats": ["Recharge"]}},
         "enhancements": {"commonIoTypes": ["Recharge"], "hamidon": []},
         "mids-names": {"nameMap": {}, "nameReverse": {}},
+        "levels": {
+            "INHERENT_FITNESS_POWERS": [{"internalName": "Health",
+                                         "fullName": "Inherent.Fitness.Health",
+                                         "description": "not needed"}],
+            "BASIC_INHERENT_POWERS": [], "PRESTIGE_SPRINT_POWERS": [],
+            "SLOT_GRANTS": {"3": 2}},
         "io-sets": {"unused": "by the importer"},
     }
     data.update(overrides)
@@ -95,6 +101,51 @@ class DownloadTests(unittest.TestCase):
         leftovers = list(self.cache.iterdir()) if self.cache.exists() else []
         self.assertEqual(leftovers, [])
 
+    def test_malformed_inherent_name_entry_is_not_silently_discarded(self):
+        # Dropping entries could make a valid Sidekick power look unknown.
+        raw = bundle(levels={
+            "BASIC_INHERENT_POWERS": [{"internalName": "Brawl"}],
+            "INHERENT_FITNESS_POWERS": [],
+            "PRESTIGE_SPRINT_POWERS": []})
+        with self.assertRaises(sc.ContractUnavailable):
+            self.install(raw)
+        self.assert_nothing_installed()
+
+    def test_inherent_eligibility_rules_are_retained_in_slim_download(self):
+        data = json.loads(gzip.decompress(bundle()).decode("utf-8"))
+        data["levels"]["INHERENT_FITNESS_POWERS"][0]["allowedEnhancements"] = ["Healing"]
+        data["levels"]["INHERENT_FITNESS_POWERS"][0]["maxSlots"] = 6
+        data["powersets"]["blaster/dual-pistols"]["powers"][0]["allowedEnhancements"] = [
+            "Accuracy", "Recharge"]
+        provider, _, root = self.install(gzip.compress(json.dumps(data).encode("utf-8")))
+        levels = json.loads((root / "levels.json").read_text())
+        self.assertEqual(
+            levels["INHERENT_FITNESS_POWERS"][0]["allowedEnhancements"], ["Healing"])
+        shard = json.loads((root / "powersets/blaster/primary/dual-pistols.json").read_text())
+        self.assertEqual(shard["powers"][0]["allowedEnhancements"], ["Accuracy", "Recharge"])
+        self.assertEqual(provider.locate(), root)
+
+    def test_preeligibility_cache_is_marked_incomplete_and_reinstalled(self):
+        provider, fetch, root = self.install(bundle())
+        shard_file = root / "powersets/blaster/primary/dual-pistols.json"
+        shard = json.loads(shard_file.read_text(encoding="utf-8"))
+        shard["powers"][0].pop("allowedEnhancements", None)
+        shard_file.write_text(json.dumps(shard), encoding="utf-8")
+        self.assertIsNone(provider.locate())
+        self.assertEqual(provider.install(), root)
+        self.assertEqual(len(fetch.calls), 2)
+
+    def test_inherent_name_table_installs_slim_and_is_required(self):
+        provider, _, root = self.install(bundle())
+        self.assertEqual(json.loads((root / "levels.json").read_text()), {
+            "INHERENT_FITNESS_POWERS": [{"internalName": "Health",
+                                         "fullName": "Inherent.Fitness.Health",
+                                         "allowedEnhancements": []}],
+            "BASIC_INHERENT_POWERS": [], "PRESTIGE_SPRINT_POWERS": []})
+        # A cache from before the table existed is incomplete, so it re-installs.
+        (root / "levels.json").unlink()
+        self.assertIsNone(provider.locate())
+
     def test_verified_bundle_installs_the_slim_contract_layout(self):
         provider, fetch, root = self.install(bundle())
         self.assertEqual(provider.locate(), root)
@@ -106,7 +157,7 @@ class DownloadTests(unittest.TestCase):
         self.assertEqual(shard, {"id": "blaster/dual-pistols",
                                  "setPath": "Blaster_Ranged.Dual_Pistols",
                                  "archetype": "blaster", "category": "primary",
-                                 "powers": [{"internalName": "Pistols"}]})
+                                 "powers": [{"internalName": "Pistols", "allowedEnhancements": []}]})
 
     def test_second_install_reuses_the_cache(self):
         provider, fetch, root = self.install(bundle())

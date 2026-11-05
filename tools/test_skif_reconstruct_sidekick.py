@@ -33,6 +33,26 @@ class RealSidekickReconstructionTests(unittest.TestCase):
         return reconstruct_build(doc, cls.hero, cls.hero_sets, cls.contract,
                                  cls.enhancements)
 
+    def test_sidekicks_own_homecoming_inherents_land_on_hc_granted_powers(self):
+        # Sidekick's v4 Homecoming Controller sample carries real slotted
+        # inherents. v5 writes the same objects without the old "name" field.
+        sample = json.loads((self.checkout / "fixtures/skif/v4/homecoming-troller.skif")
+                            .read_text(encoding="utf-8"))
+        doc = copy.deepcopy(self.source)
+        doc["build"]["inherents"] = [{k: v for k, v in power.items() if k != "name"}
+                                     for power in sample["build"]["inherents"]]
+        converted = self.reconstruct(doc)
+        self.assertTrue(converted["ok"], converted["issues"])
+        slotted = {p["full_name"]: [s and (s.get("set_name") or s["piece_name"]) for s in p["slots"]]
+                   for p in converted["build"]["powers"] if p["full_name"].startswith("Inherent.")}
+        self.assertEqual(slotted, {
+            "Inherent.Inherent.Sprint": ["Celerity"],
+            "Inherent.Fitness.Swift": ["Run Speed"],
+            "Inherent.Fitness.Hurdle": ["Hamidon Origin"],
+            "Inherent.Fitness.Health": ["Panacea", "Numina's Convalesence", "Miracle"],
+            "Inherent.Fitness.Stamina": ["Performance Shifter"],
+        })
+
     def test_actual_sidekick_attack_chains_import_as_non_simulated_metadata(self):
         original = copy.deepcopy(self.source)
         result = self.reconstruct(original)

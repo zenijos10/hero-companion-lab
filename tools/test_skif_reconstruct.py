@@ -55,23 +55,42 @@ class ReconstructionTests(unittest.TestCase):
             shards.append({"id": ident, "path": target})
             self._write(target, {"id": ident, "setPath": path,
                                  "archetype": archetype, "category": category,
-                                 "powers": [{"internalName": p} for p in powers]})
+                                 "powers": [{"internalName": p,
+                                             "allowedEnhancements": ["Recharge", "Damage"],
+                                             "maxSlots": 6} for p in powers]})
         self._write("manifest.json", {"dataset": "homecoming", "shards": shards})
         self._write("mids-names.json", {"nameMap": {}, "nameReverse": {}})
         self._write("archetypes.json", {"archetypes": {
             "blaster": {"stats": {"className": "Class_Blaster"}}}})
         self._write("boost-index.json", {
             "Crafted_Recharge": {"kind": "common-io", "level": None, "stats": ["Recharge"]},
+            "Crafted_Heal": {"kind": "common-io", "level": None, "stats": ["Healing", "Absorb"]},
             "Attuned_Achilles_Heel_C": {"kind": "io-set", "set": "achilles_heel",
                                         "piece": 3, "attuned": True},
             "Hamidon_Damage_Accuracy": {"kind": "special",
                                         "family": "hamidon", "id": "nucleolus"}})
-        self._write("enhancements.json", {"commonIoTypes": ["Recharge"]})
+        self._write("enhancements.json", {"commonIoTypes": ["Recharge", "Healing"]})
+        self._write("levels.json", {
+            "BASIC_INHERENT_POWERS": [
+                {"internalName": "Sprint", "fullName": "Inherent.Inherent.Sprint",
+                 "allowedEnhancements": ["EnduranceReduction", "Jump", "Run Speed"],
+                 "maxSlots": 6},
+                {"internalName": "Prestige_Ninja_Run",
+                 "fullName": "Prestige.Prestige_Travel.Prestige_Ninja_Run"}],
+            "INHERENT_FITNESS_POWERS": [
+                {"internalName": "Health", "fullName": "Inherent.Fitness.Health",
+                 "allowedEnhancements": ["Healing"], "maxSlots": 6}]})
         self.hero = {"Blaster_Ranged.Dual_Pistols.Pistols": {
             "full_name": "Blaster_Ranged.Dual_Pistols.Pistols",
             "display_name": "Pistols", "powerset_full_name": "Blaster_Ranged.Dual_Pistols",
             "accepted_set_category_ids": [7], "accepted_set_categories": ["Ranged"],
             "power_type": "Click", "level_available": 1}}
+        for full, power_type in (("Inherent.Fitness.Health", 1), ("Inherent.Inherent.Sprint", 2)):
+            self.hero[full] = {
+                "full_name": full, "display_name": full.split(".")[-1],
+                "powerset_full_name": full.rsplit(".", 1)[0],
+                "accepted_set_category_ids": [], "accepted_set_categories": [],
+                "power_type": power_type, "level_available": 1}
         self.hero_sets = {"by_archetype": {"Class_Blaster": {
             "primary": [{"full_name": "Blaster_Ranged.Dual_Pistols"}],
             "secondary": [{"full_name": "Blaster_Support.Fire_Manipulation"}],
@@ -79,6 +98,7 @@ class ReconstructionTests(unittest.TestCase):
             "pools": [{"full_name": "Pool.Flight"}]}
         self.pieces = {
             "Crafted_Recharge": {"piece_uid": "Crafted_Recharge", "piece_name": "Recharge"},
+            "Crafted_Heal": {"piece_uid": "Crafted_Heal", "piece_name": "Healing"},
             "Attuned_Achilles_Heel_C": {
                 "set_uid": "Crafted_Achilles_Heel", "set_name": "Achilles' Heel",
                 "piece_uid": "Crafted_Achilles_Heel_C", "piece_name": "Chance for -Res"},
@@ -151,7 +171,6 @@ class ReconstructionTests(unittest.TestCase):
         alterations = [
             ("stances", {"ammo": True}),
             ("incarnates", {"alpha": {"power": "Alpha.Example", "active": True}}),
-            ("inherents", [{"internalName": "Health", "level": 0, "slots": []}]),
             ("slotOrder", [{"powerName": "Pistols", "slotIndex": 1}]),
             ("progress", {"crafted": ["enhancement-key"]}),
             ("futureState", {"mystery": 1}),
@@ -288,6 +307,135 @@ class ReconstructionTests(unittest.TestCase):
         self.assertIn("booster_on_attuned_io", [p["reason"] for p in result["issues"]])
         doc["build"]["primary"]["powers"][0]["slots"][2]["booster"] = 0
         self.assertTrue(self.convert(doc)["ok"])
+
+    def with_inherents(self, *inherents):
+        doc = fixture()
+        doc["build"]["inherents"] = list(inherents)
+        return doc
+
+    def reasons(self, result):
+        return [p["reason"] for p in result["issues"]]
+
+    def test_slotted_inherents_land_on_the_granted_hc_powers(self):
+        doc = self.with_inherents(
+            {"internalName": "Health", "level": 1, "slots": [
+                {"type": "io-generic", "stat": "Healing", "level": 50}, None]},
+            {"internalName": "Sprint", "level": 1, "slots": [None]})
+        result = self.convert(doc)
+        self.assertTrue(result["ok"], result["issues"])
+        by_name = {p["full_name"]: p for p in result["build"]["powers"]}
+        health = by_name["Inherent.Fitness.Health"]
+        self.assertEqual(health["powerset_full_name"], "Inherent.Fitness")
+        self.assertEqual(health["slots"][0]["piece_uid"], "Crafted_Heal")
+        self.assertEqual(health["slots"][0]["io_level"], 50)
+        self.assertIsNone(health["slots"][1])
+        self.assertEqual((health["slotCount"], health["earned_slot_count"]), (2, 2))
+        self.assertTrue(health["include_in_totals"])            # Auto: always applies
+        self.assertFalse(by_name["Inherent.Inherent.Sprint"]["include_in_totals"])
+        self.assertNotIn("pick_level", health)                   # granted, never picked
+
+    def test_unenhanced_granted_inherent_still_has_its_base_slot(self):
+        # The native HC editor grants one empty slot to all seven inherents.
+        # A Sidekick file with no explicit enhancement should not suppress it.
+        result = self.convert(self.with_inherents(
+            {"internalName": "Health", "level": 1, "slots": []}))
+        self.assertTrue(result["ok"], result["issues"])
+        health = next(p for p in result["build"]["powers"]
+                      if p["full_name"] == "Inherent.Fitness.Health")
+        self.assertEqual(health["slots"], [None])
+        self.assertEqual(health["slotCount"], 1)
+
+    def test_generic_recharge_in_health_is_illegal_but_healing_is_legal(self):
+        bad = self.with_inherents({
+            "internalName": "Health", "level": 1,
+            "slots": [{"type": "io-generic", "stat": "Recharge", "level": 50}]})
+        result = self.convert(bad)
+        self.assertFalse(result["ok"])
+        self.assertNotIn("build", result)
+        self.assertIn("invalid_generic_enhancement", self.reasons(result))
+        self.assertIn("build.inherents[0].slots[0]",
+                      [p["location"] for p in result["issues"]])
+        good = self.with_inherents({
+            "internalName": "Health", "level": 1,
+            "slots": [{"type": "io-generic", "stat": "Healing", "level": 50}]})
+        converted = self.convert(good)
+        self.assertTrue(converted["ok"], converted["issues"])
+        health = next(p for p in converted["build"]["powers"]
+                      if p["full_name"] == "Inherent.Fitness.Health")
+        self.assertEqual(health["slots"][0]["piece_uid"], "Crafted_Heal")
+
+    def test_generic_io_must_also_be_permitted_in_selected_normal_powers(self):
+        bad = fixture()
+        bad["build"]["primary"]["powers"][0]["slots"][1] = {
+            "type": "io-generic", "stat": "Healing", "level": 50}
+        result = self.convert(bad)
+        self.assertFalse(result["ok"])
+        self.assertIn("invalid_generic_enhancement", self.reasons(result))
+        self.assertNotIn("build", result)
+
+    def test_missing_generic_eligibility_rules_refuse_instead_of_guessing(self):
+        path = "powersets/blaster/primary/dual-pistols.json"
+        self._write(path, {
+            "id": "blaster/dual-pistols",
+            "setPath": "Blaster_Ranged.Dual_Pistols",
+            "powers": [{"internalName": "Pistols"}]})
+        result = self.convert()
+        self.assertFalse(result["ok"])
+        self.assertIn("source_enhancement_rules_missing", self.reasons(result))
+        self.assertNotIn("build", result)
+
+    def test_seventh_slot_on_an_inherent_refuses_whole_conversion(self):
+        doc = self.with_inherents({
+            "internalName": "Health", "level": 1, "slots": [None] * 7})
+        result = self.convert(doc)
+        self.assertFalse(result["ok"])
+        self.assertNotIn("build", result)
+        self.assertIn("too_many_power_slots", self.reasons(result))
+
+    def test_inherent_identity_needs_sidekicks_own_name_table(self):
+        (self.root / "levels.json").unlink()
+        result = self.convert(self.with_inherents(
+            {"internalName": "Health", "level": 1, "slots": [None]}))
+        self.assertFalse(result["ok"])
+        self.assertNotIn("build", result)
+        self.assertIn("inherent_contract_missing", self.reasons(result))
+
+    def test_inherents_hc_does_not_grant_or_cannot_name_refuse(self):
+        for name, reason in (("Prestige_Ninja_Run", "unsupported_inherent"),
+                             ("Not_A_Power", "unknown_inherent")):
+            with self.subTest(name=name):
+                result = self.convert(self.with_inherents(
+                    {"internalName": name, "level": 1, "slots": [None]}))
+                self.assertFalse(result["ok"])
+                self.assertIn(reason, self.reasons(result))
+
+    def test_inherent_state_and_enhancements_are_held_to_the_same_rules(self):
+        cases = [
+            ({"internalName": "Sprint", "level": 1, "slots": [None], "isActive": True},
+             "unsupported_source_state"),
+            ({"internalName": "Health", "level": 1, "slots": [None], "mystery": 1},
+             "unsupported_source_state"),
+            ({"internalName": "Health", "level": 1, "slots": [
+                {"type": "io-generic", "stat": "Unknown_Stat", "level": 50}]},
+             "unknown_enhancement_identity"),
+        ]
+        for inherent, reason in cases:
+            with self.subTest(reason=reason, inherent=inherent):
+                result = self.convert(self.with_inherents(inherent))
+                self.assertFalse(result["ok"])
+                self.assertIn(reason, self.reasons(result))
+        twice = self.convert(self.with_inherents(
+            {"internalName": "Health", "level": 1, "slots": [None]},
+            {"internalName": "Health", "level": 1, "slots": [None]}))
+        self.assertIn("duplicate_power", self.reasons(twice))
+
+    def test_server_granted_inherents_match_the_apps_grants(self):
+        import re
+        import sidekick_reconstruct
+        source = (ROOT / "static/app.js").read_text(encoding="utf-8")
+        block = re.search(r"const GRANTED_INHERENTS = \[(.*?)\];", source, re.S).group(1)
+        self.assertEqual(sidekick_reconstruct.HC_GRANTED_INHERENTS,
+                         frozenset(re.findall(r'"([^"]+)"', block)))
 
 
 if __name__ == "__main__":

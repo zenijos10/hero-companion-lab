@@ -4,6 +4,8 @@ on:
     paths:
       - "server/sidekick_web_import.py"
       - "server/sidekick_contract.py"
+      - "server/engine.py"
+      - "tools/test_slot_legality.py"
       - "server/sidekick_reconstruct.py"
       - "server/sidekick_preview.py"
       - "server/server.py"
@@ -35,6 +37,7 @@ jobs:
           python -m unittest discover -s tools -p test_sidekick_contract.py -v
           python -m unittest discover -s tools -p test_skif_import_catalog.py -v
           python -m unittest discover -s tools -p test_skif_reconstruct.py -v
+          python -m unittest discover -s tools -p test_slot_legality.py -v
       - name: Verify browser javascript syntax and server compilation
         run: |
           node --check static/app.js
@@ -64,6 +67,7 @@ jobs:
             contract/homecoming/archetypes.json
             contract/homecoming/boost-index.json
             contract/homecoming/enhancements.json
+            contract/homecoming/levels.json
             contract/homecoming/powersets/stalker/primary/energy-melee.json
             contract/homecoming/powersets/stalker/secondary/energy-aura.json
             fixtures/skif/v5/rb5d_browser_pass.skif

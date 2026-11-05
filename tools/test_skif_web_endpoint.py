@@ -76,6 +76,26 @@ class SidekickFlaskEndpointTests(unittest.TestCase):
         self.assertTrue(imported["ok"], imported.get("response"))
         self.assertEqual(len(imported["build"]["powers"]), 7)
 
+    def test_downloaded_contract_rejects_illegal_health_io_without_partial_import(self):
+        installed = self.download({"consent": True})
+        self.assertTrue(installed["ok"], installed)
+        for stat, expected in (("Recharge", False), ("Healing", True)):
+            with self.subTest(stat=stat):
+                doc = copy.deepcopy(self.source)
+                doc["build"]["inherents"] = [{
+                    "internalName": "Health", "level": 1,
+                    "slots": [{"type": "io-generic", "stat": stat, "level": 50}],
+                }]
+                response = self.send(doc, configured=False)
+                self.assertEqual(response["ok"], expected, response)
+                if expected:
+                    self.assertTrue(any(p["full_name"] == "Inherent.Fitness.Health"
+                                        for p in response["build"]["powers"]))
+                else:
+                    self.assertNotIn("build", response)
+                    self.assertIn("invalid_generic_enhancement",
+                                  [issue["reason"] for issue in response["issues"]])
+
     def test_without_external_contract_never_returns_a_build(self):
         response = self.send(self.source, configured=False)
         self.assertFalse(response["ok"])
@@ -107,6 +127,34 @@ class SidekickFlaskEndpointTests(unittest.TestCase):
         self.assertNotIn("source_skif", response)
         self.assertNotIn("editor_imported", response)
         self.assertEqual(supported["build"]["primary"]["powers"][0]["slots"], [])
+
+    def test_health_generic_io_rejects_recharge_but_accepts_healing(self):
+        for stat, expect_ok in (("Recharge", False), ("Healing", True)):
+            with self.subTest(stat=stat):
+                doc = copy.deepcopy(self.source)
+                doc["build"]["inherents"] = [
+                    {"internalName": "Health", "level": 1,
+                     "slots": [{"type": "io-generic", "stat": stat, "level": 50}]}]
+                response = self.send(doc)
+                self.assertEqual(response["ok"], expect_ok, response)
+                if expect_ok:
+                    health = next(p for p in response["build"]["powers"]
+                                  if p["full_name"] == "Inherent.Fitness.Health")
+                    self.assertEqual(health["slots"][0]["piece_uid"], "Crafted_Heal")
+                else:
+                    self.assertNotIn("build", response)
+                    self.assertIn("invalid_generic_enhancement",
+                                  [i["reason"] for i in response["issues"]])
+
+    def test_over_six_inherent_slots_cannot_reach_editor(self):
+        doc = copy.deepcopy(self.source)
+        doc["build"]["inherents"] = [
+            {"internalName": "Health", "level": 1, "slots": [None] * 7}]
+        result = self.send(doc)
+        self.assertFalse(result["ok"])
+        self.assertNotIn("build", result)
+        self.assertIn("too_many_power_slots",
+                      [i["reason"] for i in result["issues"]])
 
     def test_imported_chains_survive_a_real_save_and_resume(self):
         imported = self.send(self.source)
