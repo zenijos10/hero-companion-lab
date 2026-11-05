@@ -90,6 +90,17 @@ class DownloadedSnapshot:
             for name in essential:
                 if not isinstance(json.loads((target / name).read_text(encoding="utf-8")), dict):
                     return None
+            # The v2 slim contract retains per-power generic IO restrictions.
+            # An older downloaded cache without these restrictions must be
+            # reinstalled before the importer can validate IO eligibility.
+            levels = json.loads((target / "levels.json").read_text(encoding="utf-8"))
+            for table in _INHERENT_TABLES:
+                rows = levels.get(table)
+                if not isinstance(rows, list) or any(
+                        not isinstance(row, dict)
+                        or not isinstance(row.get("allowedEnhancements"), list)
+                        for row in rows):
+                    return None
             entries = manifest.get("shards")
             if not isinstance(entries, list) or not entries:
                 return None
@@ -108,7 +119,10 @@ class DownloadedSnapshot:
                 shard = json.loads(path.read_text(encoding="utf-8"))
                 if (not isinstance(shard, dict) or shard.get("id") != entry["id"]
                         or not isinstance(shard.get("setPath"), str)
-                        or not isinstance(shard.get("powers"), list)):
+                        or not isinstance(shard.get("powers"), list)
+                        or any(not isinstance(p, dict)
+                               or not isinstance(p.get("allowedEnhancements"), list)
+                               for p in shard["powers"])):
                     return None
             return target
         except (OSError, ValueError, TypeError):
@@ -209,11 +223,16 @@ def _inherent_tables(levels):
                     or not entry["fullName"]):
                 raise ContractUnavailable(
                     f"Sidekick data has an invalid {table} inherent identity.")
+            allowed = entry.get("allowedEnhancements", [])
+            if not isinstance(allowed, list) or any(
+                    not isinstance(stat, str) for stat in allowed):
+                raise ContractUnavailable(
+                    f"Sidekick data has invalid {table} allowedEnhancements.")
             entries.append({"internalName": entry["internalName"],
-                            "fullName": entry["fullName"]})
+                            "fullName": entry["fullName"],
+                            "allowedEnhancements": allowed})
         result[table] = entries
     return result
-
 
 def _write_shard(entry, powersets, target):
     shard_id = entry.get("id") if isinstance(entry, dict) else None
@@ -229,10 +248,19 @@ def _write_shard(entry, powersets, target):
             not isinstance(p, dict) or not isinstance(p.get("internalName"), str)
             for p in powers):
         raise ContractUnavailable(f"Sidekick powerset {shard_id!r} is malformed.")
+    trimmed = []
+    for power in powers:
+        allowed = power.get("allowedEnhancements", [])
+        if not isinstance(allowed, list) or any(
+                not isinstance(stat, str) for stat in allowed):
+            raise ContractUnavailable(
+                f"Sidekick powerset {shard_id!r} has invalid allowedEnhancements.")
+        trimmed.append({"internalName": power["internalName"],
+                        "allowedEnhancements": allowed})
     _write_json(destination, {
         "id": shard.get("id"), "setPath": shard.get("setPath"),
         "archetype": shard.get("archetype"), "category": shard.get("category"),
-        "powers": [{"internalName": p["internalName"]} for p in powers],
+        "powers": trimmed,
     })
 
 

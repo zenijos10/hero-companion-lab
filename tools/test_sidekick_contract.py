@@ -139,7 +139,8 @@ class DownloadTests(unittest.TestCase):
         provider, _, root = self.install(bundle())
         self.assertEqual(json.loads((root / "levels.json").read_text()), {
             "INHERENT_FITNESS_POWERS": [{"internalName": "Health",
-                                         "fullName": "Inherent.Fitness.Health"}],
+                                         "fullName": "Inherent.Fitness.Health",
+                                         "allowedEnhancements": []}],
             "BASIC_INHERENT_POWERS": [], "PRESTIGE_SPRINT_POWERS": []})
         # A cache from before the table existed is incomplete, so it re-installs.
         (root / "levels.json").unlink()
@@ -156,7 +157,7 @@ class DownloadTests(unittest.TestCase):
         self.assertEqual(shard, {"id": "blaster/dual-pistols",
                                  "setPath": "Blaster_Ranged.Dual_Pistols",
                                  "archetype": "blaster", "category": "primary",
-                                 "powers": [{"internalName": "Pistols"}]})
+                                 "powers": [{"internalName": "Pistols", "allowedEnhancements": []}]})
 
     def test_second_install_reuses_the_cache(self):
         provider, fetch, root = self.install(bundle())
