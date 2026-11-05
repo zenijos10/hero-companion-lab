@@ -110,3 +110,23 @@ the same checks as any other slot, and the slots count against the normal 67
 (Homecoming grants no free inherent slots). A toggled-on inherent (for example
 Sprint switched on), a prestige run or sprint, or an archetype inherent is
 still refused, because the editor cannot represent it.
+
+## Enhancement legality and slot budgets
+
+An IO being present in the Homecoming database does not mean every power
+can slot it. The SKIF converter checks each **generic IO** against Sidekick's
+per-power `allowedEnhancements` list, including inherent powers. For example,
+Health accepts Healing, not Recharge. Missing per-power rules or illegal
+generic enhancement types **reject the entire file**, with the precise slot
+reported; nothing in the editor is overwritten.
+
+Homecoming allows at most six enhancement slots in a power and 67 **added**
+slots across all powers, including the seven granted inherents. The source
+converter checks these constraints before reconstruction, and Hero Companion's
+shared build validator enforces the same limits for normal import and editor
+requests. Inherents' one base slot is not an extra slot.
+
+The one-time downloaded compatibility cache now includes the game's
+per-power enhancement restrictions. An older cache lacking those restrictions
+is identified as incomplete and repaired by another user-consented download.
+A developer-supplied Sidekick checkout uses the original authoritative rules.

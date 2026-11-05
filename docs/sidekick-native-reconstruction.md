@@ -29,11 +29,12 @@ default; Hero Companion cannot reconstruct it from the file alone.
 Supply `--default-io-level N` based on the setting in the source session
 when that information is known. Do not assume it was 50.
 
-The native converter follows the existing Mids importer's HO-level convention,
-but **does not prove all enhancement mechanics, slot legality, or character
-build constraints**. Even `ok: true` means structurally reconstructed, not
-certified game-legal or installed into the editor. A future editor integration
-must run the full HC validator before exposing the result as usable.
+The converter validates **generic IO eligibility** against Sidekick's
+per-power Homecoming `allowedEnhancements` table, rejects missing eligibility
+rules, and enforces the six-slots-per-power/67-additional-slots caps. Other
+mechanics may still be unsupported; `ok: true` is not proof of every build
+constraint. The guarded in-app importer also applies HC's shared validator
+before allowing a build into the editor.
 
 ## Offline command
 
@@ -60,10 +61,10 @@ python -m unittest discover -s tools -p test_skif_reconstruct.py -v
 ```
 
 The PR CI additionally checks an actual pinned Sidekick v5 Stalker fixture
-against shipped Homecoming game data. The original fixture is **intentionally
-refused** because it carries an attack chain; a *derived supported-subset test*
-without that chain proves all seven power identities and native fields.
-This is not evidence that the original full Sidekick file imports losslessly.
+against shipped Homecoming game data. The original published fixture now imports its seven powers plus attack-chain
+references as non-simulated metadata. The pinned v4 Homecoming inherent slots
+are also exercised as v5 records. This is not a guarantee of arbitrary SKIF
+round-trip parity.
 
 ## Remaining work
 

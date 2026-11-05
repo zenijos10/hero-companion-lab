@@ -3,6 +3,10 @@ on:
   pull_request:
     paths:
       - "server/sidekick_reconstruct.py"
+      - "server/engine.py"
+      - "server/sidekick_contract.py"
+      - "tools/test_slot_legality.py"
+      - "tools/test_sidekick_contract.py"
       - "server/skif_document.py"
       - "server/sidekick_preview.py"
       - "server/sidekick_enhancements.py"
@@ -32,6 +36,8 @@ jobs:
           python -m unittest discover -s tools -p test_skif_reconstruct.py -v
           python -m unittest discover -s tools -p test_skif_enhancements.py -v
           python -m unittest discover -s tools -p test_skif_preview.py -v
+          python -m unittest discover -s tools -p test_slot_legality.py -v
+          python -m unittest discover -s tools -p test_sidekick_contract.py -v
   real-sidekick-reconstruction:
     runs-on: ubuntu-latest
     timeout-minutes: 12
