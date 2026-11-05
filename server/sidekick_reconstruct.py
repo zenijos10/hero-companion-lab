@@ -11,20 +11,20 @@ must not be mistaken for an export of later edits to the HC build.
 import copy
 from pathlib import Path
 
-from sidekick_preview import _contract, _read_json, preview_build
+from sidekick_preview import PreviewContractError, _contract, _read_json, preview_build
 from skif_document import load_document
 
 
 # The native HC editor cannot express these Sidekick state dimensions yet.
 # Refuse *non-empty* values; empty state is equivalent to the reader's default.
 _UNSUPPORTED = (
-    "inherents", "accolades", "incarnates", "slotOrder", "stances", "modes",
+    "accolades", "incarnates", "slotOrder", "stances", "modes",
     "powerState", "procOverrides", "disabledProcCategories",
     "progress", "whatIfBuffs",
 )
 _KNOWN_BUILD = frozenset((
     "name", "dataset", "archetype", "origin", "level", "primary", "secondary",
-    "pools", "epicPool", "attackChains",
+    "pools", "epicPool", "attackChains", "inherents",
 ) + _UNSUPPORTED)
 _KNOWN_POWER = frozenset(("internalName", "level", "slots", "powerset",
                           "isActive", "activeSubPower"))
@@ -34,6 +34,16 @@ _KNOWN_SLOT = {
     "special": frozenset(("type", "category", "id", "relativeLevel")),
     "origin": frozenset(("type", "stat", "tier", "relativeLevel")),
 }
+# The seven inherents Hero Companion grants every character: one copy of
+# app.js GRANTED_INHERENTS (tools/test_skif_reconstruct.py pins them equal).
+HC_GRANTED_INHERENTS = frozenset((
+    "Inherent.Inherent.Brawl", "Inherent.Inherent.Sprint", "Inherent.Inherent.Rest",
+    "Inherent.Fitness.Swift", "Inherent.Fitness.Hurdle",
+    "Inherent.Fitness.Health", "Inherent.Fitness.Stamina",
+))
+# Sidekick's own name -> full-name tables for the powers the game grants.
+_SIDEKICK_INHERENT_TABLES = ("BASIC_INHERENT_POWERS", "INHERENT_FITNESS_POWERS",
+                             "PRESTIGE_SPRINT_POWERS")
 _SPECIAL_WITH_LEVEL = ("Hamidon_", "Synthetic_Hamidon_", "Titan_", "Hydra_",
                        "DSync_", "Dsync_")
 
@@ -117,6 +127,8 @@ def _source_state_issues(doc):
             _power_field_issues(issues, selection, f"build.{bucket}")
     for i, selection in enumerate(build.get("pools", [])):
         _power_field_issues(issues, selection, f"build.pools[{i}]")
+    for i, power in enumerate(build.get("inherents", [])):
+        _one_power_issues(issues, power, f"build.inherents[{i}]")
     return issues
 
 
@@ -125,17 +137,86 @@ def _power_field_issues(issues, selection, where):
     for field in sorted(unknown_set_fields):
         issues.append(_issue("unsupported_source_state", f"{where}.{field}", field))
     for i, power in enumerate(selection.get("powers", [])):
-        power_where = f"{where}.powers[{i}]"
-        for key in sorted(set(power) - _KNOWN_POWER):
-            issues.append(_issue("unsupported_source_state", f"{power_where}.{key}", key))
-        if power.get("isActive") is True or power.get("activeSubPower"):
-            issues.append(_issue("unsupported_source_state", power_where, "active power mode"))
-        for j, slot in enumerate(power["slots"]):
-            if slot is None:
-                continue
-            for key in sorted(set(slot) - _KNOWN_SLOT[slot["type"]]):
-                issues.append(_issue("unsupported_source_state",
-                                     f"{power_where}.slots[{j}].{key}", key))
+        _one_power_issues(issues, power, f"{where}.powers[{i}]")
+
+
+def _one_power_issues(issues, power, power_where):
+    for key in sorted(set(power) - _KNOWN_POWER):
+        issues.append(_issue("unsupported_source_state", f"{power_where}.{key}", key))
+    if power.get("isActive") is True or power.get("activeSubPower"):
+        issues.append(_issue("unsupported_source_state", power_where, "active power mode"))
+    for j, slot in enumerate(power["slots"]):
+        if slot is None:
+            continue
+        for key in sorted(set(slot) - _KNOWN_SLOT[slot["type"]]):
+            issues.append(_issue("unsupported_source_state",
+                                 f"{power_where}.slots[{j}].{key}", key))
+
+
+def _sidekick_inherent_names(root, issues):
+    """Sidekick's own internalName -> fullName table, or None (with an issue)."""
+    try:
+        levels = _read_json(Path(root) / "levels.json", "Sidekick inherent table")
+    except PreviewContractError as exc:
+        issues.append(_issue("inherent_contract_missing", "build.inherents", exc))
+        return None
+    names = {}
+    for table in _SIDEKICK_INHERENT_TABLES:
+        for entry in (levels.get(table) or []) if isinstance(levels, dict) else []:
+            if isinstance(entry, dict) and isinstance(entry.get("internalName"), str):
+                names.setdefault(entry["internalName"], set()).add(entry.get("fullName"))
+    return names
+
+
+def _translate_inherents(body, root, hero_powers_by_full, enhancements,
+                         default_io_level, issues, encountered):
+    """Seat Sidekick's slotted inherents on the inherents HC grants.
+
+    Identity comes from Sidekick's own name table, and must land on one of
+    HC_GRANTED_INHERENTS; anything else (prestige runs, archetype inherents)
+    refuses. The shape mirrors app.js ensureInherents: granted, never picked.
+    """
+    inherents = body.get("inherents") or []
+    if not inherents:
+        return []
+    names = _sidekick_inherent_names(root, issues)
+    if names is None:
+        return []
+    native = []
+    for i, power in enumerate(inherents):
+        where = f"build.inherents[{i}]"
+        full_names = names.get(power["internalName"], set())
+        if len(full_names) != 1:
+            issues.append(_issue("unknown_inherent", where, power["internalName"]))
+            continue
+        full = next(iter(full_names))
+        rec = hero_powers_by_full.get(full)
+        if full not in HC_GRANTED_INHERENTS or not isinstance(rec, dict):
+            issues.append(_issue("unsupported_inherent", where, full))
+            continue
+        if full in encountered:
+            issues.append(_issue("duplicate_power", where, full))
+            continue
+        encountered.add(full)
+        slots = []
+        for j, source_slot in enumerate(power["slots"]):
+            resolved = enhancements.get(f"{where}.slots[{j}]")
+            slots.append(_native_slot(source_slot, resolved, f"{where}.slots[{j}]",
+                                      default_io_level, issues)
+                         if source_slot is not None and resolved else None)
+        native.append({
+            "full_name": full,
+            "display_name": rec["display_name"],
+            "powerset_full_name": rec["powerset_full_name"],
+            "accepted_set_category_ids": copy.deepcopy(rec.get("accepted_set_category_ids", [])),
+            "accepted_set_categories": copy.deepcopy(rec.get("accepted_set_categories", [])),
+            "power_type": rec.get("power_type"),
+            "include_in_totals": rec.get("power_type") == 1,
+            "earned_slot_count": len(slots),
+            "slotCount": len(slots),
+            "slots": slots,
+        })
+    return native
 
 
 def _native_slot(slot, mapping, where, default_io_level, issues):
@@ -239,7 +320,9 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
     # native build metadata; no other preview issue may be waived.
     issues = [copy.deepcopy(issue) for issue in preview["unresolved"]
               if not (issue["reason"] == "state_not_mapped"
-                      and issue["location"] in ("build.origin", "build.attackChains"))]
+                      and issue["location"] in ("build.origin", "build.attackChains"))
+              # Inherent identity is decided below from Sidekick's own table.
+              and issue["reason"] != "inherent_not_mapped"]
     issues.extend(_source_state_issues(doc))
     body = doc["build"]
     attack_chains = _translate_attack_chains(body, preview, issues)
@@ -302,6 +385,9 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
                     "slotCount": len(slots),
                     "slots": slots,
                 })
+    native_powers.extend(_translate_inherents(
+        body, contract_root, hero_powers_by_full, enhancements,
+        default_io_level, issues, encountered))
     result = {
         "ok": not issues,
         "name": body.get("name") or "Imported Sidekick build",

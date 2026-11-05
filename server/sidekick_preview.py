@@ -121,6 +121,21 @@ def preview_build(document, hero_powers_by_full, contract_root, hero_piece_by_ui
     resolved = []
     enhancements = []
 
+    def resolve_slots(power, location):
+        for j, slot in enumerate(power["slots"]):
+            if slot is None:
+                continue
+            slot_where = f"{location}.slots[{j}]"
+            if enhancement_bridge is None:
+                issues.append(_issue("enhancement_not_mapped", slot_where, slot["type"]))
+                continue
+            identity, problem = enhancement_bridge.resolve(
+                slot, character_origin=build.get("origin"))
+            if problem:
+                issues.append(_issue(problem, slot_where, slot["type"]))
+            else:
+                enhancements.append({"location": slot_where, **identity})
+
     def visit(bucket, selection, position=None):
         if selection is None:
             return
@@ -158,19 +173,7 @@ def preview_build(document, hero_powers_by_full, contract_root, hero_piece_by_ui
                     "sidekick_power": name, "hero_power": matched,
                     "level": power["level"], "slot_count": len(power["slots"]),
                 })
-            for j, slot in enumerate(power["slots"]):
-                if slot is None:
-                    continue
-                slot_where = f"{location}.slots[{j}]"
-                if enhancement_bridge is None:
-                    issues.append(_issue("enhancement_not_mapped", slot_where, slot["type"]))
-                    continue
-                identity, problem = enhancement_bridge.resolve(
-                    slot, character_origin=build.get("origin"))
-                if problem:
-                    issues.append(_issue(problem, slot_where, slot["type"]))
-                else:
-                    enhancements.append({"location": slot_where, **identity})
+            resolve_slots(power, location)
             for key in ("isActive", "activeSubPower"):
                 if power.get(key):
                     issues.append(_issue("state_not_mapped", f"{location}.{key}", key))
@@ -180,9 +183,12 @@ def preview_build(document, hero_powers_by_full, contract_root, hero_piece_by_ui
     for index, selection in enumerate(build.get("pools", [])):
         visit("pools", selection, index)
 
+    # The power identity of an inherent is the reconstruction layer's job
+    # (Sidekick's own name table); its enhancements resolve here like any slot.
     for i, power in enumerate(build.get("inherents", [])):
         issues.append(_issue("inherent_not_mapped", f"build.inherents[{i}]",
                              power["internalName"]))
+        resolve_slots(power, f"build.inherents[{i}]")
     # Not all of this data is reducible to Hero Companion's editor state yet.
     # Surface it explicitly even when all selected powers resolved.
     for key in ("incarnates", "slotOrder", "stances", "modes", "powerState",

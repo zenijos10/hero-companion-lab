@@ -2,7 +2,7 @@
 
 The importer only ever asks `locate_contract(providers)` for a folder in the
 Sidekick contract layout (manifest.json, powersets/..., archetypes.json,
-boost-index.json, enhancements.json, mids-names.json). Every provider is one
+boost-index.json, enhancements.json, mids-names.json, levels.json). Every provider is one
 small class with `name` and `locate()`; one that can fetch its data also has
 `install()`.
 
@@ -82,7 +82,7 @@ class DownloadedSnapshot:
         """Never treat a manifest alone as proof of a complete cached ID map."""
         target = self._target
         essential = ("archetypes.json", "boost-index.json",
-                     "enhancements.json", "mids-names.json")
+                     "enhancements.json", "mids-names.json", "levels.json")
         try:
             manifest = json.loads((target / "manifest.json").read_text(encoding="utf-8"))
             if not isinstance(manifest, dict) or manifest.get("dataset") != "homecoming":
@@ -186,6 +186,21 @@ def write_contract_from_bundle(bundle, target):
         if not isinstance(bundle.get(name), dict):
             raise ContractUnavailable(f"Sidekick data is missing {name}.")
         _write_json(target / f"{name}.json", bundle[name])
+    _write_json(target / "levels.json", _inherent_tables(bundle.get("levels")))
+
+
+# Sidekick's name -> full-name tables for the powers the game grants.
+_INHERENT_TABLES = ("BASIC_INHERENT_POWERS", "INHERENT_FITNESS_POWERS",
+                    "PRESTIGE_SPRINT_POWERS")
+
+
+def _inherent_tables(levels):
+    if not isinstance(levels, dict) or not all(
+            isinstance(levels.get(t), list) for t in _INHERENT_TABLES):
+        raise ContractUnavailable("Sidekick data is missing its inherent tables.")
+    return {t: [{"internalName": e.get("internalName"), "fullName": e.get("fullName")}
+                for e in levels[t] if isinstance(e, dict)]
+            for t in _INHERENT_TABLES}
 
 
 def _write_shard(entry, powersets, target):

@@ -53,9 +53,11 @@ jobs:
             contract/homecoming/archetypes.json
             contract/homecoming/boost-index.json
             contract/homecoming/enhancements.json
+            contract/homecoming/levels.json
             contract/homecoming/powersets/stalker/primary/energy-melee.json
             contract/homecoming/powersets/stalker/secondary/energy-aura.json
             fixtures/skif/v5/rb5d_browser_pass.skif
+            fixtures/skif/v4/homecoming-troller.skif
           persist-credentials: false
       - name: Verify actual Sidekick fixture against shipped Hero Companion powersets
         run: python -m unittest discover -s tools -p test_skif_reconstruct_sidekick.py -v

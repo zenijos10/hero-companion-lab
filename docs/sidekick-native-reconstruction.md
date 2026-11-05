@@ -17,8 +17,8 @@ which is provenance, **not an export of any later edits**.
 ## Explicit loss-of-fidelity refusal
 
 Any unresolved power or enhancement, unsupported Sidekick state (including
-inherents with slots, active power mode, attack chains, proc overrides,
-incarnates and progress), unknown schema field, wrong powerset classification,
+prestige or archetype inherents, active power mode, proc overrides, incarnates
+and progress), unknown schema field, wrong powerset classification,
 inability to determine an ordinary crafted IO's level, a booster on an attuned
 IO (the game allows none), or a Hamidon/Titan/Hydra/D-Sync grade outside +0..+3
 (the game's 50..53 range) produces

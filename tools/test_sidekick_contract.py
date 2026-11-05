@@ -31,6 +31,12 @@ def bundle(**overrides):
                                              "stats": ["Recharge"]}},
         "enhancements": {"commonIoTypes": ["Recharge"], "hamidon": []},
         "mids-names": {"nameMap": {}, "nameReverse": {}},
+        "levels": {
+            "INHERENT_FITNESS_POWERS": [{"internalName": "Health",
+                                         "fullName": "Inherent.Fitness.Health",
+                                         "description": "not needed"}],
+            "BASIC_INHERENT_POWERS": [], "PRESTIGE_SPRINT_POWERS": [],
+            "SLOT_GRANTS": {"3": 2}},
         "io-sets": {"unused": "by the importer"},
     }
     data.update(overrides)
@@ -94,6 +100,16 @@ class DownloadTests(unittest.TestCase):
     def assert_nothing_installed(self):
         leftovers = list(self.cache.iterdir()) if self.cache.exists() else []
         self.assertEqual(leftovers, [])
+
+    def test_inherent_name_table_installs_slim_and_is_required(self):
+        provider, _, root = self.install(bundle())
+        self.assertEqual(json.loads((root / "levels.json").read_text()), {
+            "INHERENT_FITNESS_POWERS": [{"internalName": "Health",
+                                         "fullName": "Inherent.Fitness.Health"}],
+            "BASIC_INHERENT_POWERS": [], "PRESTIGE_SPRINT_POWERS": []})
+        # A cache from before the table existed is incomplete, so it re-installs.
+        (root / "levels.json").unlink()
+        self.assertIsNone(provider.locate())
 
     def test_verified_bundle_installs_the_slim_contract_layout(self):
         provider, fetch, root = self.install(bundle())
