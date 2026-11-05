@@ -327,6 +327,17 @@ class ReconstructionTests(unittest.TestCase):
         self.assertFalse(by_name["Inherent.Inherent.Sprint"]["include_in_totals"])
         self.assertNotIn("pick_level", health)                   # granted, never picked
 
+    def test_unenhanced_granted_inherent_still_has_its_base_slot(self):
+        # The native HC editor grants one empty slot to all seven inherents.
+        # A Sidekick file with no explicit enhancement should not suppress it.
+        result = self.convert(self.with_inherents(
+            {"internalName": "Health", "level": 1, "slots": []}))
+        self.assertTrue(result["ok"], result["issues"])
+        health = next(p for p in result["build"]["powers"]
+                      if p["full_name"] == "Inherent.Fitness.Health")
+        self.assertEqual(health["slots"], [None])
+        self.assertEqual(health["slotCount"], 1)
+
     def test_inherent_identity_needs_sidekicks_own_name_table(self):
         (self.root / "levels.json").unlink()
         result = self.convert(self.with_inherents(

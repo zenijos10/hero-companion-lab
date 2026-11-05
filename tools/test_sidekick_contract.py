@@ -101,6 +101,16 @@ class DownloadTests(unittest.TestCase):
         leftovers = list(self.cache.iterdir()) if self.cache.exists() else []
         self.assertEqual(leftovers, [])
 
+    def test_malformed_inherent_name_entry_is_not_silently_discarded(self):
+        # Dropping entries could make a valid Sidekick power look unknown.
+        raw = bundle(levels={
+            "BASIC_INHERENT_POWERS": [{"internalName": "Brawl"}],
+            "INHERENT_FITNESS_POWERS": [],
+            "PRESTIGE_SPRINT_POWERS": []})
+        with self.assertRaises(sc.ContractUnavailable):
+            self.install(raw)
+        self.assert_nothing_installed()
+
     def test_inherent_name_table_installs_slim_and_is_required(self):
         provider, _, root = self.install(bundle())
         self.assertEqual(json.loads((root / "levels.json").read_text()), {
