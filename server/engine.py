@@ -293,6 +293,24 @@ def validate_build(build):
                     f"{_nm} is not available to this archetype - the game does "
                     f"not offer it here")
 
+    # The editor enforces these limits interactively, but imported builds and
+    # direct /build/validate callers must not bypass them. Homecoming provides
+    # one base slot for each slottable power, plus at most 67 additional slots
+    # across selected and auto-granted inherents at level 50.
+    added_slots = 0
+    for power in build.get("powers", []):
+        slots = power.get("slots") or []
+        count = len(slots)
+        declared = power.get("slotCount")
+        if type(declared) is int and declared > count:
+            count = declared
+        if count > 6:
+            label = power.get("display_name") or power.get("full_name") or "Power"
+            errors.append(f"{label} has {count} slots; the game permits at most 6.")
+        added_slots += max(0, count - 1)
+    if added_slots > 67:
+        errors.append(f"Build uses {added_slots} additional slots; the level-50 limit is 67.")
+
     unique_seen = defaultdict(int)        # piece identity -> count
     bonus_counter = defaultdict(int)      # bonus signature -> count (rule of 5)
 

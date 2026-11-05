@@ -306,6 +306,101 @@ def _translate_attack_chains(body, preview, issues):
         })
     return translated
 
+def _source_generic_eligibility(body, root, issues):
+    """Validate generic IOs against the receiving Sidekick *power*, not catalog.
+
+    Sidekick's commonIoTypes proves only that an IO exists. It does NOT prove
+    the power accepts that stat. The source Homecoming powerset shards and
+    inherent level tables carry the per-power allowedEnhancements vocabulary.
+    We reject missing rules instead of guessing from a displayed name.
+    """
+    def generic_slots(power):
+        return [(j, slot) for j, slot in enumerate(power["slots"])
+                if slot is not None and slot["type"] == "io-generic"]
+
+    def check(power, where, source):
+        generic = generic_slots(power)
+        if not generic:
+            return
+        allowed = source.get("allowedEnhancements") if isinstance(source, dict) else None
+        if not isinstance(allowed, list) or any(
+                not isinstance(stat, str) for stat in allowed):
+            issues.append(_issue("source_enhancement_rules_missing", where,
+                                 power["internalName"]))
+            return
+        for i, slot in generic:
+            if slot["stat"] not in allowed:
+                issues.append(_issue("invalid_generic_enhancement",
+                                     f"{where}.slots[{i}]",
+                                     f"{slot['stat']} is not allowed in {power['internalName']}"))
+
+    selections = []
+    for bucket in ("primary", "secondary", "epicPool", "pools"):
+        entries = body.get(bucket, []) if bucket == "pools" else [body.get(bucket)]
+        for i, selection in enumerate(entries):
+            if selection and any(generic_slots(p) for p in selection.get("powers", [])):
+                location = f"build.pools[{i}]" if bucket == "pools" else f"build.{bucket}"
+                selections.append((selection, location))
+    if selections:
+        paths, _ = _contract(root)
+        for selection, location in selections:
+            path = paths.get(selection["id"])
+            if path is None:
+                continue  # identity preview reports the missing source set
+            shard = _read_json(path, f"Sidekick generic IO rules {selection['id']}")
+            source_powers = shard.get("powers", []) if isinstance(shard, dict) else []
+            for i, power in enumerate(selection.get("powers", [])):
+                generic = generic_slots(power)
+                if not generic:
+                    continue
+                source_matches = [p for p in source_powers
+                                  if isinstance(p, dict)
+                                  and p.get("internalName") == power["internalName"]]
+                source = source_matches[0] if len(source_matches) == 1 else None
+                check(power, f"{location}.powers[{i}]", source)
+
+    inherents = body.get("inherents") or []
+    if any(generic_slots(p) for p in inherents):
+        levels = _read_json(Path(root) / "levels.json", "Sidekick inherent IO rules")
+        by_name = {}
+        for table in _SIDEKICK_INHERENT_TABLES:
+            for entry in levels.get(table, []):
+                if isinstance(entry, dict):
+                    by_name.setdefault(entry.get("internalName"), []).append(entry)
+        for i, power in enumerate(inherents):
+            generic = generic_slots(power)
+            if not generic:
+                continue
+            matched = by_name.get(power["internalName"], [])
+            source = matched[0] if len(matched) == 1 else None
+            check(power, f"build.inherents[{i}]", source)
+
+
+def _source_slot_budget(body, issues):
+    """The game has at most six slots/power and 67 added slots at level 50."""
+    added = 0
+    for bucket in ("primary", "secondary", "epicPool", "pools"):
+        entries = body.get(bucket, []) if bucket == "pools" else [body.get(bucket)]
+        for i, selection in enumerate(entries):
+            if not selection:
+                continue
+            location = f"build.pools[{i}]" if bucket == "pools" else f"build.{bucket}"
+            for j, power in enumerate(selection.get("powers", [])):
+                count = len(power["slots"])
+                if count > 6:
+                    issues.append(_issue("too_many_power_slots",
+                                         f"{location}.powers[{j}].slots", count))
+                added += max(0, count - 1)
+    for i, power in enumerate(body.get("inherents") or []):
+        count = len(power["slots"])
+        if count > 6:
+            issues.append(_issue("too_many_power_slots",
+                                 f"build.inherents[{i}].slots", count))
+        added += max(0, count - 1)
+    if added > 67:
+        issues.append(_issue("slot_budget_exceeded", "build", f"{added} > 67"))
+
+
 def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
                       contract_root, hero_piece_by_uid, *, default_io_level=None):
     """Reconstruct only when no known source semantics would be lost.
@@ -329,6 +424,8 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
               and issue["reason"] != "inherent_not_mapped"]
     issues.extend(_source_state_issues(doc))
     body = doc["build"]
+    _source_generic_eligibility(body, contract_root, issues)
+    _source_slot_budget(body, issues)
     attack_chains = _translate_attack_chains(body, preview, issues)
     class_name = _resolve_class(body, contract_root, hero_powersets, issues)
     sets = _resolve_sets(body, class_name, contract_root, hero_powersets, issues)
