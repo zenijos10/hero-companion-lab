@@ -198,9 +198,21 @@ def _inherent_tables(levels):
     if not isinstance(levels, dict) or not all(
             isinstance(levels.get(t), list) for t in _INHERENT_TABLES):
         raise ContractUnavailable("Sidekick data is missing its inherent tables.")
-    return {t: [{"internalName": e.get("internalName"), "fullName": e.get("fullName")}
-                for e in levels[t] if isinstance(e, dict)]
-            for t in _INHERENT_TABLES}
+    result = {}
+    for table in _INHERENT_TABLES:
+        entries = []
+        for entry in levels[table]:
+            if (not isinstance(entry, dict)
+                    or not isinstance(entry.get("internalName"), str)
+                    or not entry["internalName"]
+                    or not isinstance(entry.get("fullName"), str)
+                    or not entry["fullName"]):
+                raise ContractUnavailable(
+                    f"Sidekick data has an invalid {table} inherent identity.")
+            entries.append({"internalName": entry["internalName"],
+                            "fullName": entry["fullName"]})
+        result[table] = entries
+    return result
 
 
 def _write_shard(entry, powersets, target):

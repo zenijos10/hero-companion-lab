@@ -204,6 +204,10 @@ def _translate_inherents(body, root, hero_powers_by_full, enhancements,
             slots.append(_native_slot(source_slot, resolved, f"{where}.slots[{j}]",
                                       default_io_level, issues)
                          if source_slot is not None and resolved else None)
+        # Sidekick may omit an unenhanced inherent's base slot. Hero
+        # Companion always exposes that granted slot (ensureInherents).
+        if not slots:
+            slots = [None]
         native.append({
             "full_name": full,
             "display_name": rec["display_name"],
