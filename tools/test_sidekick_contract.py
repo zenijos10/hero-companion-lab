@@ -111,6 +111,20 @@ class DownloadTests(unittest.TestCase):
             self.install(raw)
         self.assert_nothing_installed()
 
+    def test_inherent_eligibility_rules_are_retained_in_slim_download(self):
+        data = bundle()
+        data["levels"]["INHERENT_FITNESS_POWERS"][0]["allowedEnhancements"] = ["Healing"]
+        data["levels"]["INHERENT_FITNESS_POWERS"][0]["maxSlots"] = 6
+        data["powersets"]["blaster/dual-pistols"]["powers"][0]["allowedEnhancements"] = [
+            "Accuracy", "Recharge"]
+        provider, _, root = self.install(data)
+        levels = json.loads((root / "levels.json").read_text())
+        self.assertEqual(
+            levels["INHERENT_FITNESS_POWERS"][0]["allowedEnhancements"], ["Healing"])
+        shard = json.loads((root / "powersets/blaster/primary/dual-pistols.json").read_text())
+        self.assertEqual(shard["powers"][0]["allowedEnhancements"], ["Accuracy", "Recharge"])
+        self.assertEqual(provider.locate(), root)
+
     def test_inherent_name_table_installs_slim_and_is_required(self):
         provider, _, root = self.install(bundle())
         self.assertEqual(json.loads((root / "levels.json").read_text()), {
