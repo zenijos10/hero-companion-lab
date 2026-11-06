@@ -38,6 +38,7 @@ import leveling_schedule          # noqa: E402
 import converter                   # noqa: E402
 import import_catalog              # noqa: E402
 import sidekick_web_import          # noqa: E402
+import skif_export                  # noqa: E402
 import sidekick_contract            # noqa: E402
 import role_output                 # noqa: E402
 
@@ -6510,6 +6511,73 @@ def build_import_sidekick():
     parsed = {"ok": True, "build": attempt["build"], "name": attempt["name"],
               "unresolved_enh": [], "unresolved_powers": []}
     return _build_import_response(parsed, body)
+
+
+@app.route("/build/export-sidekick", methods=["POST"])
+def build_export_sidekick():
+    """Export the user's current native character without saving/mutating it.
+
+    A failed validation or identity conversion returns NO file. The only
+    permitted lossy element (stale reference-only attack-chain notes) requires
+    a second explicit confirmation request before a SKIF can be returned.
+    """
+    body = request.get_json(silent=True)
+    if (not isinstance(body, dict)
+            or not isinstance(body.get("build"), dict)
+            or not isinstance(body["build"].get("archetype"), str)
+            or not isinstance(body["build"].get("powers"), list)
+            or type(body.get("allow_dropped_chains", False)) is not bool):
+        return jsonify({"ok": False, "code": "sidekick_export_invalid_request",
+                        "response": "Choose a character with valid powers before exporting."})
+    if request.content_length is not None and request.content_length > 3_000_000:
+        return jsonify({"ok": False, "code": "sidekick_export_invalid_request",
+                        "response": "Build data exceeds the export safety limit."})
+
+    providers = _sidekick_providers()
+    contract, _ = sidekick_contract.locate_contract(providers)
+    if not contract:
+        unavailable = {"ok": False, "code": "sidekick_contract_unavailable",
+                       "response": "Sidekick export needs the Homecoming compatibility map. "
+                                   "No file was created."}
+        installer = sidekick_contract.installer(providers)
+        if installer:
+            unavailable.update(can_download=True,
+                               download_bytes=installer.snapshot.size_bytes)
+        return jsonify(unavailable)
+
+    source = copy.deepcopy(body["build"])
+    legal = _complete_build_validation(copy.deepcopy(source))
+    errors = legal.get("errors") or []
+    if errors:
+        return jsonify({"ok": False, "code": "sidekick_export_illegal_build",
+                        "response": "This character has build-legality errors; export refused.",
+                        "errors": errors, "warnings": legal.get("warnings") or []})
+    try:
+        converted = skif_export.export_build(
+            source, POWER_BY_FULL, contract, POWERSETS,
+            name=body.get("name") if isinstance(body.get("name"), str) else None,
+            hero_piece_by_uid=import_catalog.build_sidekick_piece_lookups(
+                ENH_SETS, COMMON_IOS),
+            incarnate_catalog=INCARNATES)
+    except (ValueError, TypeError, KeyError, IndexError, OSError) as exc:
+        return jsonify({"ok": False, "code": "sidekick_export_unavailable",
+                        "response": f"Sidekick export could not represent the build: {exc}"})
+    if not converted.get("ok"):
+        return jsonify({"ok": False, "code": "sidekick_export_unresolved",
+                        "response": "Sidekick cannot represent every part of this character.",
+                        "issues": converted.get("issues") or []})
+    dropped = converted.get("dropped") or []
+    if dropped and not body.get("allow_dropped_chains", False):
+        return jsonify({"ok": False, "code": "sidekick_export_dropped_chains",
+                        "response": "Some saved Sidekick attack-chain notes reference "
+                                    "powers no longer selected. Confirm before leaving "
+                                    "those obsolete reference notes out.",
+                        "dropped": dropped})
+    title = body.get("name") if isinstance(body.get("name"), str) else None
+    safe_name = re.sub(r"[^A-Za-z0-9._-]+", "_", title or "HeroCompanion").strip("._")[:72]
+    return jsonify({"ok": True, "filename": (safe_name or "HeroCompanion") + ".skif",
+                    "skif": converted["skif"], "dropped": dropped,
+                    "warnings": legal.get("warnings") or []})
 
 
 def _sidekick_cache_dir():

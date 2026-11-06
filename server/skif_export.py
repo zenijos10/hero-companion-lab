@@ -172,7 +172,7 @@ def _invert_set_pieces(root, boosts, hero_piece_by_uid):
 
 
 def export_build(build, hero_powers_by_full, contract_root, hero_powersets=None, *, name=None,
-                 hero_piece_by_uid=None):
+                 hero_piece_by_uid=None, incarnate_catalog=None):
     """Return {ok, issues, dropped, skif?}; `skif` only when nothing is lost.
 
     hero_powersets (powersets.json) supplies the epics this archetype may take,
@@ -228,7 +228,7 @@ def export_build(build, hero_powers_by_full, contract_root, hero_powersets=None,
     inherents = _inherents(contract, build, issues)
     if inherents:
         out["inherents"] = inherents
-    incarnates = _incarnates(build, issues)
+    incarnates = _incarnates(build, issues, incarnate_catalog)
     if incarnates:
         out["incarnates"] = incarnates
     chains = _attack_chains(build, picks, dropped)
@@ -303,7 +303,7 @@ def _inherents(contract, build, issues):
     return out
 
 
-def _incarnates(build, issues):
+def _incarnates(build, issues, incarnate_catalog=None):
     """Export only known Hero Companion incarnates in the matching slot.
 
     The JSON codec only checks the shape of the Sidekick record; it cannot
@@ -318,12 +318,18 @@ def _incarnates(build, issues):
         issues.append(_issue("incarnate_not_exportable", "incarnates",
                              "Expected a map of incarnate selections"))
         return {}
-    try:
-        catalog = _read_json(Path(__file__).resolve().parents[1] / "data" / "incarnates.json",
-                             "Hero Companion incarnate catalog")
-    except (OSError, ValueError) as exc:
-        issues.append(_issue("incarnate_catalog_unavailable", "incarnates", exc))
-        return {}
+    if incarnate_catalog is not None:
+        catalog = incarnate_catalog
+    else:
+        # Offline callers may omit the catalog; the packaged app always
+        # supplies its already-loaded INCARNATES instead of assuming source
+        # tree file paths still exist inside a frozen executable.
+        try:
+            catalog = _read_json(Path(__file__).resolve().parents[1] / "data" / "incarnates.json",
+                                 "Hero Companion incarnate catalog")
+        except (OSError, ValueError) as exc:
+            issues.append(_issue("incarnate_catalog_unavailable", "incarnates", exc))
+            return {}
     slots = catalog.get("slots") if isinstance(catalog, dict) else None
     if not isinstance(slots, list):
         issues.append(_issue("incarnate_catalog_unavailable", "incarnates",
