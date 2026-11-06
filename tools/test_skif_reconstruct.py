@@ -14,6 +14,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "server"))
 from sidekick_reconstruct import reconstruct_build
+from skif_document import SkifFormatError
 
 
 def fixture():
@@ -200,25 +201,28 @@ class ReconstructionTests(unittest.TestCase):
                               [i["reason"] for i in result["issues"]])
 
     def test_malformed_incarnate_record_and_absent_catalog_fail_closed(self):
-        cases = [
+        # Schema-invalid records are rejected before reconstruction. Unknown
+        # extra fields pass SKIF's codec but are refused rather than ignored.
+        malformed = [
             {"alpha": {"power": "Agility_Core_Paragon"}},
             {"alpha": {"power": "Agility_Core_Paragon", "active": 1}},
-            {"alpha": {"power": "Agility_Core_Paragon", "active": True, "futureMode": 1}},
             {"alpha": "Agility_Core_Paragon"},
             [{"alpha": {"power": "Agility_Core_Paragon", "active": True}}],
         ]
-        for record in cases:
+        for record in malformed:
             doc = fixture()
             doc["build"]["incarnates"] = record
-            result = self.convert(doc)
-            with self.subTest(record=record):
-                self.assertFalse(result["ok"])
-                self.assertNotIn("build", result)
-                self.assertIn("invalid_incarnate_record",
-                              [i["reason"] for i in result["issues"]])
+            with self.subTest(record=record), self.assertRaises(SkifFormatError):
+                self.convert(doc)
         doc = fixture()
         doc["build"]["incarnates"] = {
-            "alpha": {"power": "Agility_Core_Paragon", "active": True}}
+            "alpha": {"power": "Agility_Core_Paragon",
+                      "active": True, "futureMode": 1}}
+        result = self.convert(doc)
+        self.assertFalse(result["ok"])
+        self.assertNotIn("build", result)
+        self.assertIn("invalid_incarnate_record", [i["reason"] for i in result["issues"]])
+        doc["build"]["incarnates"]["alpha"].pop("futureMode")
         self.incarnate_catalog = None
         result = self.convert(doc)
         self.assertFalse(result["ok"])

@@ -494,7 +494,8 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
     # native build metadata; no other preview issue may be waived.
     issues = [copy.deepcopy(issue) for issue in preview["unresolved"]
               if not (issue["reason"] == "state_not_mapped"
-                      and issue["location"] in ("build.origin", "build.attackChains"))
+                      and issue["location"] in ("build.origin", "build.attackChains",
+                                                "build.incarnates"))
               # Inherent identity is decided below from Sidekick's own table.
               and issue["reason"] != "inherent_not_mapped"]
     issues.extend(_source_state_issues(doc))
