@@ -14,7 +14,7 @@ def _refusal(code, message, **details):
 
 
 def prepare_sidekick_import(payload, contract_root, power_index, powersets,
-                            piece_index, validate):
+                            piece_index, validate, incarnate_catalog=None):
     """Return a ready-to-display native build *only* after both gates pass.
 
     The source document is not returned in the browser response. No native
@@ -42,7 +42,8 @@ def prepare_sidekick_import(payload, contract_root, power_index, powersets,
     try:
         reconstructed = reconstruct_build(
             skif, power_index, powersets, contract_root, piece_index,
-            default_io_level=default_level)
+            default_io_level=default_level,
+            incarnate_catalog=incarnate_catalog)
     except (ValueError, TypeError, KeyError, OSError) as exc:
         return _refusal("sidekick_invalid_file", f"Sidekick import refused: {exc}")
     if not reconstructed["ok"]:

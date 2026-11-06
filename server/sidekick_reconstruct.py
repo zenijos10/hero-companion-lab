@@ -18,13 +18,13 @@ from skif_document import load_document
 # The native HC editor cannot express these Sidekick state dimensions yet.
 # Refuse *non-empty* values; empty state is equivalent to the reader's default.
 _UNSUPPORTED = (
-    "accolades", "incarnates", "slotOrder", "stances", "modes",
+    "accolades", "slotOrder", "stances", "modes",
     "powerState", "procOverrides", "disabledProcCategories",
     "progress", "whatIfBuffs",
 )
 _KNOWN_BUILD = frozenset((
     "name", "dataset", "archetype", "origin", "level", "primary", "secondary",
-    "pools", "epicPool", "attackChains", "inherents",
+    "pools", "epicPool", "attackChains", "inherents", "incarnates",
 ) + _UNSUPPORTED)
 _KNOWN_POWER = frozenset(("internalName", "level", "slots", "powerset",
                           "isActive", "activeSubPower"))
@@ -401,8 +401,83 @@ def _source_slot_budget(body, issues):
         issues.append(_issue("slot_budget_exceeded", "build", f"{added} > 67"))
 
 
+def _translate_incarnates(body, incarnate_catalog, issues):
+    """Match Sidekick's slot/power identity to HC's shipped incarnate catalog.
+
+    No name-derived assumptions: selected powers must exist uniquely in the
+    selected slot. Both the selected choice and the independent active flag
+    survive, so the UI may show inactive selections without pricing them.
+    """
+    source = body.get("incarnates", {})
+    if not isinstance(source, dict):
+        issues.append(_issue("invalid_incarnate_record", "build.incarnates",
+                             "expected slot -> {power, active} object"))
+        return {}
+    if not source:
+        return {}
+    if not isinstance(incarnate_catalog, dict) or not isinstance(
+            incarnate_catalog.get("slots"), list):
+        issues.append(_issue("incarnate_catalog_unavailable", "build.incarnates",
+                             "Hero Companion incarnate choices unavailable"))
+        return {}
+    slots = incarnate_catalog["slots"]
+    result = {}
+    matched_slots = set()
+    for slot_id, pick in source.items():
+        where = f"build.incarnates.{slot_id}"
+        if (not isinstance(slot_id, str)
+                or not isinstance(pick, dict)
+                or set(pick) != {"power", "active"}
+                or not isinstance(pick.get("power"), str)
+                or not pick["power"]
+                or type(pick.get("active")) is not bool):
+            issues.append(_issue("invalid_incarnate_record", where, pick))
+            continue
+        candidates = [slot for slot in slots if isinstance(slot, dict)
+                      and isinstance(slot.get("slot"), str)
+                      and slot["slot"].casefold() == slot_id.casefold()]
+        if not candidates:
+            issues.append(_issue("unknown_incarnate_selection", where, slot_id))
+            continue
+        if len(candidates) != 1 or slot_id.casefold() in matched_slots:
+            issues.append(_issue("ambiguous_incarnate_selection", where, slot_id))
+            continue
+        slot = candidates[0]
+        matched_slots.add(slot_id.casefold())
+        choices = slot.get("choices")
+        if not isinstance(choices, list):
+            issues.append(_issue("incarnate_catalog_unavailable", where,
+                                 "missing incarnate power choices"))
+            continue
+        # Sidekick stores the internalName, while older builds may carry the
+        # complete "Incarnate.<Slot>.<Power>" path. Neither display names nor
+        # partial matches are used: only case-insensitive exact identities.
+        power = pick["power"].casefold()
+        matches = [choice for choice in choices
+                   if isinstance(choice, dict)
+                   and isinstance(choice.get("full_name"), str)
+                   and (choice["full_name"].casefold() == power or
+                        choice["full_name"].rsplit(".", 1)[-1].casefold() == power)]
+        if not matches:
+            issues.append(_issue("unknown_incarnate_selection", where,
+                                 pick["power"]))
+            continue
+        if len(matches) != 1:
+            issues.append(_issue("ambiguous_incarnate_selection", where,
+                                 pick["power"]))
+            continue
+        chosen = matches[0]
+        result[slot["slot"]] = {
+            "full_name": chosen["full_name"],
+            "display_name": chosen.get("display_name") or chosen["full_name"].split(".")[-1],
+            "active": pick["active"],
+        }
+    return result
+
+
 def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
-                      contract_root, hero_piece_by_uid, *, default_io_level=None):
+                      contract_root, hero_piece_by_uid, *, default_io_level=None,
+                      incarnate_catalog=None):
     """Reconstruct only when no known source semantics would be lost.
 
     Returns {ok, name, issues, preview, source_skif}; on success also build.
@@ -424,6 +499,7 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
               and issue["reason"] != "inherent_not_mapped"]
     issues.extend(_source_state_issues(doc))
     body = doc["build"]
+    incarnates = _translate_incarnates(body, incarnate_catalog, issues)
     _source_generic_eligibility(body, contract_root, issues)
     _source_slot_budget(body, issues)
     attack_chains = _translate_attack_chains(body, preview, issues)
@@ -504,7 +580,7 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
         "archetype": class_name, **sets,
         "char_level": body["level"],
         "origin": body.get("origin"),
-        "incarnates": {},
+        "incarnates": incarnates,
         "sidekick_attack_chains": attack_chains,
         "powers": native_powers,
     }
