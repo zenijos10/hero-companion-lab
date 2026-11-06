@@ -158,6 +158,21 @@ class SidekickExportRoundTripTests(unittest.TestCase):
         self.assertNotIn("skif", result)
         self.assertIn("incarnate_not_exportable", [i["reason"] for i in result["issues"]])
 
+    def test_case_different_duplicate_incarnates_do_not_overwrite_each_other(self):
+        build = self.imported(self.source)
+        build["incarnates"] = {
+            "Alpha": {"full_name": "Incarnate.Alpha.Agility_Core_Paragon", "active": True},
+            "alpha": {"full_name": "Incarnate.Alpha.Agility_Boost", "active": False},
+        }
+        result = self.export_direct(build)
+        self.assertFalse(result["ok"])
+        self.assertNotIn("skif", result)
+        self.assertIn("incarnate_not_exportable", [i["reason"] for i in result["issues"]])
+
+    def export_direct(self, build):
+        return export_build(build, self.hero, self.contract, self.hero_sets,
+                            hero_piece_by_uid=self.pieces)
+
     def test_stale_attack_chain_is_reported_not_silently_dropped(self):
         build = self.imported(self.source)
         removed = build["sidekick_attack_chains"][0]["powers"][0]

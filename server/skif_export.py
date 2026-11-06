@@ -332,6 +332,10 @@ def _incarnates(build, issues):
     out = {}
     for slot, pick in picks.items():
         where = f"incarnates.{slot}"
+        if isinstance(slot, str) and slot.casefold() in out:
+            issues.append(_issue("incarnate_not_exportable", where,
+                                 "Duplicate incarnate slot (case-insensitive)"))
+            continue
         if (not isinstance(slot, str)
                 or not isinstance(pick, dict)
                 or not isinstance(pick.get("full_name"), str)
