@@ -131,6 +131,33 @@ class SidekickExportRoundTripTests(unittest.TestCase):
         self.assertNotIn("skif", result)
         self.assertIn("enhancement_not_exportable", [i["reason"] for i in result["issues"]])
 
+    def test_unsupported_native_inherent_is_not_silently_dropped(self):
+        # The importer cannot represent nonstandard inherited powers, and
+        # the exporter must not claim success while discarding a selected one.
+        build = self.imported(self.source)
+        build["powers"].append({
+            "full_name": "Inherent.Archetype_Only.Example_Power",
+            "powerset_full_name": "Inherent.Archetype_Only",
+            "slots": [None], "slotCount": 1})
+        result = export_build(build, self.hero, self.contract, self.hero_sets,
+                              hero_piece_by_uid=self.pieces)
+        self.assertFalse(result["ok"])
+        self.assertNotIn("skif", result)
+        self.assertIn("inherent_not_exportable", [i["reason"] for i in result["issues"]])
+
+    def test_unknown_incarnate_identity_does_not_generate_unreadable_skif(self):
+        # The SKIF JSON codec checks shape, not whether a source dataset
+        # actually contains the requested incarnate power.
+        build = self.imported(self.source)
+        build["incarnates"] = {"Alpha": {
+            "full_name": "Incarnate.Alpha.This_Power_Does_Not_Exist",
+            "display_name": "Imaginary Alpha", "active": True}}
+        result = export_build(build, self.hero, self.contract, self.hero_sets,
+                              hero_piece_by_uid=self.pieces)
+        self.assertFalse(result["ok"])
+        self.assertNotIn("skif", result)
+        self.assertIn("incarnate_not_exportable", [i["reason"] for i in result["issues"]])
+
     def test_stale_attack_chain_is_reported_not_silently_dropped(self):
         build = self.imported(self.source)
         removed = build["sidekick_attack_chains"][0]["powers"][0]
