@@ -43,6 +43,7 @@ class EnhancementResolver:
                 raise EnhancementContractError(f"Malformed boost-index entry: {uid}")
         self._common_types = frozenset(types)
         self._hero = hero_piece_by_uid
+        self._hero_sets = _pieces_by_set_and_number(hero_piece_by_uid)
 
     def _matches(self, piece, origin):
         kind = piece["type"]
@@ -95,8 +96,14 @@ class EnhancementResolver:
             return None, "unknown_enhancement_identity"
         if len(matches) != 1:
             return None, "ambiguous_enhancement_identity"
-        uid, _ = matches[0]
+        uid, record = matches[0]
         hero = self._hero.get(uid)
+        if not isinstance(hero, dict) and record.get("kind") == "io-set":
+            # Same piece, different uid spelling (our Mids-derived Crafted_Shrapnel_A
+            # is the game's Crafted_Artillery_A; an attuned purple is the game's
+            # Superior_Attuned_Apocalypse_A). Bridged only on Sidekick's own set id
+            # AND piece number naming one real piece of ours.
+            hero = self._hero_sets.get(record.get("set"), {}).get(record.get("piece"))
         if not isinstance(hero, dict):
             return None, "missing_hero_enhancement"
         result = {"source_uid": uid, "hero_slot": copy.deepcopy(hero), "type": piece["type"]}
@@ -109,6 +116,19 @@ class EnhancementResolver:
         elif piece["type"] in ("special", "origin"):
             result["relative_level"] = _present_or(piece, "relativeLevel", 0)
         return result, None
+
+
+def _pieces_by_set_and_number(hero_piece_by_uid):
+    """{set id (lowercase): {piece number: slot}} over our REAL set pieces only."""
+    by_set = {}
+    for uid, slot in hero_piece_by_uid.items():
+        set_uid = slot.get("set_uid") if isinstance(slot, dict) else None
+        letter = uid[-1:]
+        if (not set_uid or slot.get("piece_uid") != uid or uid[-2:-1] != "_"
+                or not "A" <= letter <= "Z"):
+            continue                    # an alias, or not a lettered set piece
+        by_set.setdefault(set_uid.casefold(), {})[ord(letter) - ord("A") + 1] = slot
+    return by_set
 
 
 def _present_or(piece, key, default):

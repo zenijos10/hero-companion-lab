@@ -1,0 +1,13 @@
+# Re-opens .skif files with CoH Sidekick's OWN decoder (its coh_data crate at the
+# commit CI pins), so "Sidekick accepts our export" is Sidekick's verdict, not ours.
+# No Sidekick code lives in this repository: CI checks it out next to this tool.
+[package]
+name = "sidekick-verify"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+coh_data = { path = "../../_sidekick_contract_fixture/crates/coh_data" }
+
+[workspace]

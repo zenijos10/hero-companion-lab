@@ -37,6 +37,14 @@ def bundle(**overrides):
                                          "description": "not needed"}],
             "BASIC_INHERENT_POWERS": [], "PRESTIGE_SPRINT_POWERS": [],
             "SLOT_GRANTS": {"3": 2}},
+        "power-pools": {"leaping": {
+            "id": "leaping", "setPath": "Pool.Leaping", "description": "not needed",
+            "powers": [{"internalName": "Combat_Jumping", "allowedEnhancements": ["Defense"],
+                        "atoms": ["large"]}]}},
+        "epic-pools": {"melee_psionic_mastery": {
+            "id": "melee_psionic_mastery", "setPath": "Epic.Melee_Psionic_Mastery",
+            "archetype": "scrapper", "minLevel": 35,
+            "powers": [{"internalName": "Mental_Blast", "allowedEnhancements": ["Damage"]}]}},
         "io-sets": {"unused": "by the importer"},
     }
     data.update(overrides)
@@ -134,6 +142,17 @@ class DownloadTests(unittest.TestCase):
         self.assertIsNone(provider.locate())
         self.assertEqual(provider.install(), root)
         self.assertEqual(len(fetch.calls), 2)
+
+    def test_pool_and_epic_sets_install_slim_and_are_required(self):
+        provider, _, root = self.install(bundle())
+        self.assertEqual(json.loads((root / "power-pools.json").read_text()), {"leaping": {
+            "id": "leaping", "setPath": "Pool.Leaping", "archetype": None,
+            "powers": [{"internalName": "Combat_Jumping", "allowedEnhancements": ["Defense"]}]}})
+        self.assertEqual(json.loads((root / "epic-pools.json").read_text())
+                         ["melee_psionic_mastery"]["archetype"], "scrapper")
+        # A cache from before pools were carried is incomplete, so it re-installs.
+        (root / "epic-pools.json").unlink()
+        self.assertIsNone(provider.locate())
 
     def test_inherent_name_table_installs_slim_and_is_required(self):
         provider, _, root = self.install(bundle())

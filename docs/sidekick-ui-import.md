@@ -160,3 +160,66 @@ real Homecoming incarnate choices from Sidekick's published v4 test case.
 The unit suite also checks false versus true active flags and rejects unknown
 or malformed records without returning a partial build. The real Flask test
 checks import and Save/Resume.
+
+## Power pools and epics
+
+Sidekick keeps pools (`leaping`, `fighting`, ...) and epics
+(`melee_psionic_mastery`, ...) in two grouped files, `power-pools.json` and
+`epic-pools.json`, not with the per-archetype powerset shards. The importer
+(`sidekick_preview.SourceSets`) reads both, and the download carries them
+slim. Before this, every real Sidekick build with a pool was refused.
+
+Pool names match Hero Companion's directly (`Pool.Leaping`). Sidekick's
+`Pool.Fitness` (now inherent), `Pool.Gadgetry` and `Pool.Utility_Belt` (not
+live) have no Hero Companion pool and refuse.
+
+Epic names often differ: the game's `Epic.Melee_Psionic_Mastery` is our
+`Epic.Psionic_Mastery_ScrapStalk`. `sidekick_preview.hero_set_path` resolves
+an epic name Hero Companion does not have through Sidekick's own alias table,
+else to the ONE epic this archetype may take with the identical power roster.
+That is the two-signal rule `tools/epic_set_name_bridge.json` was proven with,
+and all 12 of its pairs agree. A name Hero Companion does have is never
+translated, so another archetype's epic is refused, not re-labelled. Sidekick's
+archetype label on an epic is a hint only (it labels the VEAT epics
+`arachnos_soldier`, which Widows take too); Hero Companion's per-archetype epic
+list is the gate.
+
+**Pieces whose uid is spelled differently.** For 72 of Sidekick's 2,078 set
+pieces, our Mids-derived catalog spells the uid differently from the game:
+Artillery's pieces are our `Crafted_Shrapnel_*` but the game's
+`Crafted_Artillery_*`, and an attuned purple is the game's
+`Superior_Attuned_Apocalypse_A` filed under the plain `apocalypse` set. When
+the exact uid misses, `sidekick_enhancements` bridges on two signals: Sidekick's
+own **set id** and **piece number** must name one real piece of ours (a blanket
+`Superior_` alias would be wrong; Superior Winter sets are different sets).
+Export uses the importer's mapping inverted, so the two directions cannot
+disagree. `tools/test_skif_reconstruct_sidekick.py` checks the whole catalog:
+2,078 of 2,078 resolve, exactly 72 through the bridge, each with an agreeing
+piece name.
+
+## Export (library, not yet in the app)
+
+`server/skif_export.py` writes a native build as SKIF v5, the mirror of
+import: every identity is looked up in the same contract, and powers and sets
+are written under the Sidekick names the importer maps back to them.
+Anything without an exact Sidekick identity refuses the whole export. Stale
+attack-chain notes are reported in `dropped`, never silently lost.
+
+Proof, all against the pinned Sidekick data:
+
+- `tools/test_skif_export_sidekick.py`: real Sidekick builds (as published,
+  with real inherents and incarnates, with a pool and a renamed epic)
+  round-trip import -> export -> import to the identical build.
+- During review, 39 of 40 and 23 of 24 builds the app's own solver generated
+  (about 93 pieces each) round-tripped identically. The one refusal both times
+  was a solver bug, not an export bug: the solver put a Recharge IO in
+  Electric Armor's Lightning Reflexes, which accepts only Run Speed and Fly.
+  Fixed: the solver's fill fallback now picks only an IO the power accepts
+  (or leaves the slot empty), and `/build/validate` refuses a common IO a
+  power does not accept (`engine.COMMON_IO_ADMITTED_BY`, derived from
+  common_ios.json; `tools/test_common_io_legality.py`). Of 64 served builds,
+  62 are byte-identical and the 2 that held the illegal IO now hold a Fly IO.
+- `.github/workflows/sidekick-export.yml` compiles **Sidekick's own decoder**
+  (`tools/sidekick_verify`, its `coh_data` crate at the pinned commit, in CI
+  only) and re-opens our exports with it, after Sidekick's published build as
+  the control.

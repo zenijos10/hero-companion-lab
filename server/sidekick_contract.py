@@ -2,7 +2,8 @@
 
 The importer only ever asks `locate_contract(providers)` for a folder in the
 Sidekick contract layout (manifest.json, powersets/..., archetypes.json,
-boost-index.json, enhancements.json, mids-names.json, levels.json). Every provider is one
+boost-index.json, enhancements.json, mids-names.json, levels.json,
+power-pools.json, epic-pools.json). Every provider is one
 small class with `name` and `locate()`; one that can fetch its data also has
 `install()`.
 
@@ -81,8 +82,8 @@ class DownloadedSnapshot:
     def locate(self):
         """Never treat a manifest alone as proof of a complete cached ID map."""
         target = self._target
-        essential = ("archetypes.json", "boost-index.json",
-                     "enhancements.json", "mids-names.json", "levels.json")
+        essential = ("archetypes.json", "boost-index.json", "enhancements.json",
+                     "mids-names.json", "levels.json", "power-pools.json", "epic-pools.json")
         try:
             manifest = json.loads((target / "manifest.json").read_text(encoding="utf-8"))
             if not isinstance(manifest, dict) or manifest.get("dataset") != "homecoming":
@@ -201,6 +202,7 @@ def write_contract_from_bundle(bundle, target):
             raise ContractUnavailable(f"Sidekick data is missing {name}.")
         _write_json(target / f"{name}.json", bundle[name])
     _write_json(target / "levels.json", _inherent_tables(bundle.get("levels")))
+    _write_grouped_sets(bundle, target)
 
 
 # Sidekick's name -> full-name tables for the powers the game grants.
@@ -243,25 +245,42 @@ def _write_shard(entry, powersets, target):
     destination = (target / path).resolve()
     if not destination.is_relative_to(target) or destination == target:
         raise ContractUnavailable(f"Sidekick powerset {shard_id!r} has an unsafe path.")
-    powers = shard.get("powers")
+    _write_json(destination, dict(_slim_set(shard_id, shard), category=shard.get("category")))
+
+
+def _slim_set(set_id, record):
+    """The fields the importer reads from one powerset, validated."""
+    powers = record.get("powers")
     if not isinstance(powers, list) or any(
             not isinstance(p, dict) or not isinstance(p.get("internalName"), str)
             for p in powers):
-        raise ContractUnavailable(f"Sidekick powerset {shard_id!r} is malformed.")
+        raise ContractUnavailable(f"Sidekick powerset {set_id!r} is malformed.")
     trimmed = []
     for power in powers:
         allowed = power.get("allowedEnhancements", [])
         if not isinstance(allowed, list) or any(
                 not isinstance(stat, str) for stat in allowed):
             raise ContractUnavailable(
-                f"Sidekick powerset {shard_id!r} has invalid allowedEnhancements.")
+                f"Sidekick powerset {set_id!r} has invalid allowedEnhancements.")
         trimmed.append({"internalName": power["internalName"],
                         "allowedEnhancements": allowed})
-    _write_json(destination, {
-        "id": shard.get("id"), "setPath": shard.get("setPath"),
-        "archetype": shard.get("archetype"), "category": shard.get("category"),
-        "powers": trimmed,
-    })
+    return {"id": record.get("id"), "setPath": record.get("setPath"),
+            "archetype": record.get("archetype"), "powers": trimmed}
+
+
+# Sidekick keeps pools and epics in two grouped files, not per-set shards.
+_GROUPED_SETS = ("power-pools", "epic-pools")
+
+
+def _write_grouped_sets(bundle, target):
+    for name in _GROUPED_SETS:
+        records = bundle.get(name)
+        if not isinstance(records, dict) or any(
+                not isinstance(r, dict) or r.get("id") != set_id or not isinstance(r.get("setPath"), str)
+                for set_id, r in records.items()):
+            raise ContractUnavailable(f"Sidekick data is missing valid {name}.")
+        _write_json(target / f"{name}.json",
+                    {set_id: _slim_set(set_id, r) for set_id, r in records.items()})
 
 
 def _write_json(path, data):

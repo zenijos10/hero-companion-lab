@@ -1,0 +1,58 @@
+name: Sidekick export round trip
+on:
+  pull_request:
+    paths:
+      - "server/skif_export.py"
+      - "server/skif_document.py"
+      - "server/sidekick_preview.py"
+      - "server/sidekick_reconstruct.py"
+      - "server/sidekick_enhancements.py"
+      - "server/import_catalog.py"
+      - "tools/export_skif_samples.py"
+      - "tools/test_skif_export_sidekick.py"
+      - "tools/sidekick_verify/**"
+      - ".github/workflows/sidekick-export.yml"
+      - "data/powers.json"
+      - "data/powersets.json"
+      - "data/enhancement_sets.json"
+      - "data/common_ios.json"
+      - "data/incarnates.json"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  sidekick-reopens-our-exports:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # Sidekick's source and data at the pinned commit, beside this repository
+      # (never vendored). Its decoder is compiled and run here, in CI only.
+      - name: Fetch pinned CoH Sidekick (decoder source, contract, fixtures)
+        uses: actions/checkout@v4
+        with:
+          repository: wednesdaywoe/coh-sidekick
+          ref: 90e9b8eeaf59a2350e62587968f523a1e1371f88
+          path: _sidekick_contract_fixture
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            Cargo.toml
+            Cargo.lock
+            crates/
+            vendor/
+            contract/homecoming/
+            fixtures/skif/
+          persist-credentials: false
+      - name: Export round trip (import -> export -> import is identical)
+        run: python -m unittest discover -s tools -p test_skif_export_sidekick.py -v
+      - name: Write Hero Companion exports of real Sidekick builds
+        run: python tools/export_skif_samples.py _skif_exports
+      - name: Sidekick's own decoder re-opens them (its published build first, as the control)
+        run: |
+          cargo run --quiet --release --manifest-path tools/sidekick_verify/Cargo.toml -- \
+            _sidekick_contract_fixture/contract/homecoming/bundle.json.gz \
+            _sidekick_contract_fixture/fixtures/skif/v5/rb5d_browser_pass.skif \
+            _skif_exports/*.skif

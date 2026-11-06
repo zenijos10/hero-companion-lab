@@ -11,7 +11,8 @@ must not be mistaken for an export of later edits to the HC build.
 import copy
 from pathlib import Path
 
-from sidekick_preview import PreviewContractError, _contract, _read_json, preview_build
+from sidekick_preview import (PreviewContractError, SourceSets, _read_json,
+                              hero_set_path, preview_build)
 from skif_document import load_document
 
 
@@ -67,8 +68,13 @@ def _resolve_class(build, root, hero_powersets, issues):
     return class_name
 
 
-def _resolve_sets(build, class_name, root, hero_powersets, issues):
-    paths, _ = _contract(root)
+def _epic_choices(class_name, hero_powersets):
+    by_class = hero_powersets.get("by_archetype", {}).get(class_name, {})
+    return [v.get("full_name") for v in by_class.get("epic") or []]
+
+
+def _resolve_sets(build, class_name, root, hero_powersets, issues, hero_powers_by_full):
+    sources = SourceSets(root)
     by_class = hero_powersets.get("by_archetype", {}).get(class_name, {})
     roles = (("primary", "primary"), ("secondary", "secondary"),
              ("epicPool", "epic"))
@@ -78,15 +84,15 @@ def _resolve_sets(build, class_name, root, hero_powersets, issues):
         if selection is None:
             return None
         source_id = selection["id"]
-        path = paths.get(source_id)
-        if not path:
+        shard = sources.get(source_id)
+        if shard is None:
             issues.append(_issue("unknown_source_set", where, source_id))
             return None
-        shard = _read_json(path, f"Sidekick powerset {source_id}")
         if not isinstance(shard, dict) or shard.get("id") != source_id:
             issues.append(_issue("source_identity_mismatch", where, source_id))
             return None
-        full = shard.get("setPath")
+        full = hero_set_path(shard, sources.mids, hero_powers_by_full,
+                             _epic_choices(class_name, hero_powersets))
         if role == "pool":
             candidates = hero_powersets.get("pools") or []
         else:
@@ -342,12 +348,11 @@ def _source_generic_eligibility(body, root, issues):
                 location = f"build.pools[{i}]" if bucket == "pools" else f"build.{bucket}"
                 selections.append((selection, location))
     if selections:
-        paths, _ = _contract(root)
+        sources = SourceSets(root)
         for selection, location in selections:
-            path = paths.get(selection["id"])
-            if path is None:
+            shard = sources.get(selection["id"])
+            if shard is None:
                 continue  # identity preview reports the missing source set
-            shard = _read_json(path, f"Sidekick generic IO rules {selection['id']}")
             source_powers = shard.get("powers", []) if isinstance(shard, dict) else []
             for i, power in enumerate(selection.get("powers", [])):
                 generic = generic_slots(power)
@@ -487,8 +492,11 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
     if default_io_level is not None and not _positive_level(default_io_level):
         raise ValueError("default_io_level must be an integer from 1 through 50")
     doc = load_document(skif)
+    class_issues = []
+    class_name = _resolve_class(doc["build"], contract_root, hero_powersets, class_issues)
     preview = preview_build(doc, hero_powers_by_full, contract_root,
-                            hero_piece_by_uid=hero_piece_by_uid)
+                            hero_piece_by_uid=hero_piece_by_uid,
+                            epic_choices=_epic_choices(class_name, hero_powersets))
     # The identity-only preview predates reconstruction and flags origin as
     # unmapped. This layer retains that declared origin verbatim in HC's
     # native build metadata; no other preview issue may be waived.
@@ -504,8 +512,9 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
     _source_generic_eligibility(body, contract_root, issues)
     _source_slot_budget(body, issues)
     attack_chains = _translate_attack_chains(body, preview, issues)
-    class_name = _resolve_class(body, contract_root, hero_powersets, issues)
-    sets = _resolve_sets(body, class_name, contract_root, hero_powersets, issues)
+    issues.extend(class_issues)
+    sets = _resolve_sets(body, class_name, contract_root, hero_powersets, issues,
+                         hero_powers_by_full)
 
     native_powers = []
     matches = {p["location"]: p for p in preview["resolved"]}

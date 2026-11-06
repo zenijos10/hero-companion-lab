@@ -36,6 +36,22 @@ RESISTANCE_TYPES = ["Smashing", "Lethal", "Fire", "Cold", "Energy", "Negative",
 # (Luck of the Gambler: Def/Increased Global Recharge Speed - allow multiples.)
 NON_UNIQUE_OVERRIDES = {"luck of the gambler: defense/increased global recharge speed"}
 
+# Common IO uid -> the accepted_enhancement_types word (lowercase) that admits it.
+# Derived, never hand-listed: common_ios.json names each IO with the power data's
+# own word for 24 of 26 (Crafted_Run is "Run Speed"); Sidekick's game stats agree.
+# An IO named with a word no power uses ("Threat Duration", "Interrupt
+# Reduction") is left out and so never judged: over-blocking is the worse mistake.
+COMMON_IO_ADMITTED_BY = {}
+
+
+def register_common_ios(common_ios, powers_by_full):
+    words = {t.lower() for rec in powers_by_full.values()
+             for t in (rec.get("accepted_enhancement_types") or [])}
+    COMMON_IO_ADMITTED_BY.clear()
+    COMMON_IO_ADMITTED_BY.update({
+        c["uid"]: c["name"].lower() for c in common_ios
+        if c.get("uid") and (c.get("name") or "").lower() in words})
+
 # Hamidon/Titan/Hydra Origins + D-Syncs: NOT set pieces — identical copies stack
 # freely in one power, so the per-power duplicate-piece rule never applies to them.
 _SPECIAL_IO_PREFIXES = ("Hamidon_", "Titan_", "Hydra_", "DSync_", "Dsync_")
@@ -292,6 +308,21 @@ def validate_build(build):
                 errors.append(
                     f"{_nm} is not available to this archetype - the game does "
                     f"not offer it here")
+
+    # A common IO goes only where the power accepts its type (the game refuses
+    # the rest). Judged only when the power's accepted types are known.
+    for power in build.get("powers", []):
+        accepted = power.get("accepted_enhancement_types")
+        if accepted is None:
+            continue
+        words = {t.lower() for t in accepted}
+        label = power.get("display_name") or power.get("full_name") or "Power"
+        for slot in power.get("slots") or []:
+            need = COMMON_IO_ADMITTED_BY.get((slot or {}).get("piece_uid"))
+            if need and need not in words:
+                errors.append(
+                    f"{label} can't take a {slot.get('piece_name') or need} enhancement - "
+                    f"the game only lets it take: {', '.join(accepted) or 'none'}.")
 
     # The editor enforces these limits interactively, but imported builds and
     # direct /build/validate callers must not bypass them. Homecoming provides
