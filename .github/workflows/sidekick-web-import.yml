@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - "server/sidekick_web_import.py"
+      - "server/skif_export.py"
+      - "tools/test_sidekick_export_ui.cjs"
       - "server/sidekick_contract.py"
       - "server/engine.py"
       - "tools/test_slot_legality.py"
@@ -45,6 +47,7 @@ jobs:
       - name: Verify browser javascript syntax and server compilation
         run: |
           node --check static/app.js
+          node tools/test_sidekick_export_ui.cjs
           node tools/test_sidekick_incarnates_ui.cjs
           python -m py_compile server/server.py
 

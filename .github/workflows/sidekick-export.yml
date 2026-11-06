@@ -3,6 +3,11 @@ on:
   pull_request:
     paths:
       - "server/skif_export.py"
+      - "server/server.py"
+      - "tools/test_skif_web_endpoint.py"
+      - "static/app.js"
+      - "static/index.html"
+      - "tools/test_sidekick_export_ui.cjs"
       - "server/skif_document.py"
       - "server/sidekick_preview.py"
       - "server/sidekick_reconstruct.py"
