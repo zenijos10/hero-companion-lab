@@ -6495,7 +6495,7 @@ def build_import_sidekick():
     attempt = sidekick_web_import.prepare_sidekick_import(
         body, contract, POWER_BY_FULL, POWERSETS,
         import_catalog.build_sidekick_piece_lookups(ENH_SETS, COMMON_IOS),
-        _complete_build_validation)
+        _complete_build_validation, incarnate_catalog=INCARNATES)
     if not attempt.get("ok"):
         download = sidekick_contract.installer(providers)
         if attempt.get("code") == "sidekick_contract_unavailable" and download:

@@ -48,9 +48,11 @@ def main(argv=None):
         if args.reconstruct:
             with (ROOT / "data" / "powersets.json").open(encoding="utf-8") as handle:
                 powersets = json.load(handle)
+            with (ROOT / "data" / "incarnates.json").open(encoding="utf-8") as handle:
+                incarnates = json.load(handle)
             report = reconstruct_build(
                 document, by_full, powersets, args.sidekick_contract, catalog,
-                default_io_level=args.default_io_level)
+                default_io_level=args.default_io_level, incarnate_catalog=incarnates)
         else:
             report = preview_build(document, by_full, args.sidekick_contract,
                                    hero_piece_by_uid=catalog)

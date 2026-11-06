@@ -156,6 +156,26 @@ class SidekickFlaskEndpointTests(unittest.TestCase):
         self.assertIn("too_many_power_slots",
                       [i["reason"] for i in result["issues"]])
 
+
+    def test_real_incarnate_selection_survives_flask_import_and_save(self):
+        doc = copy.deepcopy(self.source)
+        doc["build"]["incarnates"] = {
+            "alpha": {"power": "Agility_Core_Paragon", "active": True},
+            "destiny": {"power": "Ageless_Invocation", "active": False}}
+        response = self.send(doc)
+        self.assertTrue(response["ok"], response.get("response"))
+        picks = response["build"]["incarnates"]
+        self.assertEqual(picks["Alpha"]["full_name"],
+                         "Incarnate.Alpha.Agility_Core_Paragon")
+        self.assertFalse(picks["Destiny"]["active"])
+        with tempfile.TemporaryDirectory() as tmp, patch.object(
+                app_server, "_saves_dir", return_value=tmp):
+            save = self.client.post("/saves", json={
+                "name": "Incarnate selection round-trip", "build": response["build"]}).get_json()
+            self.assertTrue(save["ok"], save)
+            loaded = self.client.get("/saves/" + save["id"]).get_json()
+            self.assertEqual(loaded["save"]["build"]["incarnates"], picks)
+
     def test_imported_chains_survive_a_real_save_and_resume(self):
         imported = self.send(self.source)
         self.assertTrue(imported["ok"], imported.get("response"))

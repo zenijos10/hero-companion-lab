@@ -4561,7 +4561,8 @@ function renderIncarnates() {
       + `</div>`;
   };
   host.innerHTML = INCARNATES.slots.map((s) => {
-    const cur = (build.incarnates[s.slot] || {}).full_name || "";
+    const chosen = build.incarnates[s.slot] || {};
+    const cur = chosen.full_name || "";
     const curCh = (s.choices || []).find(c => c.full_name === cur);
     // v34 item 6 (the honesty clause): a choice our math doesn't price says so
     // AT THE POINT OF CHOICE — no silent dead picks. `modeled` comes from the
@@ -4577,6 +4578,9 @@ function renderIncarnates() {
         ${s.choices.map((c) => `<option value="${c.full_name}"${c.full_name === cur ? " selected" : ""}>${
           c.display_name}${(anyModeled && !c.modeled) ? " (not yet modeled)" : ""}</option>`).join("")}
       </select>
+      ${cur ? `<span class="muted small" onclick="onIncarnateActiveText(event, this)"><input type="checkbox"
+        data-slot="${escHtml(s.slot)}" onchange="onIncarnateActive(this)"
+        ${chosen.active === false ? "" : "checked"}> Active in peak totals</span>` : ""}
       ${_incDetail(curCh)}
     </label>`;
   }).join("");
@@ -4591,9 +4595,28 @@ window.onIncarnate = function (sel) {
     build.incarnates[slot] = {
       full_name: sel.value,
       display_name: sel.options[sel.selectedIndex].text,
+      active: true, // a new explicit pick is enabled
     };
   }
   renderIncarnates();   // refresh the per-pick detail line under each select
+  recompute();
+};
+
+// The checkbox sits inside the slot's <label>, whose control is the <select>:
+// a click on the words would focus the dropdown. Hand it to the checkbox instead.
+window.onIncarnateActiveText = function (event, span) {
+  if (event.target.tagName === "INPUT") return;
+  event.preventDefault();
+  span.querySelector("input[type=checkbox]").click();
+};
+
+// Toggle only the incarnate's *active* state, never its equipped identity.
+// The global "Include incarnates (peak)" setting still gates all stat effects.
+window.onIncarnateActive = function (control) {
+  const chosen = build.incarnates[control.dataset.slot];
+  if (!chosen) return;
+  build._incarnatesManual = true;
+  chosen.active = !!control.checked;
   recompute();
 };
 
@@ -8611,7 +8634,16 @@ function cardProvenanceFooterHtml() {
 let LAST_TOTALS = null;
 let LAST_CALC = null;   // full /build/calculate response (v36 inherent mechanics)
 
+// Save/Resume keeps every choice, including a disabled one. Only active
+// incarnates are handed to the calculator; an old save with no active flag
+// retains its earlier enabled-by-default behavior.
+function activeIncarnateEntries(incarnates) {
+  return Object.entries(incarnates || {}).filter(([, choice]) =>
+    choice && choice.active !== false);
+}
+
 function buildPayload() {
+  const equippedIncarnates = activeIncarnateEntries(build.incarnates);
   return {
     archetype: build.archetype,
     primary: build.primary, primary_display: build.primary_display,
@@ -8619,9 +8651,9 @@ function buildPayload() {
     pools: build.pools, pools_display: build.pools_display,
     epic: build.epic, epic_display: build.epic_display,
     incarnates: Object.fromEntries(
-      Object.entries(build.incarnates).map(([k, v]) => [k, v.display_name])),
+      equippedIncarnates.map(([k, v]) => [k, v.display_name])),
     incarnates_full: Object.fromEntries(
-      Object.entries(build.incarnates).map(([k, v]) => [k, v.full_name])),
+      equippedIncarnates.map(([k, v]) => [k, v.full_name])),
     include_incarnates: build.include_incarnates,
     include_external: build.include_external,
     // v34 item 2: the accolade panel's checkmarks ARE the source of truth for
