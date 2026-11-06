@@ -302,6 +302,7 @@ for c in COMMON_IOS.get("special_ios", []):
 # Crafted_/Attuned_ aliases live there, with their field-report history); offline
 # tools reuse it so they never drift from what the app imports.
 PIECE_BY_UID, ENH_NAME_TO_PIECE = import_catalog.build_piece_lookups(ENH_SETS, COMMON_IOS)
+engine.register_common_ios(COMMON_IOS["common_ios"], POWER_BY_FULL)
 PIECE_BY_UID_IMPORT = import_catalog.build_import_aliases(PIECE_BY_UID)  # import-only; nothing else reads it
 
 # Exemplar-exempt sets: bonuses live at EVERY level (wiki-pinned 2026-08-03) —
@@ -2847,9 +2848,13 @@ def _complete_build_validation(build):
     validate_input = copy.deepcopy(build)
     for power in validate_input.get("powers") or []:
         game = POWER_BY_FULL.get(power.get("full_name")) or {}
-        for key in ("excludes", "archetype_excluded"):
+        # The game's own record decides what a power accepts (buildPayload
+        # sends none of these), so a client value never outranks it.
+        for key in ("excludes", "archetype_excluded", "accepted_enhancement_types"):
             if key in game:
                 power[key] = copy.deepcopy(game[key])
+        if game.get("display_name"):
+            power.setdefault("display_name", game["display_name"])
     res = engine.validate_build(validate_input)
     prereq = _epic_prereq_errors(build.get("powers") or [])
     if prereq:

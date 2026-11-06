@@ -128,6 +128,50 @@ class EnhancementBridgeTests(unittest.TestCase):
         self.assertIsNone(issue)
         self.assertEqual(result["relative_level"], 0)
 
+    def bridged(self, hero_sets, boosts):
+        self.boosts.update(boosts)
+        self.write()
+        hero = dict(self.allowed)
+        for set_uid, letters in hero_sets.items():
+            for letter, uid in letters.items():
+                hero[uid] = {"set_uid": set_uid, "piece_uid": uid}
+        return EnhancementResolver(self.root, hero)
+
+    def test_renamed_piece_uid_bridges_by_the_sets_own_id_and_piece_number(self):
+        # Our Mids-derived Artillery pieces are Crafted_Shrapnel_*; the game's
+        # (Sidekick's) are Crafted_Artillery_*. Same set id, same piece number.
+        bridge = self.bridged({"Artillery": {"A": "Crafted_Shrapnel_A", "B": "Crafted_Shrapnel_B"}},
+                              {"Crafted_Artillery_B": {"kind": "io-set", "set": "artillery",
+                                                       "piece": 2, "attuned": False}})
+        result, issue = bridge.resolve({"type": "io-set", "setId": "artillery",
+                                        "pieceNum": 2, "level": 50})
+        self.assertIsNone(issue)
+        self.assertEqual((result["source_uid"], result["hero_slot"]["piece_uid"]),
+                         ("Crafted_Artillery_B", "Crafted_Shrapnel_B"))
+
+    def test_attuned_purple_under_the_superior_prefix_is_the_same_set_attuned(self):
+        bridge = self.bridged({"Apocalypse": {"A": "Crafted_Apocalypse_A"}},
+                              {"Superior_Attuned_Apocalypse_A": {
+                                  "kind": "io-set", "set": "apocalypse", "piece": 1,
+                                  "attuned": True}})
+        result, issue = bridge.resolve({"type": "io-set", "setId": "apocalypse",
+                                        "pieceNum": 1, "attuned": True})
+        self.assertIsNone(issue)
+        self.assertEqual(result["hero_slot"]["piece_uid"], "Crafted_Apocalypse_A")
+        self.assertTrue(result["attuned"])
+
+    def test_bridge_needs_a_matching_set_and_a_real_piece(self):
+        bridge = self.bridged({"Artillery": {"A": "Crafted_Shrapnel_A"},
+                               "Superior_Blistering_Cold": {"A": "Superior_Attuned_Blistering_Cold_A"}},
+                              {"Crafted_Artillery_F": {"kind": "io-set", "set": "artillery",
+                                                       "piece": 6, "attuned": False},
+                               "Crafted_Unknown_A": {"kind": "io-set", "set": "unknown_set",
+                                                     "piece": 1, "attuned": False}})
+        for piece in ({"type": "io-set", "setId": "artillery", "pieceNum": 6, "level": 50},
+                      {"type": "io-set", "setId": "unknown_set", "pieceNum": 1, "level": 50}):
+            with self.subTest(piece=piece):
+                self.assertEqual(bridge.resolve(piece), (None, "missing_hero_enhancement"))
+
     def test_corrupt_or_missing_contract_is_a_hard_failure(self):
         (self.root / "boost-index.json").unlink()
         with self.assertRaises(EnhancementContractError):

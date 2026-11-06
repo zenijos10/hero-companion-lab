@@ -40,7 +40,8 @@ class SidekickExportRoundTripTests(unittest.TestCase):
         return result["build"]
 
     def export(self, build):
-        result = export_build(build, self.hero, self.contract, self.hero_sets)
+        result = export_build(build, self.hero, self.contract, self.hero_sets,
+                              hero_piece_by_uid=self.pieces)
         self.assertTrue(result["ok"], result["issues"])
         return result
 
@@ -99,6 +100,21 @@ class SidekickExportRoundTripTests(unittest.TestCase):
         slots = self.export(build)["skif"]["build"]["primary"]["powers"][0]["slots"]
         self.assertEqual([(s["setId"], s["pieceNum"], s["attuned"]) for s in slots],
                          [("overwhelming_force", 6, True), ("superior_avalanche", 1, True)])
+
+    def test_bridged_pieces_export_under_the_games_uid_and_round_trip(self):
+        # Ours: Crafted_Shrapnel_A (Artillery) and an attuned Crafted_Apocalypse_A.
+        # The game's: Crafted_Artillery_A and Superior_Attuned_Apocalypse_A.
+        build = self.imported(self.source)
+        build["powers"][0]["slots"] = [
+            {"piece_uid": "Crafted_Shrapnel_A", "set_uid": "Artillery", "io_level": 50},
+            {"piece_uid": "Crafted_Apocalypse_A", "set_uid": "Apocalypse", "attuned": True}]
+        exported = self.export(build)["skif"]
+        slots = exported["build"]["primary"]["powers"][0]["slots"]
+        self.assertEqual([(s["setId"], s["pieceNum"], s["attuned"]) for s in slots],
+                         [("artillery", 1, False), ("apocalypse", 1, True)])
+        again = self.imported(exported)["powers"][0]["slots"]
+        self.assertEqual([(s["piece_uid"], s["attuned"]) for s in again],
+                         [("Crafted_Shrapnel_A", False), ("Crafted_Apocalypse_A", True)])
 
     def test_unslotted_inherents_are_not_written(self):
         build = self.imported(self.source)

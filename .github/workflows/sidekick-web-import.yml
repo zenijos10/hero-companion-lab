@@ -6,6 +6,9 @@ on:
       - "server/sidekick_contract.py"
       - "server/engine.py"
       - "tools/test_slot_legality.py"
+      - "tools/test_common_io_legality.py"
+      - "server/solver.py"
+      - "data/common_ios.json"
       - "server/sidekick_reconstruct.py"
       - "server/sidekick_preview.py"
       - "server/server.py"
@@ -79,4 +82,5 @@ jobs:
       - name: Exercise real Flask endpoint and original Sidekick data
         run: |
           python -m unittest discover -s tools -p test_skif_web_endpoint.py -v
+          python -m unittest discover -s tools -p test_common_io_legality.py -v
           python -m unittest discover -s tools -p test_sidekick_contract_sidekick.py -v

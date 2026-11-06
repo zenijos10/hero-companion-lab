@@ -35,60 +35,49 @@ class RealSidekickReconstructionTests(unittest.TestCase):
                                  cls.enhancements, incarnate_catalog=cls.incarnates)
 
     def v5_from_v4(self, name, buckets=("primary", "secondary", "pools", "inherents")):
-        """Sidekick's v4 sample in v5 shape: v5 drops each power's "name" and
-        writes the archetype as its id; nothing else is changed."""
-        old = json.loads((self.checkout / f"fixtures/skif/v4/{name}.skif")
-                         .read_text(encoding="utf-8"))["build"]
+        from export_skif_samples import v5_from_v4
+        return v5_from_v4(name, buckets)
 
-        def slot(sl):
-            # v4 called both the booster and the HO grade "boost"; v5 writes
-            # an IO's as "booster" and a special's as "relativeLevel".
-            if not sl or "boost" not in sl:
-                return sl
-            out = {k: v for k, v in sl.items() if k != "boost"}
-            out["relativeLevel" if sl["type"] in ("special", "origin") else "booster"] = sl["boost"]
-            return out
+    def test_every_sidekick_set_piece_resolves_to_one_of_ours(self):
+        # Coverage over Sidekick's WHOLE io-set catalog, not one sample. Before
+        # the set/piece-number bridge, 72 of these refused: Artillery (our
+        # Crafted_Shrapnel_*) and attuned purples (Superior_Attuned_Apocalypse_A).
+        import re
+        from sidekick_enhancements import EnhancementResolver
+        bridge = EnhancementResolver(self.contract, self.enhancements)
+        boosts = json.loads((self.contract / "boost-index.json").read_text(encoding="utf-8"))
+        io_sets = json.loads((self.contract / "io-sets.json").read_text(encoding="utf-8"))
 
-        def power(p):
-            out = {k: v for k, v in p.items() if k in ("internalName", "level")}
-            out["slots"] = [slot(sl) for sl in p["slots"]]
-            return out
+        def words(name):   # the two catalogs word the same piece differently
+            name = re.sub(r"chance (for|of)|duration|reduction|\(|\)|\s|/", " ", name.casefold())
+            return set(name.replace("tohit", "to hit").replace("confused", "confuse").split())
+        records = [(u, r) for u, r in boosts.items() if r.get("kind") == "io-set"]
+        unresolved, disagree, bridged = [], [], []
+        for uid, record in records:
+            mapped, issue = bridge.resolve({"type": "io-set", "setId": record["set"],
+                                            "pieceNum": record["piece"],
+                                            "attuned": record["attuned"], "level": 50})
+            if issue:
+                unresolved.append((uid, issue))
+                continue
+            if uid in self.enhancements:
+                continue                    # matched by exact uid: identity is the proof
+            bridged.append(uid)
+            ours = next((p for p in self.pieces_by_uid().get(mapped["hero_slot"]["piece_uid"], [])), None)
+            theirs = io_sets[record["set"]]["pieces"][record["piece"] - 1]["name"]
+            if ours is not None and not (words(ours) & words(theirs)):
+                disagree.append((uid, ours, theirs))
+        self.assertEqual((len(records), unresolved), (2078, []))
+        self.assertEqual(len(bridged), 72)      # Artillery + attuned purples
+        self.assertEqual(disagree, [])          # and each bridged name agrees
 
-        def selection(sel):
-            return {"id": sel["id"], "powers": [power(p) for p in sel["powers"]]}
-        build = {"dataset": "homecoming", "archetype": old["archetype"]["id"],
-                 "level": old["level"], "name": old.get("name") or name}
-        for bucket in buckets:
-            value = old.get(bucket)
-            if bucket == "pools":
-                build["pools"] = [selection(p) for p in value or []]
-            elif bucket == "inherents":
-                build["inherents"] = [power(p) for p in value or []]
-            elif value:
-                build[bucket] = selection(value)
-        return {"version": 5, "build": build}
-
-    # KNOWN GAP (follow-up): these sets' piece uids differ between Hero
-    # Companion's Mids-derived catalog and the game's (Sidekick's) names, e.g.
-    # our Crafted_Shrapnel_A is the game's Crafted_Artillery_A. Until bridged,
-    # they refuse explicitly; the pin below fails if one starts mapping.
-    UNBRIDGED_SETS = {"artillery", "absolute_amazement", "apocalypse", "armageddon",
-                      "coercive_persuasion", "fortunata_hypnosis", "gravitational_anchor",
-                      "hecatomb", "ragnarok", "soulbound_allegiance", "unbreakable_constraint"}
-
-    def test_unbridged_set_names_refuse_explicitly(self):
-        doc = self.v5_from_v4("homecoming-troller")
-        converted = reconstruct_build(doc, self.hero, self.hero_sets, self.contract,
-                                      self.enhancements, default_io_level=50)
-        self.assertFalse(converted["ok"])
-        self.assertEqual({i["reason"] for i in converted["issues"]}, {"missing_hero_enhancement"})
+    @classmethod
+    def pieces_by_uid(cls):
+        sets = json.loads((ROOT / "data/enhancement_sets.json").read_text(encoding="utf-8"))
+        return {p["uid"]: [p["name"]] for s in sets for p in s["pieces"] if p.get("uid")}
 
     def test_sidekicks_homecoming_controller_with_four_pools_imports_whole(self):
-        doc = self.v5_from_v4("homecoming-troller")
-        for bucket in [doc["build"]["primary"], doc["build"]["secondary"], *doc["build"]["pools"]]:
-            for power in bucket["powers"]:
-                power["slots"] = [None if sl and sl.get("setId") in self.UNBRIDGED_SETS else sl
-                                  for sl in power["slots"]]
+        doc = self.v5_from_v4("homecoming-troller")   # its Artillery slots included
         converted = reconstruct_build(doc, self.hero, self.hero_sets, self.contract,
                                       self.enhancements, incarnate_catalog=self.incarnates,
                                       default_io_level=50)

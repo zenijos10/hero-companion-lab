@@ -55,6 +55,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             contract/homecoming/manifest.json
+            contract/homecoming/io-sets.json
             contract/homecoming/power-pools.json
             contract/homecoming/epic-pools.json
             contract/homecoming/powersets/controller/primary/electric-control.json

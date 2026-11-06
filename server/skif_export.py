@@ -14,6 +14,7 @@ from pathlib import Path
 from sidekick_preview import (SourceSets, _index_powers, _read_json, _resolve_power,
                               hero_set_path)
 from sidekick_reconstruct import HC_GRANTED_INHERENTS
+from sidekick_enhancements import EnhancementResolver
 from skif_document import SkifFormatError, load_document
 
 _INHERENT_TABLES = ("BASIC_INHERENT_POWERS", "INHERENT_FITNESS_POWERS",
@@ -28,7 +29,7 @@ def _issue(reason, where, detail):
 class _Contract:
     """Reverse lookups over one Sidekick contract folder."""
 
-    def __init__(self, root, hero_powers_by_full, epic_choices):
+    def __init__(self, root, hero_powers_by_full, epic_choices, hero_piece_by_uid=None):
         self.root = Path(root)
         sources = SourceSets(root)
         self.mids = sources.mids
@@ -43,6 +44,8 @@ class _Contract:
             for slug, entry in (archetypes.get("archetypes") or {}).items()
             if isinstance(entry, dict)}
         self._levels = None
+        self.inverse = (_invert_set_pieces(root, self.boosts, hero_piece_by_uid)
+                        if hero_piece_by_uid is not None else {})
 
     def inherent_names(self):
         if self._levels is None:
@@ -99,8 +102,13 @@ class _Contract:
                 twins.insert(0, crafted + uid[len(tuned):])
         for source_uid in twins:
             record = self.boosts.get(source_uid)
-            if isinstance(record, dict):
-                return self._slot_from_record(record, slot, attuned)
+            written = (self._slot_from_record(record, slot, attuned)
+                       if isinstance(record, dict) else None)
+            if written:
+                return written
+        source_uid = self.inverse.get((uid, attuned))
+        if source_uid:                    # e.g. our Crafted_Shrapnel_A = the game's Crafted_Artillery_A
+            return self._slot_from_record(self.boosts[source_uid], slot, attuned)
         return None
 
     def _slot_from_record(self, record, slot, attuned):
@@ -138,11 +146,39 @@ class _Contract:
         return None
 
 
-def export_build(build, hero_powers_by_full, contract_root, hero_powersets=None, *, name=None):
+def _invert_set_pieces(root, boosts, hero_piece_by_uid):
+    """{(our piece uid, attuned): Sidekick uid}: the importer's own mapping, reversed.
+
+    Built by resolving every Sidekick set piece forward with EnhancementResolver,
+    so export can never map a piece the importer would not map back. A key two
+    Sidekick uids share is dropped (ambiguous), never guessed.
+    """
+    resolver = EnhancementResolver(root, hero_piece_by_uid)
+    found, clashes = {}, set()
+    for source_uid, record in boosts.items():
+        if not isinstance(record, dict) or record.get("kind") != "io-set":
+            continue
+        attuned = bool(record.get("attuned"))
+        mapped, issue = resolver.resolve({"type": "io-set", "setId": record["set"],
+                                          "pieceNum": record["piece"], "attuned": attuned,
+                                          "level": 50})
+        if issue:
+            continue
+        key = (mapped["hero_slot"]["piece_uid"], attuned)
+        if key in found and found[key] != source_uid:
+            clashes.add(key)
+        found[key] = source_uid
+    return {k: v for k, v in found.items() if k not in clashes}
+
+
+def export_build(build, hero_powers_by_full, contract_root, hero_powersets=None, *, name=None,
+                 hero_piece_by_uid=None):
     """Return {ok, issues, dropped, skif?}; `skif` only when nothing is lost.
 
     hero_powersets (powersets.json) supplies the epics this archetype may take,
     which a renamed epic needs; without it only identically named epics export.
+    hero_piece_by_uid (the import lookup) lets a piece whose uid spelling differs
+    from the game's export under the game's uid; without it, such a piece refuses.
 
     `dropped` lists Sidekick attack-chain notes left out because a power they
     name is no longer in the build (they were reference notes, never state).
@@ -152,7 +188,7 @@ def export_build(build, hero_powers_by_full, contract_root, hero_powersets=None,
     if hero_powersets is not None:
         by_class = hero_powersets.get("by_archetype", {}).get(build.get("archetype"), {})
         epic_choices = [e.get("full_name") for e in by_class.get("epic") or []]
-    contract = _Contract(contract_root, hero_powers_by_full, epic_choices)
+    contract = _Contract(contract_root, hero_powers_by_full, epic_choices, hero_piece_by_uid)
     slug = contract.archetype_slugs.get(build.get("archetype"))
     if not slug:
         issues.append(_issue("archetype_not_exportable", "archetype", build.get("archetype")))

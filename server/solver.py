@@ -25,6 +25,7 @@ import os
 from collections import defaultdict, Counter
 
 import diag
+import engine
 
 # A/B seam for the activation-gated-proc host rule. Default ON: this is a
 # correctness fix, not a preference. HC_PROC_HOST_GATE=0 exists so the trade
@@ -732,6 +733,20 @@ _FILL_PRIMARY = [
 ]
 
 
+def _accepted_cio_keys(types):
+    """The _TYPE_TO_CIO keys whose IO this power really accepts, most wanted first.
+
+    The fill lists name types in the solver's own words ("running"); the power
+    data uses the game's ("Run Speed"). Where a list finds nothing, this asks the
+    IO itself (engine.COMMON_IO_ADMITTED_BY) instead of assuming Recharge, which
+    an Auto such as Lightning Reflexes does not accept. [] means fill nothing.
+    """
+    keys = [k for k, (uid, _) in _TYPE_TO_CIO.items()
+            if engine.COMMON_IO_ADMITTED_BY.get(uid) in types]
+    rank = {k: i for i, k in enumerate(_FILL_PRIMARY)}
+    return sorted(keys, key=lambda k: rank.get(k, len(rank)))
+
+
 def _cio_slot(kind):
     uid, name = _CIO[kind]
     return {"set_uid": None, "set_name": "Common IO", "piece_uid": uid,
@@ -1342,9 +1357,10 @@ def _restore_cheap_ios(powers):
 def _fill_commons(p, n):
     """n common-IO slot dicts spread across the power's accepted enhancement types."""
     types = {t.lower() for t in (p.get("accepted_enhancement_types") or [])}
-    ordered = [t for t in _CIO_FILL_PRIORITY if t in types and t in _TYPE_TO_CIO]
+    ordered = ([t for t in _CIO_FILL_PRIORITY if t in types and t in _TYPE_TO_CIO]
+               or _accepted_cio_keys(types))
     if not ordered:
-        ordered = ["recharge reduction"]      # universal fallback (every power recharges)
+        return []                             # nothing it accepts has a common IO
     out = []
     i = 0
     while len(out) < n:
@@ -1447,13 +1463,14 @@ def _fill_generated_empties(powers, slots_left):
         if "recharge reduction" in types and (p.get("base_recharge") or 0) >= 60:
             order, want = ["recharge reduction"], 2
         else:
-            order = [t for t in _FILL_PRIMARY if t in types] or ["recharge reduction"]
+            order = [t for t in _FILL_PRIMARY if t in types] or _accepted_cio_keys(types)
             want = 1
+        if not order:
+            continue                              # nothing it accepts has a common IO
         want = min(want, slots_left)
         p["_slots"] = [s for s in p["_slots"] if s.get("piece_uid") or s.get("set_uid")]
         for i in range(want):
-            uid, name = _TYPE_TO_CIO.get(order[i % len(order)],
-                                         _TYPE_TO_CIO["recharge reduction"])
+            uid, name = _TYPE_TO_CIO[order[i % len(order)]]
             p["_slots"].append({"set_uid": None, "set_name": "Common IO", "piece_uid": uid,
                                 "piece_name": name, "category_id": None, "io_level": 50,
                                 "_fill": True})

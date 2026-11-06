@@ -184,12 +184,18 @@ archetype label on an epic is a hint only (it labels the VEAT epics
 `arachnos_soldier`, which Widows take too); Hero Companion's per-archetype epic
 list is the gate.
 
-**Known gap:** 11 enhancement sets (Artillery and 10 purple sets such as
-Apocalypse, Armageddon, Hecatomb and Ragnarok) have different piece uids in
-Hero Companion's Mids-derived catalog than in the game (our
-`Crafted_Shrapnel_A` is the game's `Crafted_Artillery_A`). They refuse
-explicitly until bridged; `tools/test_skif_reconstruct_sidekick.py` pins the
-list so it cannot shrink or grow unnoticed.
+**Pieces whose uid is spelled differently.** For 72 of Sidekick's 2,078 set
+pieces, our Mids-derived catalog spells the uid differently from the game:
+Artillery's pieces are our `Crafted_Shrapnel_*` but the game's
+`Crafted_Artillery_*`, and an attuned purple is the game's
+`Superior_Attuned_Apocalypse_A` filed under the plain `apocalypse` set. When
+the exact uid misses, `sidekick_enhancements` bridges on two signals: Sidekick's
+own **set id** and **piece number** must name one real piece of ours (a blanket
+`Superior_` alias would be wrong; Superior Winter sets are different sets).
+Export uses the importer's mapping inverted, so the two directions cannot
+disagree. `tools/test_skif_reconstruct_sidekick.py` checks the whole catalog:
+2,078 of 2,078 resolve, exactly 72 through the bridge, each with an agreeing
+piece name.
 
 ## Export (library, not yet in the app)
 
@@ -206,8 +212,13 @@ Proof, all against the pinned Sidekick data:
   round-trip import -> export -> import to the identical build.
 - During review, 39 of 40 and 23 of 24 builds the app's own solver generated
   (about 93 pieces each) round-tripped identically. The one refusal both times
-  was a solver bug, not an export bug: the solver puts a Recharge IO in
+  was a solver bug, not an export bug: the solver put a Recharge IO in
   Electric Armor's Lightning Reflexes, which accepts only Run Speed and Fly.
+  Fixed: the solver's fill fallback now picks only an IO the power accepts
+  (or leaves the slot empty), and `/build/validate` refuses a common IO a
+  power does not accept (`engine.COMMON_IO_ADMITTED_BY`, derived from
+  common_ios.json; `tools/test_common_io_legality.py`). Of 64 served builds,
+  62 are byte-identical and the 2 that held the illegal IO now hold a Fly IO.
 - `.github/workflows/sidekick-export.yml` compiles **Sidekick's own decoder**
   (`tools/sidekick_verify`, its `coh_data` crate at the pinned commit, in CI
   only) and re-opens our exports with it, after Sidekick's published build as
