@@ -198,6 +198,13 @@ def export_build(build, hero_powers_by_full, contract_root, hero_powersets=None,
     if isinstance(build.get("origin"), str):
         out["origin"] = build["origin"]
 
+    # Only the standard seven inherited powers can be represented by this
+    # exporter. An archetype/prestige or future inherent must never vanish
+    # merely because the general power loop excludes Inherent.* records.
+    for p in build.get("powers") or []:
+        full = p.get("full_name")
+        if isinstance(full, str) and full.startswith("Inherent.") and full not in HC_GRANTED_INHERENTS:
+            issues.append(_issue("inherent_not_exportable", full, full))
     picks = [p for p in build.get("powers") or [] if not p["full_name"].startswith("Inherent.")]
     roles = [("primary", build.get("primary")), ("secondary", build.get("secondary")),
              ("epicPool", build.get("epic"))]
@@ -297,12 +304,59 @@ def _inherents(contract, build, issues):
 
 
 def _incarnates(build, issues):
+    """Export only known Hero Companion incarnates in the matching slot.
+
+    The JSON codec only checks the shape of the Sidekick record; it cannot
+    prove a particular incarnate power belongs to the game's dataset. The
+    shipped HC incarnate catalog provides that independent proof, as it does
+    on import, before the file is emitted.
+    """
+    picks = build.get("incarnates") or {}
+    if not picks:
+        return {}
+    if not isinstance(picks, dict):
+        issues.append(_issue("incarnate_not_exportable", "incarnates",
+                             "Expected a map of incarnate selections"))
+        return {}
+    try:
+        catalog = _read_json(Path(__file__).resolve().parents[1] / "data" / "incarnates.json",
+                             "Hero Companion incarnate catalog")
+    except (OSError, ValueError) as exc:
+        issues.append(_issue("incarnate_catalog_unavailable", "incarnates", exc))
+        return {}
+    slots = catalog.get("slots") if isinstance(catalog, dict) else None
+    if not isinstance(slots, list):
+        issues.append(_issue("incarnate_catalog_unavailable", "incarnates",
+                             "No incarnate slot catalog"))
+        return {}
     out = {}
-    for slot, pick in (build.get("incarnates") or {}).items():
-        if not isinstance(pick, dict) or not isinstance(pick.get("full_name"), str):
-            issues.append(_issue("incarnate_not_exportable", f"incarnates.{slot}", pick))
+    for slot, pick in picks.items():
+        where = f"incarnates.{slot}"
+        if (not isinstance(slot, str)
+                or not isinstance(pick, dict)
+                or not isinstance(pick.get("full_name"), str)
+                or ("active" in pick and type(pick["active"]) is not bool)):
+            issues.append(_issue("incarnate_not_exportable", where, pick))
             continue
-        out[slot.lower()] = {"power": pick["full_name"], "active": pick.get("active") is not False}
+        matched_slots = [s for s in slots if isinstance(s, dict)
+                         and isinstance(s.get("slot"), str)
+                         and s["slot"].casefold() == slot.casefold()]
+        if len(matched_slots) != 1:
+            issues.append(_issue("incarnate_not_exportable", where,
+                                 "Unknown or ambiguous incarnate slot"))
+            continue
+        candidates = matched_slots[0].get("choices")
+        if not isinstance(candidates, list):
+            issues.append(_issue("incarnate_catalog_unavailable", where,
+                                 "Missing incarnate choices"))
+            continue
+        matches = [c for c in candidates if isinstance(c, dict)
+                   and c.get("full_name") == pick["full_name"]]
+        if len(matches) != 1:
+            issues.append(_issue("incarnate_not_exportable", where, pick["full_name"]))
+            continue
+        out[matched_slots[0]["slot"].lower()] = {
+            "power": pick["full_name"], "active": pick.get("active") is not False}
     return out
 
 
