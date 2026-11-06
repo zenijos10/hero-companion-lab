@@ -3908,6 +3908,7 @@ async function init() {
       $("farm-retired-note").classList.add("hidden");
   });
   $("export-btn").addEventListener("click", exportMids);
+  $("export-skif-btn").addEventListener("click", exportSidekick);
   if ($("has-ho-toggle")) $("has-ho-toggle").checked = !noHo();
   if ($("cage-allies-toggle"))
     api("/settings/cage-on-allies").then((r) => { $("cage-allies-toggle").checked = !!(r && r.on); })
@@ -9859,6 +9860,93 @@ async function exportMids() {
   }
 }
 
+// Preserve the actual selected, slotted native character. buildPayload() is
+// a CALCULATION view (it removes inactive incarnates and includes temporary
+// booster previews) and therefore MUST NOT be reused for file export.
+function sidekickExportPayload(nativeBuild, name, allowDropped = false) {
+  return {
+    build: JSON.parse(JSON.stringify(nativeBuild)),
+    name,
+    allow_dropped_chains: !!allowDropped,
+  };
+}
+
+async function exportSidekick() {
+  if (!build.archetype || !build.powers.length) {
+    alert("Pick an archetype and add powers before exporting to Sidekick.");
+    return;
+  }
+  const status = $("gen-status");
+  const snapshot = sidekickExportPayload(build,
+    (CURRENT_SAVE && CURRENT_SAVE.name) || "Hero Companion Build");
+
+  function reportFailure(result) {
+    const problems = [
+      ...(result.issues || []).map(p => `${p.location || "build"}: ${p.reason || "unresolved"} — ${p.detail || ""}`),
+      ...(result.errors || []),
+    ];
+    const desc = problems.slice(0, 8).map(x => escHtml(String(x))).join("; ");
+    const message = (result.response || "Sidekick export refused.")
+      + (desc ? " " + desc : "");
+    if (status) status.textContent = message;
+    else alert(message);
+  }
+
+  async function attempt(allowDropped = false) {
+    let result;
+    try {
+      result = await api("/build/export-sidekick",
+        postJson({ ...snapshot, allow_dropped_chains: allowDropped }));
+    } catch (error) {
+      reportFailure({response: "Sidekick export failed: " + error});
+      return;
+    }
+    if (!result.ok && result.code === "sidekick_contract_unavailable" && result.can_download) {
+      // Reuse the existing one-time, explicit consent flow; never download
+      // merely because a user pressed Export.
+      if (await offerSidekickDownload(result.download_bytes, status, "export")) {
+        return attempt(allowDropped);
+      }
+      return;
+    }
+    if (!result.ok && result.code === "sidekick_export_dropped_chains") {
+      const dropped = result.dropped || [];
+      const choice = await askDialog({
+        title: "Leave obsolete attack chains out?",
+        body: `${dropped.length} saved Sidekick attack chain(s) name powers missing from
+          this build. These are reference notes, not simulated attacks.
+          Continue to export WITHOUT those chains, or keep everything unchanged?`,
+        actions: [{key: "export", label: "Export without old chains", kind: "primary"},
+                  {key: "cancel", label: "Cancel export", kind: "ghost"}],
+        safe: "cancel",
+      });
+      if (choice === "export") return attempt(true);
+      if (status) status.textContent = "Sidekick export cancelled; nothing was written.";
+      return;
+    }
+    if (!result.ok) { reportFailure(result); return; }
+    if (!result.skif || result.skif.version !== 5) {
+      reportFailure({response: "Export refused: the server did not return a valid SKIF v5 file."});
+      return;
+    }
+    try {
+      const outcome = await saveTextFile(
+        result.filename || "HeroCompanion.skif", JSON.stringify(result.skif, null, 2) + "\n");
+      if (outcome && outcome.cancelled) {
+        if (status) status.textContent = "Sidekick export cancelled; nothing was written.";
+        return;
+      }
+      if (status) status.textContent = outcome && outcome.path
+        ? `⬇ Sidekick build saved to ${outcome.path}. Open the .skif file in CoH Sidekick.`
+        : "⬇ Sidekick build exported. Open the .skif from Downloads in CoH Sidekick.";
+    } catch (error) {
+      reportFailure({response: "Could not save the Sidekick file: " + error});
+    }
+  }
+
+  await attempt(false);
+}
+
 // ---------------------------------------------------------------------------
 // Import a Mids .mbd: parse server-side -> load into the builder -> critique.
 // Then the user sets a goal/role/tier and Solves to get an improved build; the
@@ -9894,20 +9982,20 @@ async function importMids(e) {
 // parse server-side, load into the builder, snapshot for diff/reset, critique.
 // One-time, consented download of CoH Sidekick's ID map. Returns true once
 // the map is installed; false (with the reason shown) on No or a failure.
-async function offerSidekickDownload(bytes, report) {
+async function offerSidekickDownload(bytes, report, purpose = "import") {
   const size = bytes ? ` (about ${(bytes / 1e6).toFixed(1)} MB)` : "";
   const choice = await askDialog({
     title: "Download Sidekick's ID map?",
-    body: "To read a .skif file, Hero Companion needs CoH Sidekick's map of its "
+    body: `To ${purpose} a .skif file, Hero Companion needs CoH Sidekick's map of its `
       + `power and enhancement names. It downloads once${size} from the CoH Sidekick `
       + "project on GitHub, is checked against a pinned copy, and stays on this PC. "
       + "Nothing about your build is sent.",
-    actions: [{ key: "download", label: "Download and import", kind: "primary" },
+    actions: [{ key: "download", label: "Download and " + purpose, kind: "primary" },
               { key: "cancel", label: "Not now", kind: "ghost" }],
     safe: "cancel",
   });
   if (choice !== "download") {
-    report.innerHTML = "<p class='muted small'>Sidekick import cancelled; nothing was downloaded "
+    report.innerHTML = `<p class='muted small'>Sidekick ${purpose} cancelled; nothing was downloaded `
       + "and your current build is unchanged.</p>";
     return false;
   }
