@@ -20,4 +20,19 @@ assert.deepEqual(Array.from(active({})), []);
 assert.equal(picks.Destiny.active, false, "Do not change the saved inactive selection");
 assert(js.includes("onchange=\"onIncarnateActive(this)\""),
        "Editor must expose active toggling, not silently lock inactive selections");
+// The checkbox lives inside the slot's <label>, whose control is the <select>:
+// a click on its words must reach the checkbox (proven with a real mouse in
+// Chromium during review; without the handler the dropdown takes the focus).
+assert(js.includes('onclick="onIncarnateActiveText(event, this)"'),
+       "Clicking 'Active in peak totals' must toggle the checkbox, not focus the select");
+const handlerStart = js.indexOf("window.onIncarnateActiveText = function");
+assert(handlerStart >= 0, "Text-click handler must exist");
+const handler = vm.runInNewContext("(" + js.slice(handlerStart + "window.onIncarnateActiveText = ".length,
+  js.indexOf("\n};", handlerStart) + 2) + ")", {});
+let clicked = 0, prevented = 0;
+const box = {click: () => { clicked++; }};
+const span = {querySelector: () => box};
+handler({target: {tagName: "SPAN"}, preventDefault: () => { prevented++; }}, span);
+handler({target: {tagName: "INPUT"}, preventDefault: () => { prevented++; }}, span);
+assert.deepEqual([clicked, prevented], [1, 1], "words toggle once; the box itself is left alone");
 console.log("Sidekick incarnate calculator gate: passed");

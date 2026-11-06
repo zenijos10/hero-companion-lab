@@ -4578,7 +4578,7 @@ function renderIncarnates() {
         ${s.choices.map((c) => `<option value="${c.full_name}"${c.full_name === cur ? " selected" : ""}>${
           c.display_name}${(anyModeled && !c.modeled) ? " (not yet modeled)" : ""}</option>`).join("")}
       </select>
-      ${cur ? `<span class="muted small"><input type="checkbox"
+      ${cur ? `<span class="muted small" onclick="onIncarnateActiveText(event, this)"><input type="checkbox"
         data-slot="${escHtml(s.slot)}" onchange="onIncarnateActive(this)"
         ${chosen.active === false ? "" : "checked"}> Active in peak totals</span>` : ""}
       ${_incDetail(curCh)}
@@ -4600,6 +4600,14 @@ window.onIncarnate = function (sel) {
   }
   renderIncarnates();   // refresh the per-pick detail line under each select
   recompute();
+};
+
+// The checkbox sits inside the slot's <label>, whose control is the <select>:
+// a click on the words would focus the dropdown. Hand it to the checkbox instead.
+window.onIncarnateActiveText = function (event, span) {
+  if (event.target.tagName === "INPUT") return;
+  event.preventDefault();
+  span.querySelector("input[type=checkbox]").click();
 };
 
 // Toggle only the incarnate's *active* state, never its equipped identity.
