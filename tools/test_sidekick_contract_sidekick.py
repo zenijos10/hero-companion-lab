@@ -44,14 +44,24 @@ class PinnedSidekickBundleTests(unittest.TestCase):
         by_full = {p["full_name"]: p for group in powers.values() for p in group}
         powersets = json.loads((ROOT / "data/powersets.json").read_text(encoding="utf-8"))
         catalog = _enhancement_lookups()
-        for document in (source, supported):
-            with self.subTest(attack_chains="attackChains" in document["build"]):
+        pooled = copy.deepcopy(supported)
+        pooled["build"]["pools"] = [{"id": "leaping", "powers": [
+            {"internalName": "Combat_Jumping", "level": 4, "slots": [None]}]}]
+        pooled["build"]["epicPool"] = {"id": "melee_psionic_mastery", "powers": [
+            {"internalName": "Mental_Blast", "level": 35, "slots": [None]}]}
+        for label, document in (("as published", source), ("supported", supported),
+                                ("pool + renamed epic", pooled)):
+            with self.subTest(label):
                 from_full = reconstruct_build(document, by_full, powersets, self.full, catalog)
                 from_slim = reconstruct_build(document, by_full, powersets, slim, catalog)
                 self.assertEqual(from_slim["ok"], from_full["ok"])
                 self.assertEqual(from_slim["issues"], from_full["issues"])
                 self.assertEqual(from_slim.get("build"), from_full.get("build"))
         self.assertTrue(reconstruct_build(supported, by_full, powersets, slim, catalog)["ok"])
+        from_slim = reconstruct_build(pooled, by_full, powersets, slim, catalog)
+        self.assertTrue(from_slim["ok"], from_slim["issues"])
+        self.assertEqual((from_slim["build"]["pools"], from_slim["build"]["epic"]),
+                         (["Pool.Leaping"], "Epic.Psionic_Mastery_ScrapStalk"))
 
 
 if __name__ == "__main__":

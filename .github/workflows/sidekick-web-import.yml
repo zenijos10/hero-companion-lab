@@ -64,6 +64,8 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             contract/homecoming/manifest.json
+            contract/homecoming/power-pools.json
+            contract/homecoming/epic-pools.json
             contract/homecoming/bundle.json.gz
             contract/homecoming/mids-names.json
             contract/homecoming/archetypes.json

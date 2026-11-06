@@ -34,6 +34,102 @@ class RealSidekickReconstructionTests(unittest.TestCase):
         return reconstruct_build(doc, cls.hero, cls.hero_sets, cls.contract,
                                  cls.enhancements, incarnate_catalog=cls.incarnates)
 
+    def v5_from_v4(self, name, buckets=("primary", "secondary", "pools", "inherents")):
+        """Sidekick's v4 sample in v5 shape: v5 drops each power's "name" and
+        writes the archetype as its id; nothing else is changed."""
+        old = json.loads((self.checkout / f"fixtures/skif/v4/{name}.skif")
+                         .read_text(encoding="utf-8"))["build"]
+
+        def slot(sl):
+            # v4 called both the booster and the HO grade "boost"; v5 writes
+            # an IO's as "booster" and a special's as "relativeLevel".
+            if not sl or "boost" not in sl:
+                return sl
+            out = {k: v for k, v in sl.items() if k != "boost"}
+            out["relativeLevel" if sl["type"] in ("special", "origin") else "booster"] = sl["boost"]
+            return out
+
+        def power(p):
+            out = {k: v for k, v in p.items() if k in ("internalName", "level")}
+            out["slots"] = [slot(sl) for sl in p["slots"]]
+            return out
+
+        def selection(sel):
+            return {"id": sel["id"], "powers": [power(p) for p in sel["powers"]]}
+        build = {"dataset": "homecoming", "archetype": old["archetype"]["id"],
+                 "level": old["level"], "name": old.get("name") or name}
+        for bucket in buckets:
+            value = old.get(bucket)
+            if bucket == "pools":
+                build["pools"] = [selection(p) for p in value or []]
+            elif bucket == "inherents":
+                build["inherents"] = [power(p) for p in value or []]
+            elif value:
+                build[bucket] = selection(value)
+        return {"version": 5, "build": build}
+
+    # KNOWN GAP (follow-up): these sets' piece uids differ between Hero
+    # Companion's Mids-derived catalog and the game's (Sidekick's) names, e.g.
+    # our Crafted_Shrapnel_A is the game's Crafted_Artillery_A. Until bridged,
+    # they refuse explicitly; the pin below fails if one starts mapping.
+    UNBRIDGED_SETS = {"artillery", "absolute_amazement", "apocalypse", "armageddon",
+                      "coercive_persuasion", "fortunata_hypnosis", "gravitational_anchor",
+                      "hecatomb", "ragnarok", "soulbound_allegiance", "unbreakable_constraint"}
+
+    def test_unbridged_set_names_refuse_explicitly(self):
+        doc = self.v5_from_v4("homecoming-troller")
+        converted = reconstruct_build(doc, self.hero, self.hero_sets, self.contract,
+                                      self.enhancements, default_io_level=50)
+        self.assertFalse(converted["ok"])
+        self.assertEqual({i["reason"] for i in converted["issues"]}, {"missing_hero_enhancement"})
+
+    def test_sidekicks_homecoming_controller_with_four_pools_imports_whole(self):
+        doc = self.v5_from_v4("homecoming-troller")
+        for bucket in [doc["build"]["primary"], doc["build"]["secondary"], *doc["build"]["pools"]]:
+            for power in bucket["powers"]:
+                power["slots"] = [None if sl and sl.get("setId") in self.UNBRIDGED_SETS else sl
+                                  for sl in power["slots"]]
+        converted = reconstruct_build(doc, self.hero, self.hero_sets, self.contract,
+                                      self.enhancements, incarnate_catalog=self.incarnates,
+                                      default_io_level=50)
+        self.assertTrue(converted["ok"], converted["issues"][:5])
+        build = converted["build"]
+        self.assertEqual(build["pools"], ["Pool.Leaping", "Pool.Leadership",
+                                          "Pool.Fighting", "Pool.Flight"])
+        # The sample picks powers only from Leaping and Leadership so far.
+        sets = {p["full_name"].rsplit(".", 1)[0] for p in build["powers"]}
+        self.assertLessEqual({"Pool.Leaping", "Pool.Leadership"}, sets)
+        self.assertIn("Pool.Leadership.Defense", [p["full_name"] for p in build["powers"]])
+        picked = sum(len(s["powers"]) for s in [doc["build"]["primary"], doc["build"]["secondary"]]
+                     + doc["build"]["pools"])
+        self.assertEqual(len([p for p in build["powers"]
+                              if not p["full_name"].startswith("Inherent.")]), picked)
+
+    def test_renamed_epic_resolves_by_archetype_and_identical_roster(self):
+        # Sidekick: Epic.Melee_Psionic_Mastery (labelled "scrapper");
+        # Hero Companion: Epic.Psionic_Mastery_ScrapStalk, which Stalkers take.
+        doc = copy.deepcopy(self.source)
+        doc["build"]["epicPool"] = {"id": "melee_psionic_mastery", "powers": [
+            {"internalName": "Mental_Blast", "level": 35, "slots": [None]}]}
+        doc["build"].pop("attackChains")
+        converted = self.reconstruct(doc)
+        self.assertTrue(converted["ok"], converted["issues"])
+        self.assertEqual(converted["build"]["epic"], "Epic.Psionic_Mastery_ScrapStalk")
+        self.assertIn("Epic.Psionic_Mastery_ScrapStalk.Mental_Blast",
+                      [p["full_name"] for p in converted["build"]["powers"]])
+
+    def test_another_archetypes_epic_is_refused_even_through_the_alias(self):
+        # Epic.Controller_Dark_Mastery reaches our Epic.Dark_Mastery_Controller
+        # through Sidekick's alias table, but a Stalker may not take it.
+        doc = copy.deepcopy(self.source)
+        doc["build"].pop("attackChains")
+        doc["build"]["epicPool"] = {"id": "controller_dark_mastery", "powers": [
+            {"internalName": "Dark_Blast", "level": 35, "slots": [None]}]}
+        converted = self.reconstruct(doc)
+        self.assertFalse(converted["ok"])
+        self.assertNotIn("build", converted)
+        self.assertIn("build.epicPool", [i["location"] for i in converted["issues"]])
+
     def test_sidekicks_own_homecoming_inherents_land_on_hc_granted_powers(self):
         # Sidekick's v4 Homecoming Controller sample carries real slotted
         # inherents. v5 writes the same objects without the old "name" field.

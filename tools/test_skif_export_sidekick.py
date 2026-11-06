@@ -40,7 +40,7 @@ class SidekickExportRoundTripTests(unittest.TestCase):
         return result["build"]
 
     def export(self, build):
-        result = export_build(build, self.hero, self.contract)
+        result = export_build(build, self.hero, self.contract, self.hero_sets)
         self.assertTrue(result["ok"], result["issues"])
         return result
 
@@ -61,6 +61,19 @@ class SidekickExportRoundTripTests(unittest.TestCase):
                 text = dump_document(exported)            # our codec accepts it
                 again = self.imported(load_document(text))
                 self.assertEqual(again, first)
+
+    def test_pool_and_renamed_epic_round_trip_under_sidekicks_ids(self):
+        doc = copy.deepcopy(self.source)
+        doc["build"]["pools"] = [{"id": "leaping", "powers": [
+            {"internalName": "Combat_Jumping", "level": 4, "slots": [None]}]}]
+        doc["build"]["epicPool"] = {"id": "melee_psionic_mastery", "powers": [
+            {"internalName": "Mental_Blast", "level": 35, "slots": [None]}]}
+        first = self.imported(doc)
+        self.assertEqual(first["epic"], "Epic.Psionic_Mastery_ScrapStalk")
+        exported = self.export(first)["skif"]
+        self.assertEqual(exported["build"]["epicPool"]["id"], "melee_psionic_mastery")
+        self.assertEqual([p["id"] for p in exported["build"]["pools"]], ["leaping"])
+        self.assertEqual(self.imported(exported), first)
 
     def test_export_writes_sidekicks_own_identities(self):
         doc = self.rich_source()

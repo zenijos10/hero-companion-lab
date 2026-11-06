@@ -60,3 +60,7 @@ version_info_lite.txt
 _sidekick_contract_fixture/
 # Downloaded CoH Sidekick ID map in dev (frozen builds use %APPDATA%\HeroCompanion\sidekick)
 sidekick-data/
+# Build output of the CI-only Sidekick decoder check
+tools/sidekick_verify/target/
+tools/sidekick_verify/Cargo.lock
+_skif_exports/

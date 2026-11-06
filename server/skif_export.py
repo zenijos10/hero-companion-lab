@@ -11,7 +11,8 @@ exported and imported again yields the identical Hero Companion build.
 import json
 from pathlib import Path
 
-from sidekick_preview import _contract, _index_powers, _read_json, _resolve_power
+from sidekick_preview import (SourceSets, _index_powers, _read_json, _resolve_power,
+                              hero_set_path)
 from sidekick_reconstruct import HC_GRANTED_INHERENTS
 from skif_document import SkifFormatError, load_document
 
@@ -27,10 +28,13 @@ def _issue(reason, where, detail):
 class _Contract:
     """Reverse lookups over one Sidekick contract folder."""
 
-    def __init__(self, root, hero_powers_by_full):
+    def __init__(self, root, hero_powers_by_full, epic_choices):
         self.root = Path(root)
-        paths, self.mids = _contract(root)
-        self.shards = [_read_json(path, f"Sidekick powerset {sid}") for sid, path in paths.items()]
+        sources = SourceSets(root)
+        self.mids = sources.mids
+        self.shards = [sources.get(set_id) for set_id in sources.ids()]
+        self.hero = hero_powers_by_full
+        self.epic_choices = epic_choices
         self.by_folded = _index_powers(hero_powers_by_full)
         self.boosts = _read_json(self.root / "boost-index.json", "Sidekick boost index")
         archetypes = _read_json(self.root / "archetypes.json", "Sidekick archetypes")
@@ -49,20 +53,37 @@ class _Contract:
         return self._levels
 
     def shard_for(self, set_full, role, archetype_slug):
-        """The one Sidekick powerset whose setPath is `set_full` in this role."""
-        found = [s for s in self.shards if isinstance(s, dict)
-                 and s.get("setPath") == set_full
-                 and s.get("archetype") in (None, archetype_slug)
-                 and (role not in _ROLE_CATEGORY
-                      or s.get("category") in (None, _ROLE_CATEGORY[role]))]
+        """The one Sidekick powerset the importer maps to `set_full` in this role.
+
+        Uses the importer's own hero_set_path, so a renamed epic exports under
+        the Sidekick record that imports back to it, never a lookalike."""
+        found = []
+        for s in self.shards:
+            if not isinstance(s, dict):
+                continue
+            category = s.get("category")
+            if role == "pools":
+                fits = category == "pool"
+            elif role == "epicPool":
+                fits = category == "epic"
+            else:
+                fits = (category in (None, _ROLE_CATEGORY[role])
+                        and s.get("archetype") in (None, archetype_slug))
+            if fits and self.hero_set(s) == set_full:
+                found.append(s)
         return found[0] if len(found) == 1 else None
+
+    def hero_set(self, record):
+        return hero_set_path(record, self.mids, self.hero, self.epic_choices)
 
     def internal_name(self, shard, hero_full):
         """The Sidekick power name the importer resolves to `hero_full`."""
         names = [p.get("internalName") for p in shard.get("powers") or []
                  if isinstance(p, dict)]
+        hero_set = self.hero_set(shard)
         hits = [n for n in names if _resolve_power(
-            n, shard["setPath"], shard, self.mids, self.by_folded, "", []) == hero_full]
+            n, shard["setPath"], shard, self.mids, self.by_folded, "", [],
+            hero_set=hero_set) == hero_full]
         return hits[0] if len(hits) == 1 else None
 
     def enhancement(self, slot):
@@ -117,14 +138,21 @@ class _Contract:
         return None
 
 
-def export_build(build, hero_powers_by_full, contract_root, *, name=None):
+def export_build(build, hero_powers_by_full, contract_root, hero_powersets=None, *, name=None):
     """Return {ok, issues, dropped, skif?}; `skif` only when nothing is lost.
+
+    hero_powersets (powersets.json) supplies the epics this archetype may take,
+    which a renamed epic needs; without it only identically named epics export.
 
     `dropped` lists Sidekick attack-chain notes left out because a power they
     name is no longer in the build (they were reference notes, never state).
     """
     issues, dropped = [], []
-    contract = _Contract(contract_root, hero_powers_by_full)
+    epic_choices = None
+    if hero_powersets is not None:
+        by_class = hero_powersets.get("by_archetype", {}).get(build.get("archetype"), {})
+        epic_choices = [e.get("full_name") for e in by_class.get("epic") or []]
+    contract = _Contract(contract_root, hero_powers_by_full, epic_choices)
     slug = contract.archetype_slugs.get(build.get("archetype"))
     if not slug:
         issues.append(_issue("archetype_not_exportable", "archetype", build.get("archetype")))
