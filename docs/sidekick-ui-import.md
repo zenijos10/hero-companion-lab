@@ -47,7 +47,7 @@ Already-downloaded copies keep working regardless, since they live on disk.
 
 1. Choose `.skif` from Character → Import.
 2. A missing contract, a non-v5 file, unknown powers/IOs, unsupported
-   attack chains or other state, or a failed game-legality check is
+   character state, or a failed game-legality check is
    **refused before the current editor is modified**. The screen lists
    where the problem occurred.
 3. If crafted IOs lack their level, supply the actual Sidekick session
@@ -59,9 +59,9 @@ Already-downloaded copies keep working regardless, since they live on disk.
    native build, generates totals, and supports Solve and Reset to imported.
 
 **Limitations:** This does not import arbitrary Sidekick characters.
-The current Hero Companion editor cannot yet preserve Sidekick's active
-power state, incarnates, prestige or archetype inherents, proc overrides,
-shopping progress, or all future fields. These block import rather than
+The current Hero Companion editor cannot yet preserve Sidekick's per-power
+active modes, prestige or archetype inherents, proc overrides, shopping
+progress, or all future fields. These block import rather than
 being silently ignored. Successful conversion is not a Sidekick export
 or evidence of round-trip parity. No automatically downloaded data or
 new release package is included.
@@ -96,7 +96,7 @@ use these chains to calculate damage, optimize attacks, or generate a new SKIF
 file. After you change the selected powers, the original chains may become
 stale; the panel labels them as notes from the original build, not the current
 simulation. Other Sidekick state that the editor does not represent (active
-power modes, incarnates, proc choices and progress) is still blocked rather
+power modes, proc choices and progress) is still blocked rather
 than silently ignored.
 
 ## Slotted inherents
@@ -130,3 +130,33 @@ The one-time downloaded compatibility cache now includes the game's
 per-power enhancement restrictions. An older cache lacking those restrictions
 is identified as incomplete and repaired by another user-consented download.
 A developer-supplied Sidekick checkout uses the original authoritative rules.
+
+## Incarnate selections and active flags
+
+Sidekick v5 stores each incarnate as a slot id, an **internal power name** and
+an `active` flag. The importer now requires an **exact** match within Hero
+Companion's shipped incarnate power catalog. It recognizes Homecoming's Alpha,
+Judgement, Interface, Lore, Destiny, Hybrid, and Genesis slots when the named
+power is present in that slot. Missing, ambiguous, unsupported and cross-slot
+power identities cause a complete refusal rather than a dropped pick.
+
+A supported selection is loaded directly into the End Game tab. A checkbox
+next to each selected incarnate records whether it was **active** in Sidekick.
+An inactive selection remains visible and is preserved by ordinary
+Save/Resume, but is **excluded** from the `incarnates_full` calculation
+payload when "Include incarnates (peak)" is turned on. Selecting a different
+incarnate explicitly enables that new choice. The global peak toggle still
+controls whether enabled incarnate buffs are included at all.
+
+**Scope:** This preserves the saved identity and activation flags, not all
+possible incarnate mechanics. Hero Companion's existing model still cannot
+price every incarnate effect (e.g. some Lore pet effects and Interface procs).
+Those choices are labeled unmodeled in the End Game interface and are not
+given invented numerical benefits. The importer does not infer earned/crafted
+status, purchase progress or new powers for a renamed fork.
+
+Validation covers the original Sidekick v5 power fixture combined with six
+real Homecoming incarnate choices from Sidekick's published v4 test case.
+The unit suite also checks false versus true active flags and rejects unknown
+or malformed records without returning a partial build. The real Flask test
+checks import and Save/Resume.

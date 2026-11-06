@@ -9,6 +9,9 @@ Homecoming SKIF into Hero Companion's native build dictionary:
 - Enhancement UID, set/piece metadata, IO level, booster, attunement and
   special enhancement offsets using the previously verified identity bridge
 - Character level, name and declared origin as native metadata
+- Exact selected Incarnate powers and per-slot active/inactive state, using
+  Hero Companion's shipped incarnate catalog; disabled picks remain visible
+  but do not contribute to the peak-stat calculation payload
 
 It never writes a save, alters the editor, runs an optimizer, or downloads
 upstream code. It retains the complete input separately as `source_skif`,
@@ -17,8 +20,8 @@ which is provenance, **not an export of any later edits**.
 ## Explicit loss-of-fidelity refusal
 
 Any unresolved power or enhancement, unsupported Sidekick state (including
-prestige or archetype inherents, active power mode, proc overrides, incarnates
-and progress), unknown schema field, wrong powerset classification,
+prestige or archetype inherents, active power mode, proc overrides,
+shopping progress, unknown incarnate records and unshipped incarnate choices), unknown schema field, wrong powerset classification,
 inability to determine an ordinary crafted IO's level, a booster on an attuned
 IO (the game allows none), or a Hamidon/Titan/Hydra/D-Sync grade outside +0..+3
 (the game's 50..53 range) produces
@@ -68,7 +71,9 @@ round-trip parity.
 
 ## Remaining work
 
-A usable one-button editor importer requires a complete state mapping,
-inherent and incarnate handling, game legality validation, atomic UI state
-application and a reliable export/re-import parity test. Until then this is
-an offline, fail-closed reconstruction feature.
+The guarded editor importer now supports powers, slotted standard inherents,
+reference-only attack chains and exact incarnate selections with active flags.
+Remaining milestones include unsupported active power modes, proc overrides,
+shopping/progression state, finer legality rules and real SKIF export with
+re-import parity. This is still a conservative subset, not universal SKIF
+support.
