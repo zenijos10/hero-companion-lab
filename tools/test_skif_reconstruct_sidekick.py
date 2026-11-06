@@ -27,11 +27,12 @@ class RealSidekickReconstructionTests(unittest.TestCase):
         cls.hero = {p["full_name"]: p for group in powers.values() for p in group}
         cls.hero_sets = json.loads((ROOT / "data/powersets.json").read_text(encoding="utf-8"))
         cls.enhancements = _enhancement_lookups()
+        cls.incarnates = json.loads((ROOT / "data/incarnates.json").read_text(encoding="utf-8"))
 
     @classmethod
     def reconstruct(cls, doc):
         return reconstruct_build(doc, cls.hero, cls.hero_sets, cls.contract,
-                                 cls.enhancements)
+                                 cls.enhancements, incarnate_catalog=cls.incarnates)
 
     def test_sidekicks_own_homecoming_inherents_land_on_hc_granted_powers(self):
         # Sidekick's v4 Homecoming Controller sample carries real slotted
@@ -52,6 +53,26 @@ class RealSidekickReconstructionTests(unittest.TestCase):
             "Inherent.Fitness.Health": ["Panacea", "Numina's Convalesence", "Miracle"],
             "Inherent.Fitness.Stamina": ["Performance Shifter"],
         })
+
+
+    def test_actual_sidekick_homecoming_incarnates_map_exactly(self):
+        # The v4 fixture's real Homecoming catalog choices are converted
+        # into the v5 {power, active} shape; the core v5 character is unchanged.
+        legacy = json.loads((self.checkout / "fixtures/skif/v4/homecoming-troller.skif")
+                            .read_text(encoding="utf-8"))
+        source = legacy["build"]["incarnates"]
+        doc = copy.deepcopy(self.source)
+        doc["build"]["incarnates"] = {
+            key: {"power": record["powerName"].split(".")[-1], "active": True}
+            for key, record in source.items()
+        }
+        doc["build"]["incarnates"]["destiny"]["active"] = False
+        result = self.reconstruct(doc)
+        self.assertTrue(result["ok"], result["issues"])
+        for slot, record in source.items():
+            mapped = result["build"]["incarnates"][slot.title()]
+            self.assertEqual(mapped["full_name"], record["powerName"])
+            self.assertEqual(mapped["active"], slot != "destiny")
 
     def test_actual_sidekick_attack_chains_import_as_non_simulated_metadata(self):
         original = copy.deepcopy(self.source)

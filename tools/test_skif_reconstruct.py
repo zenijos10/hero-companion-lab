@@ -96,6 +96,16 @@ class ReconstructionTests(unittest.TestCase):
             "secondary": [{"full_name": "Blaster_Support.Fire_Manipulation"}],
             "epic": []}},
             "pools": [{"full_name": "Pool.Flight"}]}
+        self.incarnate_catalog = {"slots": [
+            {"slot": "Alpha", "choices": [
+                {"full_name": "Incarnate.Alpha.Agility_Core_Paragon",
+                 "display_name": "Agility Core Paragon"},
+                {"full_name": "Incarnate.Alpha.Agility_Boost",
+                 "display_name": "Agility Boost"}]},
+            {"slot": "Destiny", "choices": [
+                {"full_name": "Incarnate.Destiny.Ageless_Invocation",
+                 "display_name": "Ageless Invocation"}]},
+        ]}
         self.pieces = {
             "Crafted_Recharge": {"piece_uid": "Crafted_Recharge", "piece_name": "Recharge"},
             "Crafted_Heal": {"piece_uid": "Crafted_Heal", "piece_name": "Healing"},
@@ -113,7 +123,8 @@ class ReconstructionTests(unittest.TestCase):
     def convert(self, doc=None, **kwargs):
         return reconstruct_build(
             fixture() if doc is None else doc, self.hero, self.hero_sets,
-            self.root, self.pieces, **kwargs)
+            self.root, self.pieces, incarnate_catalog=self.incarnate_catalog,
+            **kwargs)
 
     def test_native_build_keeps_class_all_powersets_slot_positions_and_levels(self):
         source = fixture()
@@ -143,6 +154,89 @@ class ReconstructionTests(unittest.TestCase):
         self.assertFalse(result["editor_imported"])  # library conversion, not UI mutation
         self.assertEqual(result["source_skif"], source)
 
+
+    def test_exact_incarnate_selection_and_per_slot_active_flags(self):
+        doc = fixture()
+        doc["build"]["incarnates"] = {
+            "alpha": {"power": "Agility_Core_Paragon", "active": True},
+            "destiny": {"power": "Ageless_Invocation", "active": False},
+        }
+        before = copy.deepcopy(doc)
+        result = self.convert(doc)
+        self.assertTrue(result["ok"], result["issues"])
+        self.assertEqual(doc, before)
+        self.assertEqual(result["build"]["incarnates"], {
+            "Alpha": {"full_name": "Incarnate.Alpha.Agility_Core_Paragon",
+                      "display_name": "Agility Core Paragon", "active": True},
+            "Destiny": {"full_name": "Incarnate.Destiny.Ageless_Invocation",
+                        "display_name": "Ageless Invocation", "active": False},
+        })
+        self.assertFalse(result["build"].get("include_incarnates", False))
+
+    def test_full_path_and_case_only_identity_normalization(self):
+        doc = fixture()
+        doc["build"]["incarnates"] = {
+            "alpha": {"power": "incarnate.alpha.agility_core_paragon", "active": True},
+        }
+        result = self.convert(doc)
+        self.assertTrue(result["ok"], result["issues"])
+        self.assertEqual(result["build"]["incarnates"]["Alpha"]["full_name"],
+                         "Incarnate.Alpha.Agility_Core_Paragon")
+
+    def test_unknown_incarnate_or_cross_slot_name_refuses_without_build(self):
+        cases = [
+            ("alpha", "Unshipped_Imaginary"),
+            ("destiny", "Agility_Core_Paragon"),
+            ("missing", "Agility_Core_Paragon"),
+        ]
+        for slot, name in cases:
+            doc = fixture()
+            doc["build"]["incarnates"] = {slot: {"power": name, "active": True}}
+            result = self.convert(doc)
+            with self.subTest(slot=slot, name=name):
+                self.assertFalse(result["ok"])
+                self.assertNotIn("build", result)
+                self.assertIn("unknown_incarnate_selection",
+                              [i["reason"] for i in result["issues"]])
+
+    def test_malformed_incarnate_record_and_absent_catalog_fail_closed(self):
+        cases = [
+            {"alpha": {"power": "Agility_Core_Paragon"}},
+            {"alpha": {"power": "Agility_Core_Paragon", "active": 1}},
+            {"alpha": {"power": "Agility_Core_Paragon", "active": True, "futureMode": 1}},
+            {"alpha": "Agility_Core_Paragon"},
+            [{"alpha": {"power": "Agility_Core_Paragon", "active": True}}],
+        ]
+        for record in cases:
+            doc = fixture()
+            doc["build"]["incarnates"] = record
+            result = self.convert(doc)
+            with self.subTest(record=record):
+                self.assertFalse(result["ok"])
+                self.assertNotIn("build", result)
+                self.assertIn("invalid_incarnate_record",
+                              [i["reason"] for i in result["issues"]])
+        doc = fixture()
+        doc["build"]["incarnates"] = {
+            "alpha": {"power": "Agility_Core_Paragon", "active": True}}
+        self.incarnate_catalog = None
+        result = self.convert(doc)
+        self.assertFalse(result["ok"])
+        self.assertIn("incarnate_catalog_unavailable",
+                      [i["reason"] for i in result["issues"]])
+
+    def test_duplicate_or_ambiguous_incarnate_catalog_refuses(self):
+        doc = fixture()
+        doc["build"]["incarnates"] = {
+            "alpha": {"power": "Agility_Core_Paragon", "active": True}}
+        self.incarnate_catalog["slots"][0]["choices"].append({
+            "full_name": "Incarnate.Alpha.AGILITY_CORE_PARAGON",
+            "display_name": "Duplicate"})
+        result = self.convert(doc)
+        self.assertFalse(result["ok"])
+        self.assertIn("ambiguous_incarnate_selection",
+                      [i["reason"] for i in result["issues"]])
+
     def test_missing_generic_level_requires_explicit_default(self):
         doc = fixture()
         del doc["build"]["primary"]["powers"][0]["slots"][1]["level"]
@@ -170,7 +264,6 @@ class ReconstructionTests(unittest.TestCase):
     def test_nonrepresentable_state_is_explicitly_blocked_never_partially_imported(self):
         alterations = [
             ("stances", {"ammo": True}),
-            ("incarnates", {"alpha": {"power": "Alpha.Example", "active": True}}),
             ("slotOrder", [{"powerName": "Pistols", "slotIndex": 1}]),
             ("progress", {"crafted": ["enhancement-key"]}),
             ("futureState", {"mystery": 1}),
