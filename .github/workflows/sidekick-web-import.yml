@@ -78,8 +78,7 @@ jobs:
             contract/homecoming/boost-index.json
             contract/homecoming/enhancements.json
             contract/homecoming/levels.json
-            contract/homecoming/powersets/stalker/primary/energy-melee.json
-            contract/homecoming/powersets/stalker/secondary/energy-aura.json
+            contract/homecoming/powersets/
             fixtures/skif/v5/rb5d_browser_pass.skif
           persist-credentials: false
       - name: Exercise real Flask endpoint and original Sidekick data
