@@ -54,6 +54,76 @@ class SidekickFlaskEndpointTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         return response.get_json()
 
+    def export(self, build, *, configured=True, **extra):
+        config = {"HC_SIDEKICK_CONTRACT_DIR": str(self.contract_root) if configured else ""}
+        with patch.dict(os.environ, config):
+            response = self.client.post("/build/export-sidekick",
+                                        json={"build": build, "name": "Export Test", **extra})
+        self.assertEqual(response.status_code, 200)
+        return response.get_json()
+
+    def test_sidekick_export_real_import_reopens_without_mutation(self):
+        import copy as _copy
+        built = self.send(self.source)["build"]
+        before = _copy.deepcopy(built)
+        exported = self.export(built)
+        self.assertTrue(exported["ok"], exported)
+        self.assertEqual(exported["filename"], "Export_Test.skif")
+        self.assertEqual(exported["skif"]["version"], 5)
+        self.assertEqual(built, before)
+        reopened = self.send(exported["skif"])
+        self.assertTrue(reopened["ok"], reopened.get("issues"))
+        self.assertEqual([p["full_name"] for p in reopened["build"]["powers"]],
+                         [p["full_name"] for p in built["powers"]])
+
+    def test_export_without_contract_requests_consent_not_download(self):
+        built = self.send(self.source)["build"]
+        response = self.export(built, configured=False)
+        self.assertFalse(response["ok"])
+        self.assertEqual(response["code"], "sidekick_contract_unavailable")
+        self.assertTrue(response["can_download"])
+        self.assertNotIn("skif", response)
+        self.assertEqual(list(self.cache.iterdir()), [])
+
+    def test_unrepresentable_piece_blocks_file_without_partial_data(self):
+        built = self.send(self.source)["build"]
+        built["powers"][0]["slots"].append({"piece_uid": "Imaginary_Enhancement",
+                                               "set_uid": None})
+        response = self.export(built)
+        self.assertFalse(response["ok"])
+        self.assertNotIn("skif", response)
+        self.assertIn("enhancement_not_exportable",
+                      [x["reason"] for x in response["issues"]])
+
+    def test_stale_chain_requires_explicit_consent_before_file_exists(self):
+        built = self.send(self.source)["build"]
+        power = built["sidekick_attack_chains"][0]["powers"][0]
+        built["powers"] = [p for p in built["powers"] if p["full_name"] != power]
+        with patch.object(app_server, "_complete_build_validation",
+                          return_value={"errors": [], "warnings": []}):
+            blocked = self.export(built)
+            self.assertFalse(blocked["ok"], blocked)
+            self.assertEqual(blocked["code"], "sidekick_export_dropped_chains")
+            self.assertNotIn("skif", blocked)
+            self.assertTrue(blocked["dropped"])
+            allowed = self.export(built, allow_dropped_chains=True)
+            self.assertTrue(allowed["ok"], allowed)
+            self.assertTrue(allowed["dropped"])
+            self.assertEqual(allowed["skif"]["version"], 5)
+
+    def test_invalid_or_illegal_export_request_is_refused_early(self):
+        bad = self.export(None)
+        self.assertFalse(bad["ok"])
+        self.assertEqual(bad["code"], "sidekick_export_invalid_request")
+        self.assertNotIn("skif", bad)
+        built = self.send(self.source)["build"]
+        with patch.object(app_server, "_complete_build_validation",
+                          return_value={"errors": ["Illegally slotted"], "warnings": []}):
+            bad = self.export(built)
+        self.assertEqual(bad["code"], "sidekick_export_illegal_build")
+        self.assertNotIn("skif", bad)
+        self.assertEqual(bad["errors"], ["Illegally slotted"])
+
     def test_unavailable_data_offers_the_one_time_download(self):
         response = self.send(self.source, configured=False)
         self.assertEqual(response["code"], "sidekick_contract_unavailable")
