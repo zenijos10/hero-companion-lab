@@ -76,6 +76,22 @@ class SidekickFlaskEndpointTests(unittest.TestCase):
         self.assertEqual([p["full_name"] for p in reopened["build"]["powers"]],
                          [p["full_name"] for p in built["powers"]])
 
+    def test_export_preserves_inactive_incarnates_through_real_flask_round_trip(self):
+        doc = copy.deepcopy(self.source)
+        doc["build"]["incarnates"] = {
+            "alpha": {"power": "Agility_Core_Paragon", "active": True},
+            "destiny": {"power": "Ageless_Invocation", "active": False},
+        }
+        source = self.send(doc)
+        self.assertTrue(source["ok"], source)
+        exported = self.export(source["build"])
+        self.assertTrue(exported["ok"], exported)
+        self.assertEqual(exported["skif"]["build"]["incarnates"]["destiny"]["active"],
+                         False)
+        reopened = self.send(exported["skif"])
+        self.assertTrue(reopened["ok"], reopened)
+        self.assertFalse(reopened["build"]["incarnates"]["Destiny"]["active"])
+
     def test_export_without_contract_requests_consent_not_download(self):
         built = self.send(self.source)["build"]
         response = self.export(built, configured=False)

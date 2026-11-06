@@ -9885,7 +9885,9 @@ async function exportSidekick() {
       ...(result.issues || []).map(p => `${p.location || "build"}: ${p.reason || "unresolved"} — ${p.detail || ""}`),
       ...(result.errors || []),
     ];
-    const desc = problems.slice(0, 8).map(x => escHtml(String(x))).join("; ");
+    // This message goes into textContent (not innerHTML): preserve raw text
+    // without double-escaping diagnostics such as <unknown>.
+    const desc = problems.slice(0, 8).map(x => String(x)).join("; ");
     const message = (result.response || "Sidekick export refused.")
       + (desc ? " " + desc : "");
     if (status) status.textContent = message;
