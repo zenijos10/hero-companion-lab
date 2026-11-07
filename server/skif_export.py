@@ -39,6 +39,11 @@ class _Contract:
         self.epic_choices = epic_choices
         self.by_folded = _index_powers(hero_powers_by_full)
         self.boosts = _read_json(self.root / "boost-index.json", "Sidekick boost index")
+        folded = {}
+        for uid in self.boosts:
+            folded.setdefault(uid.casefold(), []).append(uid)
+        # The same uid but for case (our Dsync_*, Sidekick's DSync_*), where unique.
+        self.boosts_folded = {key: uids[0] for key, uids in folded.items() if len(uids) == 1}
         archetypes = _read_json(self.root / "archetypes.json", "Sidekick archetypes")
         self.archetype_slugs = {
             (entry.get("stats") or {}).get("className"): slug
@@ -126,7 +131,8 @@ class _Contract:
                 twins.insert(0, tuned + uid[len(crafted):])
             if not attuned and uid.startswith(tuned):
                 twins.insert(0, crafted + uid[len(tuned):])
-        for source_uid in twins:
+        for twin in twins:
+            source_uid = twin if twin in self.boosts else self.boosts_folded.get(twin.casefold())
             record = self.boosts.get(source_uid)
             written = (self._slot_from_record(record, slot, attuned)
                        if isinstance(record, dict) else None)

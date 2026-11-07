@@ -76,6 +76,34 @@ class RealSidekickReconstructionTests(unittest.TestCase):
         sets = json.loads((ROOT / "data/enhancement_sets.json").read_text(encoding="utf-8"))
         return {p["uid"]: [p["name"]] for s in sets for p in s["pieces"] if p.get("uid")}
 
+    def test_every_sidekick_special_we_have_resolves(self):
+        # Sidekick writes DSync_*, we write Dsync_*: the same uid but for case.
+        # The Synthetic Hamidon and Generic_* specials are not in our data at
+        # all; they stay refused, named here so a data change shows up.
+        from sidekick_enhancements import EnhancementResolver
+        bridge = EnhancementResolver(self.contract, self.enhancements)
+        boosts = json.loads((self.contract / "boost-index.json").read_text(encoding="utf-8"))
+        specials = {u: r for u, r in boosts.items() if r.get("kind") == "special"}
+        missing = sorted(u for u, r in specials.items() if bridge.resolve(
+            {"type": "special", "category": r["family"], "id": r["id"]})[1])
+        self.assertEqual(len(specials), 78, "denominator: Sidekick's special enhancements")
+        self.assertEqual(missing, sorted(
+            [f"Synthetic_Hamidon_{s}" for s in (
+                "Accuracy_Mez", "Buff_Endurance_Discount", "Buff_Recharge", "Damage_Accuracy",
+                "Damage_Mez", "Damage_Range", "DeBuff_Accuracy", "DeBuff_Endurance_Discount",
+                "Heal_Endurance_Discount", "Res_Damage_Endurance_Discount",
+                "Travel_Endurance_Discount")]
+            + [f"Generic_{s}" for s in ("Clockwork_Efficiency", "Might_of_the_Empire",
+                                        "Resistance_Tactics", "Syndicate_Techniques",
+                                        "Will_of_the_Seers")]))
+
+    def test_sojourner_sample_with_a_dsync_imports_whole(self):
+        converted = self.reconstruct(self.v5_from_v4("sojourner_1784025393210"))
+        self.assertTrue(converted["ok"], converted["issues"][:5])
+        fire_ball = next(p for p in converted["build"]["powers"]
+                         if p["full_name"].endswith(".Fire_Ball"))
+        self.assertEqual(fire_ball["slots"][5]["piece_uid"], "Dsync_Damage_Accuracy")
+
     def test_sidekicks_homecoming_controller_with_four_pools_imports_whole(self):
         doc = self.v5_from_v4("homecoming-troller")   # its Artillery slots included
         converted = reconstruct_build(doc, self.hero, self.hero_sets, self.contract,

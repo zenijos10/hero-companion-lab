@@ -88,6 +88,15 @@ class SidekickExportRoundTripTests(unittest.TestCase):
                 exported = self.export(first)["skif"]
                 self.assertEqual(self.imported(load_document(dump_document(exported))), first)
 
+    def test_dsync_exports_under_sidekicks_spelling_and_round_trips(self):
+        first = self.imported(self.sample("sojourner_1784025393210"))
+        exported = self.export(first)["skif"]
+        self.assertEqual(self.imported(exported), first)
+        slots = [s for sel in ("primary", "secondary") for p in exported["build"][sel]["powers"]
+                 for s in p["slots"] if s and s["type"] == "special"]
+        self.assertIn({"type": "special", "category": "d-sync", "id": "empowerment"},
+                      [{k: s[k] for k in ("type", "category", "id")} for s in slots])
+
     def test_kheldian_form_attacks_export_inside_their_powerset(self):
         exported = self.export(self.imported(self.sample("homecoming-kheldian")))["skif"]["build"]
         self.assertIn("Bright_Nova_Bolt",

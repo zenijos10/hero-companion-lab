@@ -81,7 +81,9 @@ def sample_documents():
             # Form attacks travel inside their powerset (ours: Inherent.Inherent).
             "peacebringer-forms": v5_from_v4("homecoming-kheldian"),
             # Base set named, each Crab Spider pick names its branch.
-            "arachnos-crab-branch": v5_from_v4("homcoming-level-up-arachnos")}
+            "arachnos-crab-branch": v5_from_v4("homcoming-level-up-arachnos"),
+            # A D-Sync: Sidekick's DSync_* is our Dsync_*.
+            "blaster-dsync": v5_from_v4("sojourner_1784025393210")}
 
 
 def main(out_dir):
