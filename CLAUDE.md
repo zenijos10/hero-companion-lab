@@ -52,6 +52,39 @@ out. Rules going forward:
   between runs on near-tie arms). Physics still arbitrates; the committed
   build is always CBC-exact.
 
+## Sidekick (.skif) compatibility (lab, 2026-10/11; PRs #2-#14)
+
+- **Where the ID map comes from: ONE provider list** (`server/sidekick_contract.py`,
+  `server._sidekick_providers`): configured folder (`HC_SIDEKICK_CONTRACT_DIR`, dev) then a
+  consented download of Sidekick's `bundle.json.gz` at a PINNED commit, installed only on a
+  SHA-256 match. Pivot if Sidekick stops = repoint `SIDEKICK_SNAPSHOT` or add a provider;
+  the importer only ever receives a folder.
+- **Pools and epics live in `power-pools.json` / `epic-pools.json`, NOT the powerset
+  shards** (`sidekick_preview.SourceSets`). Before #12 every real build with a pool was
+  refused; the tests had invented a pool shard. Model fixtures on Sidekick's REAL files.
+- **Epic names diverge; `hero_set_path` resolves them** via Sidekick's alias table, else the
+  ONE archetype-allowed epic with the identical roster (agrees with all 12 pairs in
+  `tools/epic_set_name_bridge.json`). A name we have is never translated. Sidekick's epic
+  archetype label is a hint only (VEAT epics say `arachnos_soldier`; Widows take them too).
+- **Set pieces with a different uid spelling bridge on set id + piece number**: our
+  `Crafted_Shrapnel_A` = the game's `Crafted_Artillery_A`; an attuned purple is the game's
+  `Superior_Attuned_Apocalypse_A` under set `apocalypse`. Never a blanket `Superior_` alias
+  (Superior Winter sets are different sets). Export inverts the importer's mapping.
+- **Proof standard: Sidekick's own decoder re-opens our exports** (`tools/sidekick_verify`,
+  its `coh_data` crate at the pinned commit, CI only, nothing vendored; the owner ruled CI-only).
+- **A common IO goes only where the power accepts it** (#12): the solver's fill fallback
+  assumed "every power recharges" and put Recharge in Autos (Lightning Reflexes, Quickness,
+  Particle Acceleration, Mental Training); the score credited it. Rule:
+  `engine.COMMON_IO_ADMITTED_BY` (derived from common_ios.json names, which ARE the power
+  data's words), enforced by `/build/validate`. 131 champion `canonical_score`s corrected
+  2-10% (#14); per the owner, NO re-search ran: a recert wave for them is still theirs.
+- **OPEN, the owner's rulings:** the solver's fill-list names ("damage", "hold") do not match the
+  power data's ("Damage Increase", "Hold Duration"), so common fills never choose a Damage IO
+  (fixing it moves many scores); incarnates on a sub-50 plan are not refused (a leveling
+  character may plan them).
+- **The app keeps character level as `level_reached`, never `char_level`** (#13 lost it
+  both ways). Import writes both; export reads either.
+
 ## Communication protocol (token discipline — strict)
 
 Joel's session context is a limited resource. Do not spend it on prose.
