@@ -12,6 +12,7 @@ const build = {
   incarnates: {},   // slot -> {full_name, display_name}
   sidekick_attack_chains: [], // original Sidekick cast-order reference, not simulated
   sidekick_slot_order: null,  // Sidekick's slot history, kept verbatim for export (never read)
+  sidekick_proc_settings: null, // Sidekick's per-proc controls, kept verbatim for export (never read)
   include_incarnates: false,  // peak totals: fold incarnate buffs into totals
   // ⚠ v34 RECONCILIATION (Joel spotted this on the panel screenshot, 2026-07-16):
   // this global "Include accolades + amplifiers" toggle and the accolade
@@ -451,6 +452,7 @@ function buildSnapshot() {
   return JSON.stringify({
     a: build.archetype, p: build.primary, s: build.secondary, pl: build.pools, e: build.epic,
     inc: build.incarnates, sc: build.sidekick_attack_chains, so: build.sidekick_slot_order,
+    sp: build.sidekick_proc_settings,
     ac: [...ACCOLADES_CHECKED],
     pw: (build.powers || []).map(pw => [pw.full_name, pw.slots]),
     fl: [build.include_incarnates, build.pvp, build.tier, build.level_reached],
@@ -558,6 +560,7 @@ function resetBuildScopedState() {
   _BUILD_EPOCH++;
   build.sidekick_attack_chains = [];
   build.sidekick_slot_order = null;
+  build.sidekick_proc_settings = null;
   renderSidekickChainReference();
   build._custom_targets = null;
   build._exposure = null;
@@ -9884,10 +9887,15 @@ function sidekickExportPayload(nativeBuild, name, allowDropped = false) {
 // The slots changed since import, so Sidekick's own slot-by-level history no
 // longer describes them: the export leaves it out and says so.
 function sidekickSlotOrderNote(result) {
-  return result && result.dropped_slot_order
+  const dropped = (result && result.dropped_proc_settings) || [];
+  return (result && result.dropped_slot_order
     ? " Sidekick's slot-by-level history was left out because the slots changed since import;"
       + " Sidekick will plan the slot levels again."
-    : "";
+    : "")
+    + (dropped.length
+      ? ` ${dropped.length} Sidekick proc setting(s) were left out because those procs`
+        + " moved or were removed since import."
+      : "");
 }
 
 async function exportSidekick() {
@@ -10361,6 +10369,8 @@ async function _applyImportedBuild(b) {
   // Sidekick's slot history: passed back on export while the slots still match.
   build.sidekick_slot_order = b.sidekick_slot_order
     ? JSON.parse(JSON.stringify(b.sidekick_slot_order)) : null;
+  build.sidekick_proc_settings = b.sidekick_proc_settings
+    ? JSON.parse(JSON.stringify(b.sidekick_proc_settings)) : null;
   renderSidekickChainReference();
   // incarnates
   build.incarnates = {};

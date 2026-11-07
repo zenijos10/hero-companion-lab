@@ -87,7 +87,21 @@ def sample_documents():
             # Sidekick's slot-by-level history, passed back verbatim.
             "controller-slot-history": _with_slot_order("homecoming-troller"),
             # Its accolades, as Sidekick's reader stores them (lower-cased).
-            "arachnos-accolades": _with_accolades("homcoming-level-up-arachnos")}
+            "arachnos-accolades": _with_accolades("homcoming-level-up-arachnos"),
+            # Per-proc controls, re-addressed the way Sidekick's v5 reader stores them.
+            "scrapper-proc-settings": proc_settings_sample()}
+
+
+def proc_settings_sample():
+    """The "proc test" sample with its two overrides re-addressed the way
+    Sidekick's v5 reader stores them ("<powerset>:<power>:<slot index>"), plus a
+    disabled category. One copy, shared by the tests."""
+    doc = v5_from_v4("proc test", ("primary", "secondary", "pools", "inherents", "epicPool"))
+    doc["build"]["procOverrides"] = {
+        "body_mastery:Physical_Perfection:5": {"enabled": True, "mode": "hp", "hpPct": 50},
+        "scrapper/energy-aura:Kinetic_Shield:0": {"enabled": False, "mode": "hp", "hpPct": 60}}
+    doc["build"]["disabledProcCategories"] = ["Defense"]
+    return doc
 
 
 def _with_accolades(name):

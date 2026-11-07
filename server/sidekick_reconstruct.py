@@ -20,13 +20,13 @@ from skif_document import load_document
 # The native HC editor cannot express these Sidekick state dimensions yet.
 # Refuse *non-empty* values; empty state is equivalent to the reader's default.
 _UNSUPPORTED = (
-    "stances", "modes",
-    "powerState", "procOverrides", "disabledProcCategories",
+    "stances", "modes", "powerState",
     "progress", "whatIfBuffs",
 )
 _KNOWN_BUILD = frozenset((
     "name", "dataset", "archetype", "origin", "level", "primary", "secondary",
     "pools", "epicPool", "attackChains", "inherents", "incarnates", "slotOrder", "accolades",
+    "procOverrides", "disabledProcCategories",
 ) + _UNSUPPORTED)
 _KNOWN_POWER = frozenset(("internalName", "level", "slots", "powerset",
                           "isActive", "activeSubPower"))
@@ -44,6 +44,11 @@ HC_GRANTED_INHERENTS = frozenset((
     "Inherent.Fitness.Health", "Inherent.Fitness.Stamina",
 ))
 # Sidekick's own name -> full-name tables for the powers the game grants.
+# The powerset id Sidekick gives an inherent pick that names none: its reader
+# hydrates build.inherents under coh_data::INHERENT_SET = "Inherent"
+# (inherent_grants.rs at the pinned commit), so an override addresses it as
+# "Inherent:<internal name>:<slot>".
+SIDEKICK_INHERENT_SET = "Inherent"
 _SIDEKICK_INHERENT_TABLES = ("BASIC_INHERENT_POWERS", "INHERENT_FITNESS_POWERS",
                              "PRESTIGE_SPRINT_POWERS")
 _SPECIAL_WITH_LEVEL = ("Hamidon_", "Synthetic_Hamidon_", "Titan_", "Hydra_",
@@ -179,7 +184,7 @@ def _sidekick_inherent_names(root, issues):
 
 
 def _translate_inherents(body, root, hero_powers_by_full, enhancements,
-                         default_io_level, issues, encountered):
+                         default_io_level, issues, encountered, addresses):
     """Seat Sidekick's slotted inherents on the inherents HC grants.
 
     Identity comes from Sidekick's own name table, and must land on one of
@@ -208,6 +213,7 @@ def _translate_inherents(body, root, hero_powers_by_full, enhancements,
             issues.append(_issue("duplicate_power", where, full))
             continue
         encountered.add(full)
+        addresses[f"{power.get('powerset') or SIDEKICK_INHERENT_SET}:{power['internalName']}"] = full
         slots = []
         for j, source_slot in enumerate(power["slots"]):
             resolved = enhancements.get(f"{where}.slots[{j}]")
@@ -514,6 +520,31 @@ def translate_accolades(ids, root, issues):
     return out
 
 
+def _proc_settings(body, addresses, native_powers):
+    """Sidekick's per-proc controls, kept verbatim (the owner's ruling: pass
+    through, nothing reads them). Each override is keyed
+    "<powerset>:<power>:<slot index>"; its anchor records which of our powers
+    and pieces it described, so an export can tell whether it still applies.
+    An override naming no pick here (Sidekick keeps orphans after a respec)
+    is a no-op there too: it is kept without an anchor and export drops it."""
+    overrides = body.get("procOverrides") or {}
+    categories = body.get("disabledProcCategories") or []
+    if not overrides and not categories:
+        return None
+    by_full = {p["full_name"]: p for p in native_powers}
+    anchors = {}
+    for key in overrides:
+        address, _, index = key.rpartition(":")
+        power = by_full.get(addresses.get(address))
+        if power is None or not index.isdigit():
+            continue    # names no pick here (e.g. respecced away): kept, unanchored, so export drops it
+        slots = power.get("slots") or []
+        piece = slots[int(index)] if int(index) < len(slots) else None
+        anchors[key] = [power["full_name"], int(index), (piece or {}).get("piece_uid")]
+    return {"overrides": copy.deepcopy(overrides), "disabled_categories": list(categories),
+            "anchors": anchors}
+
+
 def slot_shape(powers):
     """What Sidekick's slot history describes: each power holding added slots,
     with its pick level and slot count. Kept with the history so an export can
@@ -553,7 +584,8 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
               if not (issue["reason"] == "state_not_mapped"
                       and issue["location"] in ("build.origin", "build.attackChains",
                                                 "build.incarnates", "build.slotOrder",
-                                                "build.accolades"))
+                                                "build.accolades", "build.procOverrides",
+                                                "build.disabledProcCategories"))
               # Inherent identity is decided below from Sidekick's own table.
               and issue["reason"] != "inherent_not_mapped"]
     issues.extend(_source_state_issues(doc))
@@ -571,6 +603,7 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
     matches = {p["location"]: p for p in preview["resolved"]}
     enhancements = {p["location"]: p for p in preview["resolved_enhancements"]}
     encountered = set()
+    addresses = {}
     for bucket in ("primary", "secondary", "epicPool", "pools"):
         selections = body.get(bucket, []) if bucket == "pools" else [body.get(bucket)]
         for index, selection in enumerate(selections):
@@ -599,6 +632,9 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
                                         preview["families"].get(bucket))):
                     issues.append(_issue("inconsistent_power_identity", where, full))
                     continue
+                # Sidekick addresses a pick as "<its powerset>:<internal name>".
+                addresses[f"{power.get('powerset') or selection['id']}:{power['internalName']}"] = full
+                addresses[f"{matched['sidekick_set']}:{matched['sidekick_power']}"] = full
                 slots = []
                 for j, source_slot in enumerate(power["slots"]):
                     if source_slot is None:
@@ -626,7 +662,8 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
                 })
     native_powers.extend(_translate_inherents(
         body, contract_root, hero_powers_by_full, enhancements,
-        default_io_level, issues, encountered))
+        default_io_level, issues, encountered, addresses))
+    proc_settings = _proc_settings(body, addresses, native_powers)
     result = {
         "ok": not issues,
         "name": body.get("name") or "Imported Sidekick build",
@@ -648,6 +685,8 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
         "accolades": accolades,
         "powers": native_powers,
     }
+    if proc_settings:
+        result["build"]["sidekick_proc_settings"] = proc_settings
     if body.get("slotOrder"):
         result["build"]["sidekick_slot_order"] = {
             "entries": copy.deepcopy(body["slotOrder"]), "shape": slot_shape(native_powers)}

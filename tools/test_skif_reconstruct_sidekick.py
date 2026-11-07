@@ -160,6 +160,39 @@ class RealSidekickReconstructionTests(unittest.TestCase):
                 self.assertFalse(converted["ok"])
                 self.assertIn(reason, [i["reason"] for i in converted["issues"]])
 
+    def proc_sample(self):
+        from export_skif_samples import proc_settings_sample
+        return proc_settings_sample()
+
+    def test_proc_settings_pass_through_with_their_slot_anchors(self):
+        converted = self.reconstruct(self.proc_sample())
+        self.assertTrue(converted["ok"], converted["issues"][:5])
+        kept = converted["build"]["sidekick_proc_settings"]
+        self.assertEqual(kept["overrides"], self.proc_sample()["build"]["procOverrides"])
+        self.assertEqual(kept["disabled_categories"], ["Defense"])
+        self.assertEqual(kept["anchors"]["scrapper/energy-aura:Kinetic_Shield:0"],
+                         ["Scrapper_Defense.Energy_Aura.Kinetic_Shield", 0,
+                          "Crafted_Reactive_Defenses_F"])
+
+    def test_an_override_naming_no_pick_is_kept_without_an_anchor(self):
+        # Sidekick keeps orphans after a respec; they are no-ops there too.
+        doc = self.proc_sample()
+        doc["build"]["procOverrides"]["scrapper/energy-aura:Not_A_Power:0"] = {
+            "enabled": False, "mode": "auto"}
+        converted = self.reconstruct(doc)
+        self.assertTrue(converted["ok"], converted["issues"][:5])
+        kept = converted["build"]["sidekick_proc_settings"]
+        self.assertIn("scrapper/energy-aura:Not_A_Power:0", kept["overrides"])
+        self.assertNotIn("scrapper/energy-aura:Not_A_Power:0", kept["anchors"])
+
+    def test_an_override_on_an_inherent_is_anchored(self):
+        # Health's Miracle in this sample; Sidekick addresses inherents "Inherent:<name>".
+        doc = self.proc_sample()
+        doc["build"]["procOverrides"]["Inherent:Health:0"] = {"enabled": False, "mode": "auto"}
+        kept = self.reconstruct(doc)["build"]["sidekick_proc_settings"]
+        self.assertEqual(kept["anchors"]["Inherent:Health:0"][:2], ["Inherent.Fitness.Health", 0])
+        self.assertIsNotNone(kept["anchors"]["Inherent:Health:0"][2])
+
     def test_sidekicks_homecoming_controller_with_four_pools_imports_whole(self):
         doc = self.v5_from_v4("homecoming-troller")   # its Artillery slots included
         converted = reconstruct_build(doc, self.hero, self.hero_sets, self.contract,

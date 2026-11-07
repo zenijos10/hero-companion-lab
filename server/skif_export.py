@@ -274,12 +274,18 @@ def export_build(build, hero_powers_by_full, contract_root, hero_powersets=None,
     accolades = _accolades(contract.sources, build.get("accolades") or [], issues)
     if accolades:
         out["accolades"] = accolades
+    overrides, categories, dropped_proc_settings = _proc_settings(build)
+    if overrides:
+        out["procOverrides"] = overrides
+    if categories:
+        out["disabledProcCategories"] = categories
     slot_order, dropped_slot_order = _slot_order(build)
     if slot_order:
         out["slotOrder"] = slot_order
 
     result = {"ok": not issues, "issues": issues, "dropped": dropped,
-              "dropped_slot_order": dropped_slot_order}
+              "dropped_slot_order": dropped_slot_order,
+              "dropped_proc_settings": dropped_proc_settings}
     if issues:
         result["ok"] = False
         return result
@@ -441,6 +447,35 @@ def _accolades(sources, keys, issues):
         elif key.casefold() not in out:     # one entry each, as Sidekick stores them
             out.append(key.casefold())
     return out
+
+
+def _proc_settings(build):
+    """(overrides, disabled categories, dropped override keys) for Sidekick's
+    per-proc controls, passed back verbatim. An override is written only while
+    the piece it described still sits in that slot of that power."""
+    kept = build.get("sidekick_proc_settings")
+    if not isinstance(kept, dict):
+        return {}, [], []
+    stored, anchors = kept.get("overrides"), kept.get("anchors")
+    stored = stored if isinstance(stored, dict) else {}
+    anchors = anchors if isinstance(anchors, dict) else {}
+    categories = kept.get("disabled_categories")
+    categories = [c for c in categories if isinstance(c, str)] if isinstance(categories, list) else []
+    slots_of = {p["full_name"]: p.get("slots") or [] for p in build.get("powers") or []}
+    overrides, dropped = {}, []
+    for key, value in stored.items():
+        anchor = anchors.get(key)
+        if not (isinstance(anchor, list) and len(anchor) == 3 and type(anchor[1]) is int):
+            dropped.append(key)         # unanchored (named no pick at import) or malformed
+            continue
+        full, index, uid = anchor
+        slots = slots_of.get(full)
+        piece = slots[index] if slots is not None and 0 <= index < len(slots) else None
+        if slots is not None and (piece or {}).get("piece_uid") == uid:
+            overrides[key] = value
+        else:
+            dropped.append(key)
+    return overrides, categories, dropped
 
 
 def _slot_order(build):

@@ -94,6 +94,12 @@ out. Rules going forward:
   carries `accolades`; the app's `ACCOLADES_CHECKED` stays the live copy, restored on open and
   written by `buildWithAccolades()` into saves and the export. Saves now remember accolade ticks
   (before, every reopened save came back with none ticked).
+- **procOverrides + disabledProcCategories PASS THROUGH (owner, 2026-11-07).** Sidekick's
+  per-proc controls (on/off, "assume HP at X%") are kept verbatim as `sidekick_proc_settings`;
+  nothing reads them (HC prices Reactive Defenses at its +3% floor regardless; HP-scaling procs
+  wait on the operating-health ruling). Override keys are "<powerset>:<power>:<slot>"; an
+  anchor records our power/slot/piece, and export writes an override back only while that
+  piece is still there, else reports it in `dropped_proc_settings`.
 - **OPEN, the owner's rulings:** the solver's fill-list names ("damage", "hold") do not match the
   power data's ("Damage Increase", "Hold Duration"), so common fills never choose a Damage IO
   (fixing it moves many scores).

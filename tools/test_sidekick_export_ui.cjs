@@ -37,6 +37,10 @@ const nEnd = js.indexOf("async function exportSidekick()", nStart);
 const note = vm.runInNewContext("(" + js.slice(nStart, nEnd).trim() + ")", {});
 assert.match(note({dropped_slot_order: true}), /slot-by-level history was left out/);
 assert.equal(note({dropped_slot_order: false}), "");
+assert.match(note({dropped_proc_settings: ["a:b:0"]}), /1 Sidekick proc setting\(s\) were left out/);
+assert(js.includes("build.sidekick_proc_settings = null;"), "a new character resets them");
+assert(js.includes("build.sidekick_proc_settings = b.sidekick_proc_settings"), "resume restores them");
+assert(js.includes("sp: build.sidekick_proc_settings,"), "autosave notices them");
 assert(js.includes("+ sidekickSlotOrderNote(result);"));
 // A new character never inherits the last one's history; resume restores it.
 assert(/build\.sidekick_attack_chains = \[\];\r?\n  build\.sidekick_slot_order = null;/.test(js));

@@ -153,6 +153,45 @@ class SidekickExportRoundTripTests(unittest.TestCase):
         self.assertFalse(result["ok"])
         self.assertIn("accolade_not_exportable", [i["reason"] for i in result["issues"]])
 
+    def proc_doc(self):
+        from export_skif_samples import proc_settings_sample
+        return proc_settings_sample()
+
+    def test_unchanged_proc_settings_export_verbatim_and_round_trip(self):
+        doc = self.proc_doc()
+        first = self.imported(doc)
+        result = self.export(first)
+        self.assertEqual(result["dropped_proc_settings"], [])
+        self.assertEqual(result["skif"]["build"]["procOverrides"], doc["build"]["procOverrides"])
+        self.assertEqual(result["skif"]["build"]["disabledProcCategories"], ["Defense"])
+        self.assertEqual(self.imported(load_document(dump_document(result["skif"]))), first)
+
+    def test_an_override_whose_proc_moved_is_left_out_and_reported(self):
+        build = self.imported(self.proc_doc())
+        shield = next(p for p in build["powers"] if p["full_name"].endswith(".Kinetic_Shield"))
+        shield["slots"][0] = None                               # the proc was taken out
+        result = self.export(build)
+        self.assertEqual(result["dropped_proc_settings"],
+                         ["scrapper/energy-aura:Kinetic_Shield:0"])
+        self.assertEqual(list(result["skif"]["build"]["procOverrides"]),
+                         ["body_mastery:Physical_Perfection:5"])
+        self.assertEqual(result["skif"]["build"]["disabledProcCategories"], ["Defense"])
+
+    def test_an_override_naming_no_pick_is_kept_then_left_out_on_export(self):
+        doc = self.proc_doc()
+        doc["build"]["procOverrides"]["scrapper/energy-aura:Respecced_Away:0"] = {
+            "enabled": False, "mode": "auto"}
+        result = self.export(self.imported(doc))
+        self.assertEqual(result["dropped_proc_settings"],
+                         ["scrapper/energy-aura:Respecced_Away:0"])
+
+    def test_a_malformed_saved_setting_is_dropped_not_a_crash(self):
+        build = self.imported(self.proc_doc())
+        build["sidekick_proc_settings"]["anchors"] = ["not", "a", "mapping"]
+        result = self.export(build)
+        self.assertEqual(sorted(result["dropped_proc_settings"]),
+                         sorted(self.proc_doc()["build"]["procOverrides"]))
+
     def test_kheldian_form_attacks_export_inside_their_powerset(self):
         exported = self.export(self.imported(self.sample("homecoming-kheldian")))["skif"]["build"]
         self.assertIn("Bright_Nova_Bolt",
