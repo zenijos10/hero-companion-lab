@@ -35588,12 +35588,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 709.44
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 842.68
    }
   },
-  "canonical_score": 709.44
+  "canonical_score": 842.68
  },
  "Class_Brute|Brute_Melee.Battle_Axe|Brute_Defense.Energy_Aura|itrial": {
   "picks": [
@@ -36563,12 +36563,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 1142.8
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 1118.53
    }
   },
-  "canonical_score": 1142.8
+  "canonical_score": 1118.53
  },
  "Class_Brute|Brute_Melee.Brawling|Brute_Defense.Energy_Aura|itrial": {
   "picks": [
@@ -38660,12 +38660,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 882.29
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 877.72
    }
   },
-  "canonical_score": 882.29
+  "canonical_score": 877.72
  },
  "Class_Brute|Brute_Melee.Claws|Brute_Defense.Energy_Aura|itrial": {
   "picks": [
@@ -39709,12 +39709,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 888.3
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 934.49
    }
   },
-  "canonical_score": 888.3
+  "canonical_score": 934.49
  },
  "Class_Brute|Brute_Melee.Dark_Melee|Brute_Defense.Energy_Aura|itrial": {
   "picks": [
@@ -41809,12 +41809,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 866.22
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 828.01
    }
   },
-  "canonical_score": 866.22
+  "canonical_score": 828.01
  },
  "Class_Brute|Brute_Melee.Electrical_Melee|Brute_Defense.Energy_Aura|itrial": {
   "picks": [
@@ -42859,12 +42859,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 803.93
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 788.26
    }
   },
-  "canonical_score": 803.93
+  "canonical_score": 788.26
  },
  "Class_Brute|Brute_Melee.Energy_Melee|Brute_Defense.Energy_Aura|itrial": {
   "picks": [
@@ -44958,12 +44958,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 791.88
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 773.48
    }
   },
-  "canonical_score": 791.88
+  "canonical_score": 773.48
  },
  "Class_Brute|Brute_Melee.Ice_Melee|Brute_Defense.Energy_Aura|itrial": {
   "picks": [
@@ -46008,12 +46008,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 1047.51
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 1006.32
    }
   },
-  "canonical_score": 1047.51
+  "canonical_score": 1006.32
  },
  "Class_Brute|Brute_Melee.Katana|Brute_Defense.Energy_Aura|itrial": {
   "picks": [
@@ -49158,12 +49158,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 504.3
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 497.3
    }
   },
-  "canonical_score": 504.3
+  "canonical_score": 497.3
  },
  "Class_Brute|Brute_Melee.Psionic_Melee|Brute_Defense.Energy_Aura|itrial": {
   "picks": [
@@ -51253,12 +51253,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 758.6
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 577.31
    }
   },
-  "canonical_score": 758.6
+  "canonical_score": 577.31
  },
  "Class_Brute|Brute_Melee.Savage_Melee|Brute_Defense.Energy_Aura|itrial": {
   "picks": [
@@ -52302,12 +52302,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 752.36
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 693.68
    }
   },
-  "canonical_score": 752.36
+  "canonical_score": 693.68
  },
  "Class_Brute|Brute_Melee.Sonic_Melee|Brute_Defense.Energy_Aura|itrial": {
   "picks": [
@@ -53352,12 +53352,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 825.47
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 823.38
    }
   },
-  "canonical_score": 825.47
+  "canonical_score": 823.38
  },
  "Class_Brute|Brute_Melee.Spines|Brute_Defense.Energy_Aura|itrial": {
   "picks": [
@@ -54402,12 +54402,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 686.59
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 879.56
    }
   },
-  "canonical_score": 686.59
+  "canonical_score": 879.56
  },
  "Class_Brute|Brute_Melee.Staff_Fighting|Brute_Defense.Energy_Aura|itrial": {
   "picks": [
@@ -56502,12 +56502,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 676.65
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 649.87
    }
   },
-  "canonical_score": 676.65
+  "canonical_score": 649.87
  },
  "Class_Brute|Brute_Melee.Super_Strength|Brute_Defense.Energy_Aura|itrial": {
   "picks": [
@@ -57552,12 +57552,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 1062.05
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 818.48
    }
   },
-  "canonical_score": 1062.05
+  "canonical_score": 818.48
  },
  "Class_Brute|Brute_Melee.Titan_Weapons|Brute_Defense.Energy_Aura|itrial": {
   "picks": [
@@ -134315,12 +134315,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 934.27
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 918.31
    }
   },
-  "canonical_score": 934.27
+  "canonical_score": 918.31
  },
  "Class_Scrapper|Scrapper_Melee.Brawling|Scrapper_Defense.Energy_Aura|itrial": {
   "picks": [
@@ -137604,12 +137604,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 666.95
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 714.83
    }
   },
-  "canonical_score": 666.95
+  "canonical_score": 714.83
  },
  "Class_Scrapper|Scrapper_Melee.Dark_Melee|Scrapper_Defense.Energy_Aura|itrial": {
   "picks": [
@@ -155594,12 +155594,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 580.18
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 599.39
    }
   },
-  "canonical_score": 580.18
+  "canonical_score": 599.39
  },
  "Class_Scrapper|Scrapper_Melee.Titan_Weapons|Scrapper_Defense.Energy_Aura|itrial": {
   "picks": [
@@ -160994,12 +160994,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 763.03
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 769.33
    }
   },
-  "canonical_score": 763.03
+  "canonical_score": 769.33
  },
  "Class_Sentinel|Sentinel_Ranged.Dark_Blast|Sentinel_Defense.Energy_Aura|itrial": {
   "picks": [
@@ -176889,12 +176889,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 867.31
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 856.07
    }
   },
-  "canonical_score": 867.31
+  "canonical_score": 856.07
  },
  "Class_Stalker|Stalker_Melee.Dark_Melee|Stalker_Defense.Energy_Aura|itrial": {
   "picks": [
@@ -179138,12 +179138,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 888.99
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 871.18
    }
   },
-  "canonical_score": 888.99
+  "canonical_score": 871.18
  },
  "Class_Stalker|Stalker_Melee.Electrical_Melee|Stalker_Defense.Energy_Aura|itrial": {
   "picks": [
@@ -180262,12 +180262,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 852.75
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 814.27
    }
   },
-  "canonical_score": 852.75
+  "canonical_score": 814.27
  },
  "Class_Stalker|Stalker_Melee.Energy_Melee|Stalker_Defense.Energy_Aura|itrial": {
   "picks": [
@@ -182512,12 +182512,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 762.65
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 747.31
    }
   },
-  "canonical_score": 762.65
+  "canonical_score": 747.31
  },
  "Class_Stalker|Stalker_Melee.Ice_Melee|Stalker_Defense.Energy_Aura|itrial": {
   "picks": [
@@ -189184,12 +189184,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 886.1
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 756.13
    }
   },
-  "canonical_score": 886.1
+  "canonical_score": 756.13
  },
  "Class_Stalker|Stalker_Melee.Savage_Melee|Stalker_Defense.Energy_Aura|itrial": {
   "picks": [
@@ -191434,12 +191434,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 901.95
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 939.43
    }
   },
-  "canonical_score": 901.95
+  "canonical_score": 939.43
  },
  "Class_Stalker|Stalker_Melee.Spines|Stalker_Defense.Energy_Aura|itrial": {
   "picks": [
@@ -192558,12 +192558,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 838.77
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 827.76
    }
   },
-  "canonical_score": 838.77
+  "canonical_score": 827.76
  },
  "Class_Stalker|Stalker_Melee.Staff_Fighting|Stalker_Defense.Energy_Aura|itrial": {
   "picks": [
@@ -193683,12 +193683,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 646.45
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 712.29
    }
   },
-  "canonical_score": 646.45
+  "canonical_score": 712.29
  },
  "Class_Stalker|Stalker_Melee.Stone_Melee|Stalker_Defense.Energy_Aura|itrial": {
   "picks": [
@@ -198105,12 +198105,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 1105.83
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 1109.48
    }
   },
-  "canonical_score": 1105.83
+  "canonical_score": 1109.48
  },
  "Class_Tanker|Tanker_Defense.Electric_Armor|Tanker_Melee.Brawling|itrial": {
   "picks": [
@@ -198180,12 +198180,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 1588.1
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 1554.2
    }
   },
-  "canonical_score": 1588.1
+  "canonical_score": 1554.2
  },
  "Class_Tanker|Tanker_Defense.Electric_Armor|Tanker_Melee.Broad_Sword|itrial": {
   "picks": [
@@ -198255,12 +198255,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 1377.71
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 1282.63
    }
   },
-  "canonical_score": 1377.71
+  "canonical_score": 1282.63
  },
  "Class_Tanker|Tanker_Defense.Electric_Armor|Tanker_Melee.Claws|itrial": {
   "picks": [
@@ -198330,12 +198330,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 1168.37
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 1144.78
    }
   },
-  "canonical_score": 1168.37
+  "canonical_score": 1144.78
  },
  "Class_Tanker|Tanker_Defense.Electric_Armor|Tanker_Melee.Dark_Melee|itrial": {
   "picks": [
@@ -198405,12 +198405,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 1029.96
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 1040.77
    }
   },
-  "canonical_score": 1029.96
+  "canonical_score": 1040.77
  },
  "Class_Tanker|Tanker_Defense.Electric_Armor|Tanker_Melee.Dual_Blades|itrial": {
   "picks": [
@@ -198480,12 +198480,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 971.97
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 941.75
    }
   },
-  "canonical_score": 971.97
+  "canonical_score": 941.75
  },
  "Class_Tanker|Tanker_Defense.Electric_Armor|Tanker_Melee.Electrical_Melee|itrial": {
   "picks": [
@@ -198555,12 +198555,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 1107.63
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 1176.67
    }
   },
-  "canonical_score": 1107.63
+  "canonical_score": 1176.67
  },
  "Class_Tanker|Tanker_Defense.Electric_Armor|Tanker_Melee.Energy_Melee|itrial": {
   "picks": [
@@ -198630,12 +198630,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 1162.0
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 1111.76
    }
   },
-  "canonical_score": 1162.0
+  "canonical_score": 1111.76
  },
  "Class_Tanker|Tanker_Defense.Electric_Armor|Tanker_Melee.Fiery_Melee|itrial": {
   "picks": [
@@ -198779,12 +198779,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 1015.92
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 999.69
    }
   },
-  "canonical_score": 1015.92
+  "canonical_score": 999.69
  },
  "Class_Tanker|Tanker_Defense.Electric_Armor|Tanker_Melee.Katana|itrial": {
   "picks": [
@@ -198854,12 +198854,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 1341.87
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 1316.02
    }
   },
-  "canonical_score": 1341.87
+  "canonical_score": 1316.02
  },
  "Class_Tanker|Tanker_Defense.Electric_Armor|Tanker_Melee.Kinetic_Attack|itrial": {
   "picks": [
@@ -198929,12 +198929,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 1243.66
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 1226.75
    }
   },
-  "canonical_score": 1243.66
+  "canonical_score": 1226.75
  },
  "Class_Tanker|Tanker_Defense.Electric_Armor|Tanker_Melee.Martial_Arts|itrial": {
   "picks": [
@@ -199004,12 +199004,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 636.81
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 629.98
    }
   },
-  "canonical_score": 636.81
+  "canonical_score": 629.98
  },
  "Class_Tanker|Tanker_Defense.Electric_Armor|Tanker_Melee.Psionic_Melee|itrial": {
   "picks": [
@@ -199079,12 +199079,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 1024.55
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 1007.45
    }
   },
-  "canonical_score": 1024.55
+  "canonical_score": 1007.45
  },
  "Class_Tanker|Tanker_Defense.Electric_Armor|Tanker_Melee.Radiation_Melee|itrial": {
   "picks": [
@@ -199304,12 +199304,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 920.44
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 906.05
    }
   },
-  "canonical_score": 920.44
+  "canonical_score": 906.05
  },
  "Class_Tanker|Tanker_Defense.Electric_Armor|Tanker_Melee.Spines|itrial": {
   "picks": [
@@ -199453,12 +199453,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 1432.59
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 1402.04
    }
   },
-  "canonical_score": 1432.59
+  "canonical_score": 1402.04
  },
  "Class_Tanker|Tanker_Defense.Electric_Armor|Tanker_Melee.Stone_Melee|itrial": {
   "picks": [
@@ -199603,12 +199603,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 1016.38
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 996.67
    }
   },
-  "canonical_score": 1016.38
+  "canonical_score": 996.67
  },
  "Class_Tanker|Tanker_Defense.Electric_Armor|Tanker_Melee.Titan_Weapons|itrial": {
   "picks": [
@@ -199752,12 +199752,12 @@
     "gate": "roster_merge canonical"
    },
    "evaluated": {
-    "against": "model 57, 2026-10-26",
-    "verdict": "unaffected",
-    "canonical_score": 1076.12
+    "against": "model 57, 2026-11-07",
+    "verdict": "moved",
+    "canonical_score": 1051.62
    }
   },
-  "canonical_score": 1076.12
+  "canonical_score": 1051.62
  },
  "Class_Tanker|Tanker_Defense.Energy_Aura|Tanker_Melee.Battle_Axe|itrial": {
   "picks": [
