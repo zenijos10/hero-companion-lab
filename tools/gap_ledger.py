@@ -145,6 +145,19 @@ def build():
         L.append(f"- {item}")
     L.append("")
 
+    L.append("## Known bugs, ruled not to fix (each with its ruling)")
+    L.append("")
+    for item in [
+        "**Incarnates on a character below level 50 are not refused** - the "
+        "game unlocks the Alpha slot at 50, so a sub-50 build carrying "
+        "incarnates is not buildable, yet /build/validate passes it and the "
+        "Sidekick importer accepts it. Owner's ruling (2026-11-07): it SHOULD "
+        "be an error, but builds below 50 are not made, so it stays a known "
+        "bug and is NOT fixed. Fixing it must not break planning a leveling "
+        "character's endgame (CLAUDE.md, Sidekick section).",
+    ]:
+        L.append(f"- {item}")
+    L.append("")
     L.append("## Needs eyes in the game (one look each)")
     L.append("")
     for item in [

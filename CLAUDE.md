@@ -77,11 +77,14 @@ out. Rules going forward:
   Particle Acceleration, Mental Training); the score credited it. Rule:
   `engine.COMMON_IO_ADMITTED_BY` (derived from common_ios.json names, which ARE the power
   data's words), enforced by `/build/validate`. 131 champion `canonical_score`s corrected
-  2-10% (#14); per the owner, NO re-search ran: a recert wave for them is still theirs.
+  2-10% (#14); per the owner, NO re-search ran. **Owner's ruling (2026-11-07): the
+  recert wave for these 131 WAITS until the Sidekick MVP is done.**
 - **OPEN, the owner's rulings:** the solver's fill-list names ("damage", "hold") do not match the
   power data's ("Damage Increase", "Hold Duration"), so common fills never choose a Damage IO
-  (fixing it moves many scores); incarnates on a sub-50 plan are not refused (a leveling
-  character may plan them).
+  (fixing it moves many scores).
+- **KNOWN BUG, ruled NOT to fix (owner, 2026-11-07):** incarnates on a sub-50 build are not
+  refused. It should be an error, but builds below 50 are not made; recorded in
+  docs/KNOWN-GAPS.md (tools/gap_ledger.py). Do not fix without a new ruling.
 - **The app keeps character level as `level_reached`, never `char_level`** (#13 lost it
   both ways). Import writes both; export reads either.
 
