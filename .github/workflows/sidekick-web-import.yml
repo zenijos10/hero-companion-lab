@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - "server/sidekick_web_import.py"
+      - "server/skif_export.py"
+      - "tools/test_sidekick_export_ui.cjs"
       - "server/sidekick_contract.py"
       - "server/engine.py"
       - "tools/test_slot_legality.py"
@@ -45,6 +47,7 @@ jobs:
       - name: Verify browser javascript syntax and server compilation
         run: |
           node --check static/app.js
+          node tools/test_sidekick_export_ui.cjs
           node tools/test_sidekick_incarnates_ui.cjs
           python -m py_compile server/server.py
 
@@ -75,8 +78,7 @@ jobs:
             contract/homecoming/boost-index.json
             contract/homecoming/enhancements.json
             contract/homecoming/levels.json
-            contract/homecoming/powersets/stalker/primary/energy-melee.json
-            contract/homecoming/powersets/stalker/secondary/energy-aura.json
+            contract/homecoming/powersets/
             fixtures/skif/v5/rb5d_browser_pass.skif
           persist-credentials: false
       - name: Exercise real Flask endpoint and original Sidekick data

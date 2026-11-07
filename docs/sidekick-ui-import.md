@@ -223,3 +223,31 @@ Proof, all against the pinned Sidekick data:
   (`tools/sidekick_verify`, its `coh_data` crate at the pinned commit, in CI
   only) and re-opens our exports with it, after Sidekick's published build as
   the control.
+
+## Export from the Character menu
+
+Once you've imported, assembled or optimized a build in Hero Companion:
+
+1. Open **Character → Export to CoH Sidekick**.
+2. If the pinned Sidekick compatibility map is missing, the app asks permission
+   to download it. Declining writes nothing and leaves the character untouched.
+3. The server checks the real native build against the Homecoming legality
+   rules and refuses powers or enhancements that cannot be mapped to SKIF v5.
+   Nothing is saved on a failed export. Failures list the affected power/slot.
+4. If old *reference-only* attack-chain notes mention powers no longer selected,
+   you get a separate confirmation before exporting without those notes.
+5. Use the desktop Save As dialog or browser download to save the `.skif` file,
+   then open it in Sidekick.
+
+Export uses the **saved native build state**, not the temporary stats projection.
+Inactive incarnate selections stay in the file (with `active: false`), and
+preview-only booster levels are not substituted into the actual enhancement
+slots. The export API does not mutate the current editor or save anything
+itself. The existing Mids Reborn export is unchanged.
+
+**Limitations:** This is still a conservative Homecoming SKIF v5 subset.
+Unsupported power modes, progress/proc settings and unmapped game identities
+must be resolved before a complete export can be generated. A native build
+legality check and Sidekick's independent decoder are exercised in CI; neither
+guarantees every future custom build is legal in the live game. A packaged
+Windows build must be rebuilt after merging to expose the menu action.

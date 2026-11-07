@@ -56,6 +56,9 @@ EXCLUSIONS = {
     "/ai/interpret-goal": "AI seam off in client",
     "/ai/refine-build": "AI seam off in client",
     "/static/<path:fname>": "flask static file serving",
+    "/build/import-sidekick": "owned by test_skif_web_endpoint.py (real pinned Sidekick data)",
+    "/build/export-sidekick": "owned by test_skif_web_endpoint.py (real pinned Sidekick data)",
+    "/sidekick/data/download": "owned by test_skif_web_endpoint.py (writes the data cache)",
 }
 
 TESTED = set()

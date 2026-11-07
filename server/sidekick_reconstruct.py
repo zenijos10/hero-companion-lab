@@ -589,6 +589,7 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
     result["build"] = {
         "archetype": class_name, **sets,
         "char_level": body["level"],
+        "level_reached": body["level"],   # the field the app reads as the character's level
         "origin": body.get("origin"),
         "incarnates": incarnates,
         "sidekick_attack_chains": attack_chains,
