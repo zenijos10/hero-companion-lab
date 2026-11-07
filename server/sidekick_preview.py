@@ -373,9 +373,10 @@ def preview_build(document, hero_powers_by_full, contract_root, hero_piece_by_ui
                         "level": power["level"], "slot_count": len(power["slots"]),
                     })
             resolve_slots(power, location)
-            for key in ("isActive", "activeSubPower"):
-                if power.get(key):
-                    issues.append(_issue("state_not_mapped", f"{location}.{key}", key))
+            # isActive is our include_in_totals (reconstruction maps it).
+            if power.get("activeSubPower"):
+                issues.append(_issue("state_not_mapped", f"{location}.activeSubPower",
+                                     "activeSubPower"))
         if len(used_branches) > 1:
             issues.append(_issue("mixed_branch_sets", where, ", ".join(sorted(used_branches))))
         seats[bucket] = next(iter(used_branches)) if len(used_branches) == 1 else set_id

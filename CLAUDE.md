@@ -100,6 +100,14 @@ out. Rules going forward:
   wait on the operating-health ruling). Override keys are "<powerset>:<power>:<slot>"; an
   anchor records our power/slot/piece, and export writes an override back only while that
   piece is still there, else reports it in `dropped_proc_settings`.
+- **Sidekick's per-power on/off switch (`isActive`) IS our `include_in_totals` (owner,
+  2026-11-07).** Sidekick's math (coh_math gather.rs) counts an Auto always and a toggle/click
+  only when switched on, so import sets the checkbox for toggles/clicks only (`is_auto` /
+  `_counts_in_totals`); export writes `isActive` from the checkbox (unset = our default), and
+  an inherent switched on with no slots (Sprint) travels. The solver ignores the checkbox
+  (re-derives from power_type), so this moves displayed totals only. ⚠ The census missed it
+  for a day: `v5_from_v4` stripped `isActive` (7 of 8 samples carry it) — a test converter
+  that drops a field hides every blocker in that field.
 - **OPEN, the owner's rulings:** the solver's fill-list names ("damage", "hold") do not match the
   power data's ("Damage Increase", "Hold Duration"), so common fills never choose a Damage IO
   (fixing it moves many scores).

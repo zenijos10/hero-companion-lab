@@ -14,7 +14,8 @@ from pathlib import Path
 from sidekick_preview import (GRANTED_SET, SourceSets, _Branches, _index_powers,
                               _read_json, _resolve_power, _source_archetype_fits,
                               _source_category_fits, hero_set_path)
-from sidekick_reconstruct import HC_GRANTED_INHERENTS, accolade_records, slot_shape
+from sidekick_reconstruct import (HC_GRANTED_INHERENTS, accolade_records, is_auto,
+                                  slot_shape)
 from sidekick_enhancements import EnhancementResolver
 from skif_document import SkifFormatError, load_document
 
@@ -331,6 +332,8 @@ def _selection(contract, role, set_full, slug, picks, issues, placed):
         if shard["id"] != selection_id:
             written["powerset"] = shard["id"]
         written["slots"] = _slots(contract, power, issues)
+        if _switched_on(contract, power):
+            written["isActive"] = True
         powers.append(written)
     return {"id": selection_id, "powers": powers}
 
@@ -350,19 +353,37 @@ def _slots(contract, power, issues):
     return out
 
 
+def _switched_on(contract, power):
+    """Our "count in totals" checkbox is Sidekick's isActive. Unset, it follows
+    our default (toggles and Autos on); Sidekick writes the switch on an Auto
+    too, and its math counts an Auto either way."""
+    rec = contract.hero.get(power["full_name"]) or {}
+    include = power.get("include_in_totals")
+    if include is None:
+        include = rec.get("power_type") in (1, 2)
+    return bool(include) or is_auto(rec)
+
+
 def _inherents(contract, build, issues):
-    """Only an inherent the user authored on travels (Sidekick's own rule)."""
+    """Only an inherent the user authored on travels (Sidekick's own rule):
+    slots placed or filled, or a toggle/click switched on (Sprint)."""
     out = []
     for power in build.get("powers") or []:
         full = power["full_name"]
         slots = power.get("slots") or []
-        if full not in HC_GRANTED_INHERENTS or (len(slots) <= 1 and not any(slots)):
+        rec = contract.hero.get(full) or {}
+        switched = not is_auto(rec) and power.get("include_in_totals") is True
+        if full not in HC_GRANTED_INHERENTS or (len(slots) <= 1 and not any(slots)
+                                                and not switched):
             continue
         internal = contract.inherent_names().get(full)
         if internal is None:
             issues.append(_issue("inherent_not_exportable", full, full))
             continue
-        out.append({"internalName": internal, "level": 1, "slots": _slots(contract, power, issues)})
+        written = {"internalName": internal, "level": 1, "slots": _slots(contract, power, issues)}
+        if _switched_on(contract, power):
+            written["isActive"] = True
+        out.append(written)
     return out
 
 
