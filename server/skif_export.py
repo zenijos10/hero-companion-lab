@@ -14,7 +14,7 @@ from pathlib import Path
 from sidekick_preview import (GRANTED_SET, SourceSets, _Branches, _index_powers,
                               _read_json, _resolve_power, _source_archetype_fits,
                               _source_category_fits, hero_set_path)
-from sidekick_reconstruct import HC_GRANTED_INHERENTS
+from sidekick_reconstruct import HC_GRANTED_INHERENTS, slot_shape
 from sidekick_enhancements import EnhancementResolver
 from skif_document import SkifFormatError, load_document
 
@@ -268,7 +268,12 @@ def export_build(build, hero_powers_by_full, contract_root, hero_powersets=None,
     if chains:
         out["attackChains"] = chains
 
-    result = {"ok": not issues, "issues": issues, "dropped": dropped}
+    slot_order, dropped_slot_order = _slot_order(build)
+    if slot_order:
+        out["slotOrder"] = slot_order
+
+    result = {"ok": not issues, "issues": issues, "dropped": dropped,
+              "dropped_slot_order": dropped_slot_order}
     if issues:
         result["ok"] = False
         return result
@@ -412,6 +417,17 @@ def _incarnates(build, issues, incarnate_catalog=None):
         out[matched_slots[0]["slot"].lower()] = {
             "power": pick["full_name"], "active": pick.get("active") is not False}
     return out
+
+
+def _slot_order(build):
+    """(Sidekick's slot history, dropped?): written back verbatim only while the
+    slots it describes are unchanged; otherwise left out, and the caller says so."""
+    kept = build.get("sidekick_slot_order")
+    if not isinstance(kept, dict) or not kept.get("entries"):
+        return None, False
+    if kept.get("shape") != slot_shape(build.get("powers") or []):
+        return None, True
+    return kept["entries"], False
 
 
 def _attack_chains(build, picks, dropped):

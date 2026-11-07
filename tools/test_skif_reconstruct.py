@@ -268,7 +268,6 @@ class ReconstructionTests(unittest.TestCase):
     def test_nonrepresentable_state_is_explicitly_blocked_never_partially_imported(self):
         alterations = [
             ("stances", {"ammo": True}),
-            ("slotOrder", [{"powerName": "Pistols", "slotIndex": 1}]),
             ("progress", {"crafted": ["enhancement-key"]}),
             ("futureState", {"mystery": 1}),
         ]
@@ -281,6 +280,16 @@ class ReconstructionTests(unittest.TestCase):
                 self.assertNotIn("build", result)
                 self.assertIn("unsupported_source_state",
                               [p["reason"] for p in result["issues"]])
+
+    def test_slot_history_is_kept_verbatim_never_interpreted(self):
+        # The owner's ruling (2026-11-07): Sidekick's slotOrder passes through.
+        doc = fixture()
+        doc["build"]["slotOrder"] = [{"powerName": "Pistols", "slotIndex": 1,
+                                      "category": "primary", "level": 2}]
+        result = self.convert(doc)
+        self.assertTrue(result["ok"], result["issues"])
+        self.assertEqual(result["build"]["sidekick_slot_order"]["entries"],
+                         doc["build"]["slotOrder"])
 
     def test_attack_chains_preserve_source_order_and_verified_power_mappings(self):
         doc = fixture()

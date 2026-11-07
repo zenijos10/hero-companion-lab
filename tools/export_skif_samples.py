@@ -83,7 +83,17 @@ def sample_documents():
             # Base set named, each Crab Spider pick names its branch.
             "arachnos-crab-branch": v5_from_v4("homcoming-level-up-arachnos"),
             # A D-Sync: Sidekick's DSync_* is our Dsync_*.
-            "blaster-dsync": v5_from_v4("sojourner_1784025393210")}
+            "blaster-dsync": v5_from_v4("sojourner_1784025393210"),
+            # Sidekick's slot-by-level history, passed back verbatim.
+            "controller-slot-history": _with_slot_order("homecoming-troller")}
+
+
+def _with_slot_order(name):
+    doc = v5_from_v4(name)
+    doc["build"]["slotOrder"] = json.loads(
+        (UPSTREAM / f"fixtures/skif/v4/{name}.skif").read_text(encoding="utf-8")
+    )["build"]["slotOrder"]
+    return doc
 
 
 def main(out_dir):

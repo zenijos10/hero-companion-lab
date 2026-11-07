@@ -6577,6 +6577,7 @@ def build_export_sidekick():
     safe_name = re.sub(r"[^A-Za-z0-9._-]+", "_", title or "HeroCompanion").strip("._")[:72]
     return jsonify({"ok": True, "filename": (safe_name or "HeroCompanion") + ".skif",
                     "skif": converted["skif"], "dropped": dropped,
+                    "dropped_slot_order": converted.get("dropped_slot_order", False),
                     "warnings": legal.get("warnings") or []})
 
 

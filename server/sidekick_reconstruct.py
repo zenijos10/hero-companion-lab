@@ -19,13 +19,13 @@ from skif_document import load_document
 # The native HC editor cannot express these Sidekick state dimensions yet.
 # Refuse *non-empty* values; empty state is equivalent to the reader's default.
 _UNSUPPORTED = (
-    "accolades", "slotOrder", "stances", "modes",
+    "accolades", "stances", "modes",
     "powerState", "procOverrides", "disabledProcCategories",
     "progress", "whatIfBuffs",
 )
 _KNOWN_BUILD = frozenset((
     "name", "dataset", "archetype", "origin", "level", "primary", "secondary",
-    "pools", "epicPool", "attackChains", "inherents", "incarnates",
+    "pools", "epicPool", "attackChains", "inherents", "incarnates", "slotOrder",
 ) + _UNSUPPORTED)
 _KNOWN_POWER = frozenset(("internalName", "level", "slots", "powerset",
                           "isActive", "activeSubPower"))
@@ -476,6 +476,14 @@ def _translate_incarnates(body, incarnate_catalog, issues):
     return result
 
 
+def slot_shape(powers):
+    """What Sidekick's slot history describes: each power holding added slots,
+    with its pick level and slot count. Kept with the history so an export can
+    tell whether the slots still match it. Never interpreted otherwise."""
+    return sorted([p["full_name"], p.get("pick_level"), len(p.get("slots") or [])]
+                  for p in powers if len(p.get("slots") or []) > 1)
+
+
 def _belongs(hero_set, selected_set, family):
     """A pick sits in its selection's set, in that set's Arachnos base or branch
     (the preview admits one branch only), or is a power the game grants with
@@ -506,7 +514,7 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
     issues = [copy.deepcopy(issue) for issue in preview["unresolved"]
               if not (issue["reason"] == "state_not_mapped"
                       and issue["location"] in ("build.origin", "build.attackChains",
-                                                "build.incarnates"))
+                                                "build.incarnates", "build.slotOrder"))
               # Inherent identity is decided below from Sidekick's own table.
               and issue["reason"] != "inherent_not_mapped"]
     issues.extend(_source_state_issues(doc))
@@ -600,4 +608,7 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
         "sidekick_attack_chains": attack_chains,
         "powers": native_powers,
     }
+    if body.get("slotOrder"):
+        result["build"]["sidekick_slot_order"] = {
+            "entries": copy.deepcopy(body["slotOrder"]), "shape": slot_shape(native_powers)}
     return result

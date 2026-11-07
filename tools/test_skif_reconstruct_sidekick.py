@@ -104,6 +104,22 @@ class RealSidekickReconstructionTests(unittest.TestCase):
                          if p["full_name"].endswith(".Fire_Ball"))
         self.assertEqual(fire_ball["slots"][5]["piece_uid"], "Dsync_Damage_Accuracy")
 
+    def test_every_real_sample_imports_whole_with_its_slot_history(self):
+        from export_skif_samples import UPSTREAM
+        for name in ("controller_import_1785756407256", "homcoming-level-up-arachnos",
+                     "homecoming-kheldian", "homecoming-troller", "proc test",
+                     "sojourner_1784025393210"):
+            with self.subTest(name):
+                doc = self.v5_from_v4(name)
+                order = json.loads((UPSTREAM / f"fixtures/skif/v4/{name}.skif")
+                                   .read_text(encoding="utf-8"))["build"]["slotOrder"]
+                doc["build"]["slotOrder"] = order
+                converted = self.reconstruct(doc)
+                self.assertTrue(converted["ok"], converted["issues"][:5])
+                kept = converted["build"]["sidekick_slot_order"]
+                self.assertEqual(kept["entries"], order)      # verbatim, never interpreted
+                self.assertTrue(kept["shape"])
+
     def test_sidekicks_homecoming_controller_with_four_pools_imports_whole(self):
         doc = self.v5_from_v4("homecoming-troller")   # its Artillery slots included
         converted = reconstruct_build(doc, self.hero, self.hero_sets, self.contract,

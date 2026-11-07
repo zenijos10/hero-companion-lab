@@ -127,6 +127,26 @@ class SidekickFlaskEndpointTests(unittest.TestCase):
             self.assertTrue(allowed["dropped"])
             self.assertEqual(allowed["skif"]["version"], 5)
 
+    def test_slot_history_rides_import_and_export_and_its_drop_is_reported(self):
+        source = copy.deepcopy(self.source)
+        first = source["build"]["primary"]["powers"][0]
+        source["build"]["slotOrder"] = [{"powerName": first["internalName"], "slotIndex": 1,
+                                         "category": "primary", "level": 3}]
+        built = self.send(source)["build"]
+        self.assertEqual(built["sidekick_slot_order"]["entries"], source["build"]["slotOrder"])
+        with patch.object(app_server, "_complete_build_validation",
+                          return_value={"errors": [], "warnings": []}):
+            kept = self.export(built)
+            self.assertTrue(kept["ok"], kept)
+            self.assertFalse(kept["dropped_slot_order"])
+            self.assertEqual(kept["skif"]["build"]["slotOrder"], source["build"]["slotOrder"])
+            # A slot is added: the history no longer describes the slots.
+            built["powers"][0]["slots"] += [None, None]
+            changed = self.export(built)
+            self.assertTrue(changed["ok"], changed)
+            self.assertTrue(changed["dropped_slot_order"])
+            self.assertNotIn("slotOrder", changed["skif"]["build"])
+
     def test_invalid_or_illegal_export_request_is_refused_early(self):
         bad = self.export(None)
         self.assertFalse(bad["ok"])

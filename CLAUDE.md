@@ -79,6 +79,16 @@ out. Rules going forward:
   data's words), enforced by `/build/validate`. 131 champion `canonical_score`s corrected
   2-10% (#14); per the owner, NO re-search ran. **Owner's ruling (2026-11-07): the
   recert wave for these 131 WAITS until the Sidekick MVP is done.**
+- **slotOrder (Sidekick's slot-by-level history) PASSES THROUGH (owner, 2026-11-07).** Import
+  keeps it verbatim as `sidekick_slot_order` {entries, shape}; nothing reads it. Export writes it
+  back only while `slot_shape` (each power holding added slots: pick level + slot count) is
+  unchanged; otherwise leaves it out and reports `dropped_slot_order` (the app says so). Before
+  this ruling every real Sidekick build was refused, because all of them carry it.
+- **Kheldian/Arachnos (2026-11-07):** Sidekick files their primaries/secondaries under category
+  "epic"; form attacks + Kheldian travel powers (autoIssue+free) are our `Inherent.Inherent`
+  records; VEAT branch picks carry `powerset` = branch (older files: under the base set), and
+  the branch is seated; two branches refuse. D-Syncs bridge on a case-only uid difference.
+  Still refused, our data lacks them: Synthetic Hamidon + `Generic_*` specials (16).
 - **OPEN, the owner's rulings:** the solver's fill-list names ("damage", "hold") do not match the
   power data's ("Damage Increase", "Hold Duration"), so common fills never choose a Damage IO
   (fixing it moves many scores).
