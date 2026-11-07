@@ -52,6 +52,7 @@ const harness = `
   let editBarCalls = 0;
   function updateEditBar() { editBarCalls++; }
   function updateCustomTargetsChip() {}
+  function renderSidekickChainReference() {}
   function _snapshotBuild() { return JSON.parse(JSON.stringify({ powers: build.powers })); }
 `;
 const api = `

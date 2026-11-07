@@ -42,4 +42,14 @@ assert(js.includes("+ sidekickSlotOrderNote(result);"));
 assert(/build\.sidekick_attack_chains = \[\];\r?\n  build\.sidekick_slot_order = null;/.test(js));
 assert(js.includes("build.sidekick_slot_order = b.sidekick_slot_order"));
 assert(js.includes("so: build.sidekick_slot_order"));
+// Accolade ticks belong to the character: saves keep them, opening restores
+// them, the export sends them, and a tick is a change autosave notices.
+const aStart = js.indexOf("function buildWithAccolades(");
+const withAcc = vm.runInNewContext("(" + js.slice(aStart, js.indexOf("\nfunction renderAccolades()", aStart))
+  .replace(/^\/\/.*$/gm, "").trim() + ")", {build: {archetype: "X"}, ACCOLADES_CHECKED: new Set(["Portal_Jockey"])});
+assert.deepEqual(JSON.parse(JSON.stringify(withAcc())), {archetype: "X", accolades: ["Portal_Jockey"]});
+assert.equal((js.match(/build: buildWithAccolades\(\), plan/g) || []).length, 2, "both save writers");
+assert(js.includes("sidekickExportPayload(buildWithAccolades(),"));
+assert(js.includes("if (Array.isArray(b.accolades)) b.accolades.forEach(k => ACCOLADES_CHECKED.add(k));"));
+assert(js.includes("ac: [...ACCOLADES_CHECKED],"));
 console.log("Sidekick export UI request: passed");

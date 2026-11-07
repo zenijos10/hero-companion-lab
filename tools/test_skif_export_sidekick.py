@@ -131,6 +131,21 @@ class SidekickExportRoundTripTests(unittest.TestCase):
         self.assertFalse(result["dropped_slot_order"])
         self.assertNotIn("slotOrder", result["skif"]["build"])
 
+    def test_accolades_export_as_sidekick_stores_them_and_round_trip(self):
+        doc = self.sample("homcoming-level-up-arachnos")
+        doc["build"]["accolades"] = ["the_atlas_medallion", "portal_jockey"]
+        first = self.imported(doc)
+        exported = self.export(first)["skif"]
+        self.assertEqual(exported["build"]["accolades"], ["the_atlas_medallion", "portal_jockey"])
+        self.assertEqual(self.imported(load_document(dump_document(exported))), first)
+
+    def test_an_accolade_sidekick_lacks_refuses_the_export(self):
+        build = self.imported(self.source)
+        build["accolades"] = ["Not_An_Accolade"]
+        result = self.export_direct(build)
+        self.assertFalse(result["ok"])
+        self.assertIn("accolade_not_exportable", [i["reason"] for i in result["issues"]])
+
     def test_kheldian_form_attacks_export_inside_their_powerset(self):
         exported = self.export(self.imported(self.sample("homecoming-kheldian")))["skif"]["build"]
         self.assertIn("Bright_Nova_Bolt",
