@@ -54,21 +54,8 @@ jobs:
           path: _sidekick_contract_fixture
           sparse-checkout-cone-mode: false
           sparse-checkout: |
-            contract/homecoming/manifest.json
-            contract/homecoming/io-sets.json
-            contract/homecoming/power-pools.json
-            contract/homecoming/epic-pools.json
-            contract/homecoming/powersets/controller/primary/electric-control.json
-            contract/homecoming/powersets/controller/secondary/kinetics.json
-            contract/homecoming/mids-names.json
-            contract/homecoming/archetypes.json
-            contract/homecoming/boost-index.json
-            contract/homecoming/enhancements.json
-            contract/homecoming/levels.json
-            contract/homecoming/powersets/stalker/primary/energy-melee.json
-            contract/homecoming/powersets/stalker/secondary/energy-aura.json
-            fixtures/skif/v5/rb5d_browser_pass.skif
-            fixtures/skif/v4/homecoming-troller.skif
+            contract/homecoming/
+            fixtures/skif/
           persist-credentials: false
       - name: Verify actual Sidekick fixture against shipped Hero Companion powersets
         run: python -m unittest discover -s tools -p test_skif_reconstruct_sidekick.py -v
