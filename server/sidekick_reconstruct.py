@@ -549,7 +549,7 @@ def _proc_settings(body, addresses, native_powers):
     for key in overrides:
         address, _, index = key.rpartition(":")
         power = by_full.get(addresses.get(address))
-        if power is None or not index.isdigit():
+        if power is None or not (index.isascii() and index.isdigit()):
             continue    # names no pick here (e.g. respecced away): kept, unanchored, so export drops it
         slots = power.get("slots") or []
         piece = slots[int(index)] if int(index) < len(slots) else None
@@ -672,9 +672,8 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
                     "earned_slot_count": len(slots),
                     "slotCount": len(slots),
                     "slots": slots,
+                    "include_in_totals": _counts_in_totals(rec, power),
                 })
-                if not is_auto(rec):    # an Auto power is always counted, as in Sidekick
-                    native_powers[-1]["include_in_totals"] = _counts_in_totals(rec, power)
     native_powers.extend(_translate_inherents(
         body, contract_root, hero_powers_by_full, enhancements,
         default_io_level, issues, encountered, addresses))

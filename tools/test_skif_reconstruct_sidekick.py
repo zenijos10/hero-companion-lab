@@ -210,7 +210,7 @@ class RealSidekickReconstructionTests(unittest.TestCase):
                     if leaf not in switched or power["full_name"].startswith("Inherent."):
                         continue
                     if power["power_type"] == 1:        # Auto: always counted
-                        self.assertNotIn("include_in_totals", power)
+                        self.assertIs(power["include_in_totals"], True)
                     else:
                         self.assertEqual(power["include_in_totals"], switched[leaf], leaf)
                         checked += 1

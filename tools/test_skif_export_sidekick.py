@@ -223,6 +223,16 @@ class SidekickExportRoundTripTests(unittest.TestCase):
                                                   "slots": [None], "isActive": True}])
         self.assertEqual(self.imported({"version": 5, "build": exported}), first)
 
+    def test_rest_is_never_switched_on_in_sidekick(self):
+        # We never count Rest (engine.NONCOMBAT_POWERS); a Solve ticks every
+        # toggle, and Rest is one, so its tick must not reach Sidekick's totals.
+        build = self.imported(self.source)
+        build["powers"].append({"full_name": "Inherent.Inherent.Rest", "slots": [None],
+                                "slotCount": 1, "include_in_totals": True,
+                                "powerset_full_name": "Inherent.Inherent"})
+        exported = self.export(build)["skif"]["build"]
+        self.assertNotIn("Rest", [p["internalName"] for p in exported.get("inherents", [])])
+
     def test_kheldian_form_attacks_export_inside_their_powerset(self):
         exported = self.export(self.imported(self.sample("homecoming-kheldian")))["skif"]["build"]
         self.assertIn("Bright_Nova_Bolt",
