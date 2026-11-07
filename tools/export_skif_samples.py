@@ -89,10 +89,13 @@ def sample_documents():
             # Its accolades, as Sidekick's reader stores them (lower-cased).
             "arachnos-accolades": _with_accolades("homcoming-level-up-arachnos"),
             # Per-proc controls, re-addressed the way Sidekick's v5 reader stores them.
-            "scrapper-proc-settings": _with_proc_settings()}
+            "scrapper-proc-settings": proc_settings_sample()}
 
 
-def _with_proc_settings():
+def proc_settings_sample():
+    """The "proc test" sample with its two overrides re-addressed the way
+    Sidekick's v5 reader stores them ("<powerset>:<power>:<slot index>"), plus a
+    disabled category. One copy, shared by the tests."""
     doc = v5_from_v4("proc test", ("primary", "secondary", "pools", "inherents", "epicPool"))
     doc["build"]["procOverrides"] = {
         "body_mastery:Physical_Perfection:5": {"enabled": True, "mode": "hp", "hpPct": 50},

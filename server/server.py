@@ -6517,9 +6517,11 @@ def build_import_sidekick():
 def build_export_sidekick():
     """Export the user's current native character without saving/mutating it.
 
-    A failed validation or identity conversion returns NO file. The only
-    permitted lossy element (stale reference-only attack-chain notes) requires
-    a second explicit confirmation request before a SKIF can be returned.
+    A failed validation or identity conversion returns NO file. Stale
+    reference-only attack-chain notes need a second explicit confirmation
+    request before a SKIF can be returned. Sidekick pass-through state that no
+    longer describes the build (slot history, per-proc settings) is left out
+    and named in the response (the owner's rulings), never silently.
     """
     body = request.get_json(silent=True)
     if (not isinstance(body, dict)

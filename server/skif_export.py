@@ -456,17 +456,26 @@ def _proc_settings(build):
     kept = build.get("sidekick_proc_settings")
     if not isinstance(kept, dict):
         return {}, [], []
+    stored, anchors = kept.get("overrides"), kept.get("anchors")
+    stored = stored if isinstance(stored, dict) else {}
+    anchors = anchors if isinstance(anchors, dict) else {}
+    categories = kept.get("disabled_categories")
+    categories = [c for c in categories if isinstance(c, str)] if isinstance(categories, list) else []
     slots_of = {p["full_name"]: p.get("slots") or [] for p in build.get("powers") or []}
     overrides, dropped = {}, []
-    for key, value in (kept.get("overrides") or {}).items():
-        full, index, uid = (kept.get("anchors") or {}).get(key) or (None, None, None)
+    for key, value in stored.items():
+        anchor = anchors.get(key)
+        if not (isinstance(anchor, list) and len(anchor) == 3 and type(anchor[1]) is int):
+            dropped.append(key)         # unanchored (named no pick at import) or malformed
+            continue
+        full, index, uid = anchor
         slots = slots_of.get(full)
-        piece = slots[index] if slots is not None and index < len(slots) else None
+        piece = slots[index] if slots is not None and 0 <= index < len(slots) else None
         if slots is not None and (piece or {}).get("piece_uid") == uid:
             overrides[key] = value
         else:
             dropped.append(key)
-    return overrides, list(kept.get("disabled_categories") or []), dropped
+    return overrides, categories, dropped
 
 
 def _slot_order(build):

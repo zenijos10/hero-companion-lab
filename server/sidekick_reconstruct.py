@@ -44,6 +44,11 @@ HC_GRANTED_INHERENTS = frozenset((
     "Inherent.Fitness.Health", "Inherent.Fitness.Stamina",
 ))
 # Sidekick's own name -> full-name tables for the powers the game grants.
+# The powerset id Sidekick gives an inherent pick that names none: its reader
+# hydrates build.inherents under coh_data::INHERENT_SET = "Inherent"
+# (inherent_grants.rs at the pinned commit), so an override addresses it as
+# "Inherent:<internal name>:<slot>".
+SIDEKICK_INHERENT_SET = "Inherent"
 _SIDEKICK_INHERENT_TABLES = ("BASIC_INHERENT_POWERS", "INHERENT_FITNESS_POWERS",
                              "PRESTIGE_SPRINT_POWERS")
 _SPECIAL_WITH_LEVEL = ("Hamidon_", "Synthetic_Hamidon_", "Titan_", "Hydra_",
@@ -208,7 +213,7 @@ def _translate_inherents(body, root, hero_powers_by_full, enhancements,
             issues.append(_issue("duplicate_power", where, full))
             continue
         encountered.add(full)
-        addresses[f"{SIDEKICK_INHERENT_SET}:{power['internalName']}"] = full
+        addresses[f"{power.get('powerset') or SIDEKICK_INHERENT_SET}:{power['internalName']}"] = full
         slots = []
         for j, source_slot in enumerate(power["slots"]):
             resolved = enhancements.get(f"{where}.slots[{j}]")
@@ -515,15 +520,13 @@ def translate_accolades(ids, root, issues):
     return out
 
 
-# The powerset id Sidekick gives inherent picks in an address.
-SIDEKICK_INHERENT_SET = "Inherent"
-
-
-def _proc_settings(body, addresses, native_powers, issues):
+def _proc_settings(body, addresses, native_powers):
     """Sidekick's per-proc controls, kept verbatim (the owner's ruling: pass
     through, nothing reads them). Each override is keyed
     "<powerset>:<power>:<slot index>"; its anchor records which of our powers
-    and pieces it described, so an export can tell whether it still applies."""
+    and pieces it described, so an export can tell whether it still applies.
+    An override naming no pick here (Sidekick keeps orphans after a respec)
+    is a no-op there too: it is kept without an anchor and export drops it."""
     overrides = body.get("procOverrides") or {}
     categories = body.get("disabledProcCategories") or []
     if not overrides and not categories:
@@ -534,8 +537,7 @@ def _proc_settings(body, addresses, native_powers, issues):
         address, _, index = key.rpartition(":")
         power = by_full.get(addresses.get(address))
         if power is None or not index.isdigit():
-            issues.append(_issue("unknown_proc_override", f"build.procOverrides[{key!r}]", key))
-            continue
+            continue    # names no pick here (e.g. respecced away): kept, unanchored, so export drops it
         slots = power.get("slots") or []
         piece = slots[int(index)] if int(index) < len(slots) else None
         anchors[key] = [power["full_name"], int(index), (piece or {}).get("piece_uid")]
@@ -623,9 +625,6 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
                     issues.append(_issue("duplicate_power", where, full))
                     continue
                 encountered.add(full)
-                # Sidekick addresses a pick as "<its powerset>:<internal name>".
-                addresses[f"{power.get('powerset') or selection['id']}:{power['internalName']}"] = full
-                addresses[f"{matched['sidekick_set']}:{matched['sidekick_power']}"] = full
                 rec = hero_powers_by_full.get(full)
                 if (not isinstance(rec, dict)
                         or rec.get("full_name") != full
@@ -633,6 +632,9 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
                                         preview["families"].get(bucket))):
                     issues.append(_issue("inconsistent_power_identity", where, full))
                     continue
+                # Sidekick addresses a pick as "<its powerset>:<internal name>".
+                addresses[f"{power.get('powerset') or selection['id']}:{power['internalName']}"] = full
+                addresses[f"{matched['sidekick_set']}:{matched['sidekick_power']}"] = full
                 slots = []
                 for j, source_slot in enumerate(power["slots"]):
                     if source_slot is None:
@@ -661,7 +663,7 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
     native_powers.extend(_translate_inherents(
         body, contract_root, hero_powers_by_full, enhancements,
         default_io_level, issues, encountered, addresses))
-    proc_settings = _proc_settings(body, addresses, native_powers, issues)
+    proc_settings = _proc_settings(body, addresses, native_powers)
     result = {
         "ok": not issues,
         "name": body.get("name") or "Imported Sidekick build",
