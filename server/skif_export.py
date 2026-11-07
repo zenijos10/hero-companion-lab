@@ -11,9 +11,10 @@ exported and imported again yields the identical Hero Companion build.
 import json
 from pathlib import Path
 
-from sidekick_preview import (SourceSets, _index_powers, _read_json, _resolve_power,
-                              hero_set_path)
-from sidekick_reconstruct import HC_GRANTED_INHERENTS
+from sidekick_preview import (GRANTED_SET, SourceSets, _Branches, _index_powers,
+                              _read_json, _resolve_power, _source_archetype_fits,
+                              _source_category_fits, hero_set_path)
+from sidekick_reconstruct import HC_GRANTED_INHERENTS, slot_shape
 from sidekick_enhancements import EnhancementResolver
 from skif_document import SkifFormatError, load_document
 
@@ -31,19 +32,25 @@ class _Contract:
 
     def __init__(self, root, hero_powers_by_full, epic_choices, hero_piece_by_uid=None):
         self.root = Path(root)
-        sources = SourceSets(root)
-        self.mids = sources.mids
-        self.shards = [sources.get(set_id) for set_id in sources.ids()]
+        self.sources = SourceSets(root)
+        self.mids = self.sources.mids
+        self.shards = [self.sources.get(set_id) for set_id in self.sources.ids()]
         self.hero = hero_powers_by_full
         self.epic_choices = epic_choices
         self.by_folded = _index_powers(hero_powers_by_full)
         self.boosts = _read_json(self.root / "boost-index.json", "Sidekick boost index")
+        folded = {}
+        for uid in self.boosts:
+            folded.setdefault(uid.casefold(), []).append(uid)
+        # The same uid but for case (our Dsync_*, Sidekick's DSync_*), where unique.
+        self.boosts_folded = {key: uids[0] for key, uids in folded.items() if len(uids) == 1}
         archetypes = _read_json(self.root / "archetypes.json", "Sidekick archetypes")
         self.archetype_slugs = {
             (entry.get("stats") or {}).get("className"): slug
             for slug, entry in (archetypes.get("archetypes") or {}).items()
             if isinstance(entry, dict)}
         self._levels = None
+        self._branches = {}
         self.inverse = (_invert_set_pieces(root, self.boosts, hero_piece_by_uid)
                         if hero_piece_by_uid is not None else {})
 
@@ -70,11 +77,38 @@ class _Contract:
             elif role == "epicPool":
                 fits = category == "epic"
             else:
-                fits = (category in (None, _ROLE_CATEGORY[role])
-                        and s.get("archetype") in (None, archetype_slug))
+                fits = (_source_category_fits(s, role)
+                        and _source_archetype_fits(s, role, archetype_slug))
             if fits and self.hero_set(s) == set_full:
                 found.append(s)
         return found[0] if len(found) == 1 else None
+
+    def family(self, role, seat, archetype_slug):
+        """(selection id, {hero set: shard}) for a primary or secondary. An
+        Arachnos build names its BASE set, as Sidekick does, and each branch pick
+        names its branch; every other build is its one seated set."""
+        if archetype_slug not in self._branches:
+            self._branches[archetype_slug] = _Branches(self.root, archetype_slug)
+        branches = self._branches[archetype_slug]
+        members = branches.family(role, seat["id"])
+        bases = members - branches.branch_ids
+        selection_id = next(iter(bases)) if len(members) > 1 and len(bases) == 1 else seat["id"]
+        shards = {}
+        for member in members:
+            shard = seat if member == seat["id"] else self.sources.get(member)
+            if isinstance(shard, dict):
+                shards[self.hero_set(shard)] = shard
+        return selection_id, shards
+
+    def granted_name(self, shards, hero_full):
+        """(shard, Sidekick name) of a form attack the game grants inside one of
+        these sets (Bright Nova Bolt: our Inherent.Inherent.Bright_Nova_Bolt)."""
+        hits = [(shard, p["internalName"]) for shard in shards
+                for p in shard.get("powers") or []
+                if isinstance(p, dict) and p.get("autoIssue") is True and p.get("free") is True
+                and isinstance(p.get("internalName"), str)
+                and f"{GRANTED_SET}.{p['internalName']}".casefold() == hero_full.casefold()]
+        return hits[0] if len(hits) == 1 else (None, None)
 
     def hero_set(self, record):
         return hero_set_path(record, self.mids, self.hero, self.epic_choices)
@@ -100,7 +134,8 @@ class _Contract:
                 twins.insert(0, tuned + uid[len(crafted):])
             if not attuned and uid.startswith(tuned):
                 twins.insert(0, crafted + uid[len(tuned):])
-        for source_uid in twins:
+        for twin in twins:
+            source_uid = twin if twin in self.boosts else self.boosts_folded.get(twin.casefold())
             record = self.boosts.get(source_uid)
             written = (self._slot_from_record(record, slot, attuned)
                        if isinstance(record, dict) else None)
@@ -203,11 +238,8 @@ def export_build(build, hero_powers_by_full, contract_root, hero_powersets=None,
     # Only the standard seven inherited powers can be represented by this
     # exporter. An archetype/prestige or future inherent must never vanish
     # merely because the general power loop excludes Inherent.* records.
-    for p in build.get("powers") or []:
-        full = p.get("full_name")
-        if isinstance(full, str) and full.startswith("Inherent.") and full not in HC_GRANTED_INHERENTS:
-            issues.append(_issue("inherent_not_exportable", full, full))
-    picks = [p for p in build.get("powers") or [] if not p["full_name"].startswith("Inherent.")]
+    # A form attack (Inherent.Inherent.Bright_Nova_Bolt) travels inside its powerset.
+    picks = [p for p in build.get("powers") or [] if p["full_name"] not in HC_GRANTED_INHERENTS]
     roles = [("primary", build.get("primary")), ("secondary", build.get("secondary")),
              ("epicPool", build.get("epic"))]
     roles += [("pools", pool) for pool in build.get("pools") or []]
@@ -215,15 +247,17 @@ def export_build(build, hero_powers_by_full, contract_root, hero_powersets=None,
     for role, set_full in roles:
         if not set_full:
             continue
-        selection = _selection(contract, role, set_full, slug, picks, issues)
-        placed.update(p["full_name"] for p in picks if _set_of(p) == set_full)
+        selection = _selection(contract, role, set_full, slug, picks, issues, placed)
         if role == "pools":
             pools.append(selection)
         else:
             out[role] = selection
     for power in picks:
-        if power["full_name"] not in placed:
-            issues.append(_issue("power_outside_build_sets", power["full_name"], _set_of(power)))
+        if power["full_name"] in placed:
+            continue
+        reason = ("inherent_not_exportable" if power["full_name"].startswith("Inherent.")
+                  else "power_outside_build_sets")
+        issues.append(_issue(reason, power["full_name"], _set_of(power)))
     if pools:
         out["pools"] = pools
 
@@ -237,7 +271,12 @@ def export_build(build, hero_powers_by_full, contract_root, hero_powersets=None,
     if chains:
         out["attackChains"] = chains
 
-    result = {"ok": not issues, "issues": issues, "dropped": dropped}
+    slot_order, dropped_slot_order = _slot_order(build)
+    if slot_order:
+        out["slotOrder"] = slot_order
+
+    result = {"ok": not issues, "issues": issues, "dropped": dropped,
+              "dropped_slot_order": dropped_slot_order}
     if issues:
         result["ok"] = False
         return result
@@ -252,26 +291,39 @@ def _set_of(power):
     return power.get("powerset_full_name") or power["full_name"].rsplit(".", 1)[0]
 
 
-def _selection(contract, role, set_full, slug, picks, issues):
+def _selection(contract, role, set_full, slug, picks, issues, placed):
     where = f"{role}:{set_full}"
-    shard = contract.shard_for(set_full, role, slug)
-    if shard is None:
+    seat = contract.shard_for(set_full, role, slug)
+    if seat is None:
         issues.append(_issue("powerset_not_exportable", where, set_full))
+        placed.update(p["full_name"] for p in picks if _set_of(p) == set_full)
         return {"id": set_full, "powers": []}
+    selection_id, shards = ((seat["id"], {set_full: seat}) if role not in ("primary", "secondary")
+                            else contract.family(role, seat, slug))
     powers = []
     for power in picks:
-        if _set_of(power) != set_full:
+        full = power["full_name"]
+        if full in placed:      # already written by an earlier selection
             continue
-        internal = contract.internal_name(shard, power["full_name"])
+        shard = shards.get(_set_of(power))
+        internal = contract.internal_name(shard, full) if shard else None
+        if shard is None and _set_of(power) == GRANTED_SET:
+            shard, internal = contract.granted_name(list(shards.values()), full)
+        if shard is None:
+            continue
+        placed.add(full)
         if internal is None:
-            issues.append(_issue("power_not_exportable", power["full_name"], shard["id"]))
+            issues.append(_issue("power_not_exportable", full, shard["id"]))
             continue
         if type(power.get("pick_level")) is not int:
-            issues.append(_issue("pick_level_unknown", power["full_name"], power.get("pick_level")))
+            issues.append(_issue("pick_level_unknown", full, power.get("pick_level")))
             continue
-        powers.append({"internalName": internal, "level": power["pick_level"],
-                       "slots": _slots(contract, power, issues)})
-    return {"id": shard["id"], "powers": powers}
+        written = {"internalName": internal, "level": power["pick_level"]}
+        if shard["id"] != selection_id:
+            written["powerset"] = shard["id"]
+        written["slots"] = _slots(contract, power, issues)
+        powers.append(written)
+    return {"id": selection_id, "powers": powers}
 
 
 def _slots(contract, power, issues):
@@ -370,6 +422,17 @@ def _incarnates(build, issues, incarnate_catalog=None):
         out[matched_slots[0]["slot"].lower()] = {
             "power": pick["full_name"], "active": pick.get("active") is not False}
     return out
+
+
+def _slot_order(build):
+    """(Sidekick's slot history, dropped?): written back verbatim only while the
+    slots it describes are unchanged; otherwise left out, and the caller says so."""
+    kept = build.get("sidekick_slot_order")
+    if not isinstance(kept, dict) or not kept.get("entries"):
+        return None, False
+    if kept.get("shape") != slot_shape(build.get("powers") or []):
+        return None, True
+    return kept["entries"], False
 
 
 def _attack_chains(build, picks, dropped):

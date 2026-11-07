@@ -76,6 +76,75 @@ class SidekickExportRoundTripTests(unittest.TestCase):
         self.assertEqual([p["id"] for p in exported["build"]["pools"]], ["leaping"])
         self.assertEqual(self.imported(exported), first)
 
+    def sample(self, name):
+        from export_skif_samples import UPSTREAM, v5_from_v4
+        self.assertEqual(UPSTREAM, self.checkout)
+        return v5_from_v4(name)
+
+    def test_kheldian_and_arachnos_builds_round_trip(self):
+        for name in ("homecoming-kheldian", "homcoming-level-up-arachnos"):
+            with self.subTest(name):
+                first = self.imported(self.sample(name))
+                exported = self.export(first)["skif"]
+                self.assertEqual(self.imported(load_document(dump_document(exported))), first)
+
+    def test_dsync_exports_under_sidekicks_spelling_and_round_trips(self):
+        first = self.imported(self.sample("sojourner_1784025393210"))
+        exported = self.export(first)["skif"]
+        self.assertEqual(self.imported(exported), first)
+        slots = [s for sel in ("primary", "secondary") for p in exported["build"][sel]["powers"]
+                 for s in p["slots"] if s and s["type"] == "special"]
+        self.assertIn({"type": "special", "category": "d-sync", "id": "empowerment"},
+                      [{k: s[k] for k in ("type", "category", "id")} for s in slots])
+
+    def with_slot_order(self, name):
+        doc = self.sample(name)
+        doc["build"]["slotOrder"] = json.loads(
+            (self.checkout / f"fixtures/skif/v4/{name}.skif").read_text(encoding="utf-8")
+        )["build"]["slotOrder"]
+        return doc
+
+    def test_unchanged_slots_export_sidekicks_slot_history_verbatim(self):
+        doc = self.with_slot_order("homecoming-troller")
+        first = self.imported(doc)
+        result = self.export(first)
+        self.assertFalse(result["dropped_slot_order"])
+        self.assertEqual(result["skif"]["build"]["slotOrder"], doc["build"]["slotOrder"])
+        self.assertEqual(self.imported(load_document(dump_document(result["skif"]))), first)
+
+    def test_changed_slots_leave_the_slot_history_out_and_say_so(self):
+        for change in ("add a slot", "move a pick"):
+            with self.subTest(change):
+                build = self.imported(self.with_slot_order("homecoming-troller"))
+                power = next(p for p in build["powers"] if len(p["slots"]) < 6
+                             and not p["full_name"].startswith("Inherent."))
+                if change == "add a slot":
+                    power["slots"].append(None)
+                else:
+                    power["pick_level"] += 1
+                result = self.export(build)
+                self.assertTrue(result["dropped_slot_order"])
+                self.assertNotIn("slotOrder", result["skif"]["build"])
+
+    def test_a_build_without_slot_history_drops_nothing(self):
+        result = self.export(self.imported(self.source))
+        self.assertFalse(result["dropped_slot_order"])
+        self.assertNotIn("slotOrder", result["skif"]["build"])
+
+    def test_kheldian_form_attacks_export_inside_their_powerset(self):
+        exported = self.export(self.imported(self.sample("homecoming-kheldian")))["skif"]["build"]
+        self.assertIn("Bright_Nova_Bolt",
+                      [p["internalName"] for p in exported["primary"]["powers"]])
+        self.assertNotIn("inherents", exported)
+
+    def test_arachnos_export_names_the_base_set_and_each_branch_pick(self):
+        exported = self.export(self.imported(
+            self.sample("homcoming-level-up-arachnos")))["skif"]["build"]
+        self.assertEqual(exported["primary"]["id"], "arachnos-soldier/arachnos-soldier")
+        sets = {p["internalName"]: p.get("powerset") for p in exported["primary"]["powers"]}
+        self.assertEqual(sets["Longfang"], "arachnos-soldier/crab-spider-soldier")
+        self.assertIsNone(sets["Single_Shot"])
+
     def test_export_writes_sidekicks_own_identities(self):
         doc = self.rich_source()
         exported = self.export(self.imported(doc))["skif"]["build"]

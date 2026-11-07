@@ -11,21 +11,21 @@ must not be mistaken for an export of later edits to the HC build.
 import copy
 from pathlib import Path
 
-from sidekick_preview import (PreviewContractError, SourceSets, _read_json,
-                              hero_set_path, preview_build)
+from sidekick_preview import (GRANTED_SET, PreviewContractError, SourceSets, _read_json,
+                              _source_record, hero_set_path, preview_build)
 from skif_document import load_document
 
 
 # The native HC editor cannot express these Sidekick state dimensions yet.
 # Refuse *non-empty* values; empty state is equivalent to the reader's default.
 _UNSUPPORTED = (
-    "accolades", "slotOrder", "stances", "modes",
+    "accolades", "stances", "modes",
     "powerState", "procOverrides", "disabledProcCategories",
     "progress", "whatIfBuffs",
 )
 _KNOWN_BUILD = frozenset((
     "name", "dataset", "archetype", "origin", "level", "primary", "secondary",
-    "pools", "epicPool", "attackChains", "inherents", "incarnates",
+    "pools", "epicPool", "attackChains", "inherents", "incarnates", "slotOrder",
 ) + _UNSUPPORTED)
 _KNOWN_POWER = frozenset(("internalName", "level", "slots", "powerset",
                           "isActive", "activeSubPower"))
@@ -73,17 +73,18 @@ def _epic_choices(class_name, hero_powersets):
     return [v.get("full_name") for v in by_class.get("epic") or []]
 
 
-def _resolve_sets(build, class_name, root, hero_powersets, issues, hero_powers_by_full):
+def _resolve_sets(build, class_name, root, hero_powersets, issues, hero_powers_by_full,
+                  seats=None):
     sources = SourceSets(root)
     by_class = hero_powersets.get("by_archetype", {}).get(class_name, {})
     roles = (("primary", "primary"), ("secondary", "secondary"),
              ("epicPool", "epic"))
     mapped = {"primary": None, "secondary": None, "epic": None, "pools": []}
 
-    def resolve(selection, role, where):
+    def resolve(selection, role, where, seat=None):
         if selection is None:
             return None
-        source_id = selection["id"]
+        source_id = seat or selection["id"]
         shard = sources.get(source_id)
         if shard is None:
             issues.append(_issue("unknown_source_set", where, source_id))
@@ -105,7 +106,9 @@ def _resolve_sets(build, class_name, root, hero_powersets, issues, hero_powers_b
 
     for source_key, native_key in roles:
         selected = build.get(source_key)
-        mapped[native_key] = resolve(selected, native_key, f"build.{source_key}")
+        # An Arachnos build seats the branch its picks come from (preview "seats").
+        mapped[native_key] = resolve(selected, native_key, f"build.{source_key}",
+                                     (seats or {}).get(source_key))
     for index, selection in enumerate(build.get("pools", [])):
         full = resolve(selection, "pool", f"build.pools[{index}]")
         if full:
@@ -312,7 +315,7 @@ def _translate_attack_chains(body, preview, issues):
         })
     return translated
 
-def _source_generic_eligibility(body, root, issues):
+def _source_generic_eligibility(body, root, preview, issues):
     """Validate generic IOs against the receiving Sidekick *power*, not catalog.
 
     Sidekick's commonIoTypes proves only that an IO exists. It does NOT prove
@@ -340,29 +343,22 @@ def _source_generic_eligibility(body, root, issues):
                                      f"{where}.slots[{i}]",
                                      f"{slot['stat']} is not allowed in {power['internalName']}"))
 
-    selections = []
+    # Each pick is judged by the record the preview resolved it to: an Arachnos
+    # branch pick's rules live in its branch set, not the selection's.
+    resolved = {p["location"]: p for p in preview["resolved"]}
+    sources = None
     for bucket in ("primary", "secondary", "epicPool", "pools"):
         entries = body.get(bucket, []) if bucket == "pools" else [body.get(bucket)]
         for i, selection in enumerate(entries):
-            if selection and any(generic_slots(p) for p in selection.get("powers", [])):
-                location = f"build.pools[{i}]" if bucket == "pools" else f"build.{bucket}"
-                selections.append((selection, location))
-    if selections:
-        sources = SourceSets(root)
-        for selection, location in selections:
-            shard = sources.get(selection["id"])
-            if shard is None:
-                continue  # identity preview reports the missing source set
-            source_powers = shard.get("powers", []) if isinstance(shard, dict) else []
-            for i, power in enumerate(selection.get("powers", [])):
-                generic = generic_slots(power)
-                if not generic:
-                    continue
-                source_matches = [p for p in source_powers
-                                  if isinstance(p, dict)
-                                  and p.get("internalName") == power["internalName"]]
-                source = source_matches[0] if len(source_matches) == 1 else None
-                check(power, f"{location}.powers[{i}]", source)
+            location = f"build.pools[{i}]" if bucket == "pools" else f"build.{bucket}"
+            for j, power in enumerate((selection or {}).get("powers", [])):
+                where = f"{location}.powers[{j}]"
+                if not generic_slots(power) or where not in resolved:
+                    continue  # the identity preview reports what did not resolve
+                sources = sources or SourceSets(root)
+                match = resolved[where]
+                check(power, where, _source_record(sources.get(match["sidekick_set"]),
+                                                   match["sidekick_power"]))
 
     inherents = body.get("inherents") or []
     if any(generic_slots(p) for p in inherents):
@@ -480,6 +476,21 @@ def _translate_incarnates(body, incarnate_catalog, issues):
     return result
 
 
+def slot_shape(powers):
+    """What Sidekick's slot history describes: each power holding added slots,
+    with its pick level and slot count. Kept with the history so an export can
+    tell whether the slots still match it. Never interpreted otherwise."""
+    return sorted([p["full_name"], p.get("pick_level"), len(p.get("slots") or [])]
+                  for p in powers if len(p.get("slots") or []) > 1)
+
+
+def _belongs(hero_set, selected_set, family):
+    """A pick sits in its selection's set, in that set's Arachnos base or branch
+    (the preview admits one branch only), or is a power the game grants with
+    the set (Bright Nova Bolt, Energy Flight: granted Inherent.Inherent records)."""
+    return hero_set in (selected_set, GRANTED_SET) or hero_set in (family or ())
+
+
 def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
                       contract_root, hero_piece_by_uid, *, default_io_level=None,
                       incarnate_catalog=None):
@@ -503,18 +514,18 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
     issues = [copy.deepcopy(issue) for issue in preview["unresolved"]
               if not (issue["reason"] == "state_not_mapped"
                       and issue["location"] in ("build.origin", "build.attackChains",
-                                                "build.incarnates"))
+                                                "build.incarnates", "build.slotOrder"))
               # Inherent identity is decided below from Sidekick's own table.
               and issue["reason"] != "inherent_not_mapped"]
     issues.extend(_source_state_issues(doc))
     body = doc["build"]
     incarnates = _translate_incarnates(body, incarnate_catalog, issues)
-    _source_generic_eligibility(body, contract_root, issues)
+    _source_generic_eligibility(body, contract_root, preview, issues)
     _source_slot_budget(body, issues)
     attack_chains = _translate_attack_chains(body, preview, issues)
     issues.extend(class_issues)
     sets = _resolve_sets(body, class_name, contract_root, hero_powersets, issues,
-                         hero_powers_by_full)
+                         hero_powers_by_full, preview.get("seats"))
 
     native_powers = []
     matches = {p["location"]: p for p in preview["resolved"]}
@@ -544,7 +555,8 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
                 rec = hero_powers_by_full.get(full)
                 if (not isinstance(rec, dict)
                         or rec.get("full_name") != full
-                        or rec.get("powerset_full_name") != selected_set):
+                        or not _belongs(matched["hero_set"], selected_set,
+                                        preview["families"].get(bucket))):
                     issues.append(_issue("inconsistent_power_identity", where, full))
                     continue
                 slots = []
@@ -560,7 +572,7 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
                 native_powers.append({
                     "full_name": full,
                     "display_name": rec["display_name"],
-                    "powerset_full_name": selected_set,
+                    "powerset_full_name": matched["hero_set"],
                     "accepted_set_category_ids": copy.deepcopy(
                         rec.get("accepted_set_category_ids", [])),
                     "accepted_set_categories": copy.deepcopy(
@@ -595,4 +607,7 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
         "sidekick_attack_chains": attack_chains,
         "powers": native_powers,
     }
+    if body.get("slotOrder"):
+        result["build"]["sidekick_slot_order"] = {
+            "entries": copy.deepcopy(body["slotOrder"]), "shape": slot_shape(native_powers)}
     return result

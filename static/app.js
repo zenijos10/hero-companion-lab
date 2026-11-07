@@ -11,6 +11,7 @@ const build = {
   epic: null, epic_display: null,
   incarnates: {},   // slot -> {full_name, display_name}
   sidekick_attack_chains: [], // original Sidekick cast-order reference, not simulated
+  sidekick_slot_order: null,  // Sidekick's slot history, kept verbatim for export (never read)
   include_incarnates: false,  // peak totals: fold incarnate buffs into totals
   // ⚠ v34 RECONCILIATION (Joel spotted this on the panel screenshot, 2026-07-16):
   // this global "Include accolades + amplifiers" toggle and the accolade
@@ -449,7 +450,7 @@ let _lastSavedSnapshot = null;
 function buildSnapshot() {
   return JSON.stringify({
     a: build.archetype, p: build.primary, s: build.secondary, pl: build.pools, e: build.epic,
-    inc: build.incarnates, sc: build.sidekick_attack_chains,
+    inc: build.incarnates, sc: build.sidekick_attack_chains, so: build.sidekick_slot_order,
     pw: (build.powers || []).map(pw => [pw.full_name, pw.slots]),
     fl: [build.include_incarnates, build.pvp, build.tier, build.level_reached],
   });
@@ -555,6 +556,7 @@ function resetBuildScopedState() {
   // response that started before the swap.
   _BUILD_EPOCH++;
   build.sidekick_attack_chains = [];
+  build.sidekick_slot_order = null;
   renderSidekickChainReference();
   build._custom_targets = null;
   build._exposure = null;
@@ -9871,6 +9873,15 @@ function sidekickExportPayload(nativeBuild, name, allowDropped = false) {
   };
 }
 
+// The slots changed since import, so Sidekick's own slot-by-level history no
+// longer describes them: the export leaves it out and says so.
+function sidekickSlotOrderNote(result) {
+  return result && result.dropped_slot_order
+    ? " Sidekick's slot-by-level history was left out because the slots changed since import;"
+      + " Sidekick will plan the slot levels again."
+    : "";
+}
+
 async function exportSidekick() {
   if (!build.archetype || !build.powers.length) {
     alert("Pick an archetype and add powers before exporting to Sidekick.");
@@ -9938,9 +9949,10 @@ async function exportSidekick() {
         if (status) status.textContent = "Sidekick export cancelled; nothing was written.";
         return;
       }
-      if (status) status.textContent = outcome && outcome.path
+      if (status) status.textContent = (outcome && outcome.path
         ? `⬇ Sidekick build saved to ${outcome.path}. Open the .skif file in CoH Sidekick.`
-        : "⬇ Sidekick build exported. Open the .skif from Downloads in CoH Sidekick.";
+        : "⬇ Sidekick build exported. Open the .skif from Downloads in CoH Sidekick.")
+        + sidekickSlotOrderNote(result);
     } catch (error) {
       reportFailure({response: "Could not save the Sidekick file: " + error});
     }
@@ -10331,6 +10343,9 @@ async function _applyImportedBuild(b) {
   // Keep it with the native build so ordinary Save and Resume preserve it.
   build.sidekick_attack_chains = Array.isArray(b.sidekick_attack_chains)
     ? JSON.parse(JSON.stringify(b.sidekick_attack_chains)) : [];
+  // Sidekick's slot history: passed back on export while the slots still match.
+  build.sidekick_slot_order = b.sidekick_slot_order
+    ? JSON.parse(JSON.stringify(b.sidekick_slot_order)) : null;
   renderSidekickChainReference();
   // incarnates
   build.incarnates = {};

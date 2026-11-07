@@ -44,6 +44,7 @@ class EnhancementResolver:
         self._common_types = frozenset(types)
         self._hero = hero_piece_by_uid
         self._hero_sets = _pieces_by_set_and_number(hero_piece_by_uid)
+        self._hero_folded = _pieces_by_folded_uid(hero_piece_by_uid)
 
     def _matches(self, piece, origin):
         kind = piece["type"]
@@ -105,6 +106,9 @@ class EnhancementResolver:
             # AND piece number naming one real piece of ours.
             hero = self._hero_sets.get(record.get("set"), {}).get(record.get("piece"))
         if not isinstance(hero, dict):
+            # The same uid but for case (Sidekick DSync_*, ours Dsync_*).
+            hero = self._hero_folded.get(uid.casefold())
+        if not isinstance(hero, dict):
             return None, "missing_hero_enhancement"
         result = {"source_uid": uid, "hero_slot": copy.deepcopy(hero), "type": piece["type"]}
         if piece["type"] in ("io-set", "io-generic"):
@@ -116,6 +120,14 @@ class EnhancementResolver:
         elif piece["type"] in ("special", "origin"):
             result["relative_level"] = _present_or(piece, "relativeLevel", 0)
         return result, None
+
+
+def _pieces_by_folded_uid(hero_piece_by_uid):
+    """Our pieces by case-folded uid, only where that spelling names ONE piece."""
+    folded = {}
+    for uid in hero_piece_by_uid:
+        folded.setdefault(uid.casefold(), []).append(uid)
+    return {key: hero_piece_by_uid[uids[0]] for key, uids in folded.items() if len(uids) == 1}
 
 
 def _pieces_by_set_and_number(hero_piece_by_uid):

@@ -14,6 +14,10 @@ from sidekick_reconstruct import reconstruct_build
 from preview_skif import _enhancement_lookups, main as preview_main
 
 
+# The sample's secondary picks that live in the Crab Spider training branch.
+CRAB_TRAINING_PICKS = ("Crab_Spider_Armor", "Fortification", "Serum", "Summon_Spiderlings")
+
+
 class RealSidekickReconstructionTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -76,6 +80,50 @@ class RealSidekickReconstructionTests(unittest.TestCase):
         sets = json.loads((ROOT / "data/enhancement_sets.json").read_text(encoding="utf-8"))
         return {p["uid"]: [p["name"]] for s in sets for p in s["pieces"] if p.get("uid")}
 
+    def test_every_sidekick_special_we_have_resolves(self):
+        # Sidekick writes DSync_*, we write Dsync_*: the same uid but for case.
+        # The Synthetic Hamidon and Generic_* specials are not in our data at
+        # all; they stay refused, named here so a data change shows up.
+        from sidekick_enhancements import EnhancementResolver
+        bridge = EnhancementResolver(self.contract, self.enhancements)
+        boosts = json.loads((self.contract / "boost-index.json").read_text(encoding="utf-8"))
+        specials = {u: r for u, r in boosts.items() if r.get("kind") == "special"}
+        missing = sorted(u for u, r in specials.items() if bridge.resolve(
+            {"type": "special", "category": r["family"], "id": r["id"]})[1])
+        self.assertEqual(len(specials), 78, "denominator: Sidekick's special enhancements")
+        self.assertEqual(missing, sorted(
+            [f"Synthetic_Hamidon_{s}" for s in (
+                "Accuracy_Mez", "Buff_Endurance_Discount", "Buff_Recharge", "Damage_Accuracy",
+                "Damage_Mez", "Damage_Range", "DeBuff_Accuracy", "DeBuff_Endurance_Discount",
+                "Heal_Endurance_Discount", "Res_Damage_Endurance_Discount",
+                "Travel_Endurance_Discount")]
+            + [f"Generic_{s}" for s in ("Clockwork_Efficiency", "Might_of_the_Empire",
+                                        "Resistance_Tactics", "Syndicate_Techniques",
+                                        "Will_of_the_Seers")]))
+
+    def test_sojourner_sample_with_a_dsync_imports_whole(self):
+        converted = self.reconstruct(self.v5_from_v4("sojourner_1784025393210"))
+        self.assertTrue(converted["ok"], converted["issues"][:5])
+        fire_ball = next(p for p in converted["build"]["powers"]
+                         if p["full_name"].endswith(".Fire_Ball"))
+        self.assertEqual(fire_ball["slots"][5]["piece_uid"], "Dsync_Damage_Accuracy")
+
+    def test_every_real_sample_imports_whole_with_its_slot_history(self):
+        from export_skif_samples import UPSTREAM
+        for name in ("controller_import_1785756407256", "homcoming-level-up-arachnos",
+                     "homecoming-kheldian", "homecoming-troller", "proc test",
+                     "sojourner_1784025393210"):
+            with self.subTest(name):
+                doc = self.v5_from_v4(name)
+                order = json.loads((UPSTREAM / f"fixtures/skif/v4/{name}.skif")
+                                   .read_text(encoding="utf-8"))["build"]["slotOrder"]
+                doc["build"]["slotOrder"] = order
+                converted = self.reconstruct(doc)
+                self.assertTrue(converted["ok"], converted["issues"][:5])
+                kept = converted["build"]["sidekick_slot_order"]
+                self.assertEqual(kept["entries"], order)      # verbatim, never interpreted
+                self.assertTrue(kept["shape"])
+
     def test_sidekicks_homecoming_controller_with_four_pools_imports_whole(self):
         doc = self.v5_from_v4("homecoming-troller")   # its Artillery slots included
         converted = reconstruct_build(doc, self.hero, self.hero_sets, self.contract,
@@ -93,6 +141,129 @@ class RealSidekickReconstructionTests(unittest.TestCase):
                      + doc["build"]["pools"])
         self.assertEqual(len([p for p in build["powers"]
                               if not p["full_name"].startswith("Inherent.")]), picked)
+
+    def test_kheldian_and_arachnos_samples_import_whole(self):
+        # Sidekick files the Kheldian and Arachnos (VEAT) primaries and
+        # secondaries under the "epic" category, the game's own grouping.
+        for name, at in (("homecoming-kheldian", "Class_Peacebringer"),
+                         ("homcoming-level-up-arachnos", "Class_Arachnos_Soldier")):
+            with self.subTest(name):
+                converted = self.reconstruct(self.v5_from_v4(name))
+                self.assertTrue(converted["ok"], converted["issues"][:5])
+                self.assertEqual(converted["build"]["archetype"], at)
+
+    def test_kheldian_form_attacks_land_on_our_granted_records(self):
+        # Sidekick's own record: autoIssue + free, and its requires names
+        # Inherent.Inherent.Bright_Nova_Bolt, the record we keep it under.
+        build = self.reconstruct(self.v5_from_v4("homecoming-kheldian"))["build"]
+        bolt = next(p for p in build["powers"]
+                    if p["full_name"] == "Inherent.Inherent.Bright_Nova_Bolt")
+        self.assertEqual((bolt["powerset_full_name"], bolt["pick_level"], len(bolt["slots"])),
+                         ("Inherent.Inherent", 4, 6))
+        self.assertEqual(build["primary"], "Peacebringer_Offensive.Luminous_Blast")
+
+    def test_every_kheldian_and_arachnos_power_the_game_offers_resolves(self):
+        # Coverage over all 16 sets Sidekick files under "epic" (the Kheldian
+        # and Arachnos primaries/secondaries), not just the two samples.
+        from sidekick_preview import SourceSets, _index_powers, _resolve_source_power
+        sources = SourceSets(self.contract)
+        index = _index_powers(self.hero)
+        offered, unresolved = 0, []
+        for set_id in sources.paths:
+            shard = sources.get(set_id)
+            if shard.get("category") != "epic":
+                continue
+            for record in shard["powers"]:
+                if record.get("available", 0) < 0:
+                    continue    # never offered (Quantum Boost: a sub-power, no slots)
+                offered += 1
+                if _resolve_source_power(record, shard, sources.mids, self.hero, index,
+                                         set_id, [], None) is None:
+                    unresolved.append((set_id, record["internalName"]))
+        self.assertEqual(unresolved, [])
+        self.assertEqual(offered, 166, "denominator: offered powers in the 16 sets")
+
+    def test_kheldian_travel_inherent_imports_slotted(self):
+        doc = self.v5_from_v4("homecoming-kheldian")
+        doc["build"]["secondary"]["powers"].append(
+            {"internalName": "Energy_Flight", "level": 1,
+             "slots": [{"type": "io-generic", "stat": "EnduranceReduction", "level": 50}]})
+        converted = self.reconstruct(doc)
+        self.assertTrue(converted["ok"], converted["issues"][:5])
+        self.assertIn("Inherent.Inherent.Energy_Flight",
+                      [p["full_name"] for p in converted["build"]["powers"]])
+
+    def veat_v5(self):
+        # Sidekick's current writer: the selection names the BASE set, and a
+        # branch pick names its own set.
+        doc = self.v5_from_v4("homcoming-level-up-arachnos")
+        for power in doc["build"]["primary"]["powers"]:
+            if power["internalName"] in ("Longfang", "Aim", "Suppression", "Slice",
+                                         "Frenzy", "Arm_Lash"):
+                power["powerset"] = "arachnos-soldier/crab-spider-soldier"
+        return doc
+
+    def test_arachnos_branch_picks_seat_the_branch_and_keep_base_picks(self):
+        for label, doc in (("current v5", self.veat_v5()),
+                           ("older file, branch picks under the base set",
+                            self.v5_from_v4("homcoming-level-up-arachnos"))):
+            with self.subTest(label):
+                converted = self.reconstruct(doc)
+                self.assertTrue(converted["ok"], converted["issues"][:5])
+                build = converted["build"]
+                self.assertEqual(build["primary"], "Arachnos_Soldiers.Crab_Spider_Soldier")
+                sets = {p["full_name"]: p["powerset_full_name"] for p in build["powers"]}
+                self.assertEqual(sets["Arachnos_Soldiers.Crab_Spider_Soldier.Longfang"],
+                                 "Arachnos_Soldiers.Crab_Spider_Soldier")
+                self.assertEqual(sets["Arachnos_Soldiers.Arachnos_Soldier.Single_Shot"],
+                                 "Arachnos_Soldiers.Arachnos_Soldier")
+
+    def test_a_branch_pick_is_judged_by_its_own_records_io_rules(self):
+        doc = self.veat_v5()
+        longfang = next(p for p in doc["build"]["primary"]["powers"]
+                        if p["internalName"] == "Longfang")
+        longfang["slots"][0] = {"type": "io-generic", "stat": "Damage", "level": 50}
+        converted = self.reconstruct(doc)
+        self.assertTrue(converted["ok"], converted["issues"][:5])
+        longfang["slots"][0]["stat"] = "Healing"
+        refused = self.reconstruct(doc)
+        self.assertIn("invalid_generic_enhancement", [i["reason"] for i in refused["issues"]])
+
+    def test_picks_from_two_arachnos_branches_are_refused(self):
+        doc = self.veat_v5()
+        doc["build"]["primary"]["powers"].append({
+            "internalName": "Mace_Beam", "level": 49, "slots": [None],
+            "powerset": "arachnos-soldier/bane-spider-soldier"})
+        converted = self.reconstruct(doc)
+        self.assertFalse(converted["ok"])
+        self.assertIn("mixed_branch_sets", [i["reason"] for i in converted["issues"]])
+
+    def test_primary_and_secondary_from_different_branches_are_refused(self):
+        # One branch choice at 24 sets both: Crab primary + Bane secondary is impossible.
+        doc = self.veat_v5()
+        secondary = doc["build"]["secondary"]
+        secondary["powers"] = [p for p in secondary["powers"] if p["internalName"]
+                               not in CRAB_TRAINING_PICKS]      # no Crab secondary picks left
+        secondary["powers"].append({
+            "internalName": "Surveillance", "level": 49, "slots": [None],
+            "powerset": "arachnos-soldier/bane-spider-training"})
+        converted = self.reconstruct(doc)
+        self.assertFalse(converted["ok"])
+        self.assertIn("mixed_branch_sets", [i["reason"] for i in converted["issues"]])
+
+    def test_a_branch_of_another_bucket_stays_refused(self):
+        doc = self.veat_v5()
+        doc["build"]["primary"]["powers"][2]["powerset"] = "arachnos-soldier/crab-spider-training"
+        converted = self.reconstruct(doc)
+        self.assertFalse(converted["ok"])
+        self.assertIn("cross_set_power_not_mapped", [i["reason"] for i in converted["issues"]])
+
+    def test_an_epic_category_primary_of_another_archetype_is_refused(self):
+        doc = self.v5_from_v4("homecoming-kheldian")
+        doc["build"]["primary"]["id"] = "warshade/umbral-blast"
+        converted = self.reconstruct(doc)
+        self.assertFalse(converted["ok"])
+        self.assertIn("source_archetype_mismatch", [i["reason"] for i in converted["issues"]])
 
     def test_renamed_epic_resolves_by_archetype_and_identical_roster(self):
         # Sidekick: Epic.Melee_Psionic_Mastery (labelled "scrapper");

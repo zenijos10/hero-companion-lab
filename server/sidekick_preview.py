@@ -168,6 +168,116 @@ def _resolve_power(name, set_path, shard, mids, by_folded, where, issues, hero_s
     return matches[0]
 
 
+def _is_own_set(bucket):
+    return bucket in ("primary", "secondary")
+
+
+def _source_archetype_fits(shard, bucket, archetype):
+    """A pool has no archetype, and an epic POOL's label is a hint only (Sidekick
+    labels the VEAT epics "arachnos_soldier", which Widows take too): Hero
+    Companion's own per-archetype epic list gates those. A primary or secondary
+    always belongs to the build's own archetype."""
+    if not _is_own_set(bucket) and shard.get("category") in ("pool", "epic"):
+        return True
+    return shard.get("archetype") in (None, archetype)
+
+
+def _source_category_fits(shard, bucket):
+    """Sidekick files the Kheldian and Arachnos primaries and secondaries under
+    "epic", the game's own grouping for those archetypes."""
+    if not _is_own_set(bucket):
+        return True
+    return shard.get("category") in (None, bucket, "epic")
+
+
+GRANTED_SET = "Inherent.Inherent"
+
+
+class _Branches:
+    """The Arachnos branch sets (Crab/Bane, Night Widow/Fortunata) an archetype
+    may draw from beside its base set, as Sidekick's archetypes.json states them."""
+
+    _KEYS = {"primary": ("primarySets", "primarySet"),
+             "secondary": ("secondarySets", "secondarySet")}
+
+    def __init__(self, root, archetype):
+        path = Path(root) / "archetypes.json"
+        # No catalog, no branches: every pick stays in its selection's own set.
+        catalog = _read_json(path, "Sidekick archetypes") if path.is_file() else {}
+        entry = ((catalog.get("archetypes") or {}).get(archetype)
+                 if isinstance(catalog, dict) else None)
+        self._entry = entry if isinstance(entry, dict) else {}
+        self._branches = [b for b in (self._entry.get("branches") or {}).values()
+                          if isinstance(b, dict)]
+        self.branch_ids = {b.get(key) for b in self._branches
+                           for _, key in self._KEYS.values()} - {None}
+
+    def branch_of(self, set_id):
+        """The branch (crab-spider, fortunata, ...) a set belongs to, else None."""
+        hits = [key for key, b in (self._entry.get("branches") or {}).items()
+                if isinstance(b, dict) and set_id in (b.get("primarySet"), b.get("secondarySet"))]
+        return hits[0] if len(hits) == 1 else None
+
+    def family(self, bucket, set_id):
+        """Every set a pick in this selection may come from: the base set and
+        its branches, or the selection's own set alone."""
+        if bucket not in self._KEYS or not self._branches:
+            return {set_id}
+        bases, key = self._KEYS[bucket]
+        family = set(self._entry.get(bases) or []) | {b.get(key) for b in self._branches}
+        family.discard(None)
+        return family if set_id in family else {set_id}
+
+
+def _source_record(shard, name):
+    """The one source power record named `name`; Sidekick's own lookup ignores case
+    (an older file writes Ws_Wide_Area_Web_Grenade for WS_Wide_Area_Web_Grenade)."""
+    records = [p for p in (shard or {}).get("powers") or [] if isinstance(p, dict)]
+    for same in (lambda n: n == name, lambda n: n.casefold() == name.casefold()):
+        hits = [p for p in records if isinstance(p.get("internalName"), str)
+                and same(p["internalName"])]
+        if hits:
+            return hits[0] if len(hits) == 1 else None
+    return None
+
+
+def _source_of(power, set_id, shard, family, sources):
+    """(source set id, source record) for one pick; (None, None) when it names a
+    set outside its selection's family. An older Sidekick file files a branch
+    pick under the base set; like Sidekick, look in the branches for it."""
+    name, named = power["internalName"], power.get("powerset")
+    if named and named not in family:
+        return None, None
+    if named and named != set_id:
+        return named, _source_record(sources.get(named), name)
+    record = _source_record(shard, name)
+    if record is not None or named:
+        return set_id, record
+    hits = [(other, found) for other in sorted(family - {set_id})
+            if (found := _source_record(sources.get(other), name)) is not None]
+    return hits[0] if len(hits) == 1 else (set_id, None)
+
+
+def _resolve_source_power(record, source, mids, hero_powers_by_full, hero_index, where,
+                          issues, epic_choices):
+    """Hero Companion's power for one source record. A power the game grants
+    (Sidekick: autoIssue + free, e.g. Bright Nova Bolt, Energy Flight; its own
+    requires names our Inherent.Inherent record) lands on that record."""
+    hero_set = hero_set_path(source, mids, hero_powers_by_full, epic_choices)
+    if hero_set is None:
+        issues.append(_issue("unknown_hero_powerset", where, source.get("setPath")))
+        return None
+    found = []
+    matched = _resolve_power(record["internalName"], source["setPath"], source, mids,
+                             hero_index, where, found, hero_set=hero_set)
+    if matched is None and record.get("autoIssue") is True and record.get("free") is True:
+        granted = hero_index.get(f"{GRANTED_SET}.{record['internalName']}".casefold(), [])
+        if len(granted) == 1:
+            return granted[0]
+    issues.extend(found)
+    return matched
+
+
 def preview_build(document, hero_powers_by_full, contract_root, hero_piece_by_uid=None,
                   epic_choices=None):
     """Return verifiable power matches and unresolved facts, never an editable build.
@@ -193,9 +303,11 @@ def preview_build(document, hero_powers_by_full, contract_root, hero_piece_by_ui
     hero_index = _index_powers(hero_powers_by_full)
     enhancement_bridge = (EnhancementResolver(contract_root, hero_piece_by_uid)
                           if hero_piece_by_uid is not None else None)
+    branches = _Branches(contract_root, build.get("archetype"))
     issues = []
     resolved = []
     enhancements = []
+    seats, families = {}, {}
 
     def resolve_slots(power, location):
         for j, slot in enumerate(power["slots"]):
@@ -227,44 +339,60 @@ def preview_build(document, hero_powers_by_full, contract_root, hero_piece_by_ui
         set_path = shard.get("setPath")
         if not isinstance(set_path, str) or not set_path or not isinstance(shard.get("powers"), list):
             raise PreviewContractError(f"Malformed Sidekick shard: {set_id}")
-        # A pool has no archetype, and an epic's label is a hint only (Sidekick
-        # labels the VEAT epics "arachnos_soldier", which Widows take too):
-        # Hero Companion's own per-archetype epic list gates epics.
-        if (shard.get("category") not in ("pool", "epic")
-                and shard.get("archetype") not in (None, build.get("archetype"))):
+        if not _source_archetype_fits(shard, bucket, build.get("archetype")):
             issues.append(_issue("source_archetype_mismatch", where, set_id))
             return
-        if bucket in ("primary", "secondary") and shard.get("category") not in (None, bucket):
+        if not _source_category_fits(shard, bucket):
             issues.append(_issue("source_category_mismatch", where, set_id))
             return
-        hero_set = hero_set_path(shard, mids, hero_powers_by_full, epic_choices)
-        if hero_set is None:
+        if hero_set_path(shard, mids, hero_powers_by_full, epic_choices) is None:
             issues.append(_issue("unknown_hero_powerset", where, set_path))
             return
 
+        family = branches.family(bucket, set_id)
+        used_branches = set()
         for i, power in enumerate(selection.get("powers", [])):
             location = f"{where}.powers[{i}]"
-            name = power["internalName"]
-            if power.get("powerset") and power["powerset"] != set_id:
+            source_id, record = _source_of(power, set_id, shard, family, sources)
+            if source_id is None:
                 issues.append(_issue("cross_set_power_not_mapped", location, power["powerset"]))
                 continue
-            matched = _resolve_power(name, set_path, shard, mids, hero_index, location, issues,
-                                     hero_set=hero_set)
-            if matched is not None:
-                resolved.append({
-                    "location": location, "sidekick_set": set_id,
-                    "sidekick_power": name, "hero_power": matched,
-                    "level": power["level"], "slot_count": len(power["slots"]),
-                })
+            if record is None:
+                issues.append(_issue("unknown_source_power", location, power["internalName"]))
+            else:
+                if source_id in branches.branch_ids:
+                    used_branches.add(source_id)
+                source = shard if source_id == set_id else sources.get(source_id)
+                matched = _resolve_source_power(record, source, mids, hero_powers_by_full,
+                                                hero_index, location, issues, epic_choices)
+                if matched is not None:
+                    resolved.append({
+                        "location": location, "sidekick_set": source_id,
+                        "sidekick_power": record["internalName"], "hero_power": matched,
+                        "hero_set": hero_powers_by_full[matched].get("powerset_full_name"),
+                        "level": power["level"], "slot_count": len(power["slots"]),
+                    })
             resolve_slots(power, location)
             for key in ("isActive", "activeSubPower"):
                 if power.get(key):
                     issues.append(_issue("state_not_mapped", f"{location}.{key}", key))
+        if len(used_branches) > 1:
+            issues.append(_issue("mixed_branch_sets", where, ", ".join(sorted(used_branches))))
+        seats[bucket] = next(iter(used_branches)) if len(used_branches) == 1 else set_id
+        if bucket in ("primary", "secondary"):   # pools share one bucket name; never keyed here
+            families[bucket] = sorted(filter(None, (
+                hero_set_path(sources.get(member) or {}, mids, hero_powers_by_full,
+                              epic_choices)
+                for member in family)))
 
     for bucket in ("primary", "secondary", "epicPool"):
         visit(bucket, build.get(bucket))
     for index, selection in enumerate(build.get("pools", [])):
         visit("pools", selection, index)
+    # One branch choice sets both: Crab primary with Bane secondary is impossible.
+    chosen = {branches.branch_of(seats.get(b)) for b in ("primary", "secondary")} - {None}
+    if len(chosen) > 1:
+        issues.append(_issue("mixed_branch_sets", "build.secondary", ", ".join(sorted(chosen))))
 
     # The power identity of an inherent is the reconstruction layer's job
     # (Sidekick's own name table); its enhancements resolve here like any slot.
@@ -283,6 +411,7 @@ def preview_build(document, hero_powers_by_full, contract_root, hero_piece_by_ui
     return {
         "format": "skif-v5", "dataset": "homecoming",
         "name": build.get("name", ""), "resolved": resolved,
-        "resolved_enhancements": enhancements,
+        "resolved_enhancements": enhancements, "seats": seats,
+        "families": families,
         "unresolved": issues, "ready_for_import": False,
     }
