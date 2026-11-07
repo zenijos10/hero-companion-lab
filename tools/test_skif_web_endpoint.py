@@ -145,6 +145,7 @@ class SidekickFlaskEndpointTests(unittest.TestCase):
             changed = self.export(built)
             self.assertTrue(changed["ok"], changed)
             self.assertTrue(changed["dropped_slot_order"])
+            self.assertEqual(changed["dropped_proc_settings"], [])
             self.assertNotIn("slotOrder", changed["skif"]["build"])
 
     def test_invalid_or_illegal_export_request_is_refused_early(self):

@@ -18,6 +18,12 @@ from preview_skif import _enhancement_lookups, main as preview_main
 ACCOLADES_IN_SAMPLE = ["the_atlas_medallion", "freedom_phalanx_reserve",
                        "task_force_commander", "portal_jockey"]
 
+# The "proc test" sample's two overrides, re-addressed the way Sidekick's v5 reader
+# stores them: "<powerset>:<power>:<slot index>".
+PROC_OVERRIDES = {
+    "body_mastery:Physical_Perfection:5": {"enabled": True, "mode": "hp", "hpPct": 50},
+    "scrapper/energy-aura:Kinetic_Shield:0": {"enabled": False, "mode": "hp", "hpPct": 60}}
+
 # The sample's secondary picks that live in the Crab Spider training branch.
 CRAB_TRAINING_PICKS = ("Crab_Spider_Armor", "Fortification", "Serum", "Summon_Spiderlings")
 
@@ -159,6 +165,31 @@ class RealSidekickReconstructionTests(unittest.TestCase):
                 converted = self.reconstruct(doc)
                 self.assertFalse(converted["ok"])
                 self.assertIn(reason, [i["reason"] for i in converted["issues"]])
+
+    def proc_sample(self):
+        doc = self.v5_from_v4("proc test", ("primary", "secondary", "pools", "inherents",
+                                            "epicPool"))
+        doc["build"]["procOverrides"] = copy.deepcopy(PROC_OVERRIDES)
+        doc["build"]["disabledProcCategories"] = ["Defense"]
+        return doc
+
+    def test_proc_settings_pass_through_with_their_slot_anchors(self):
+        converted = self.reconstruct(self.proc_sample())
+        self.assertTrue(converted["ok"], converted["issues"][:5])
+        kept = converted["build"]["sidekick_proc_settings"]
+        self.assertEqual(kept["overrides"], PROC_OVERRIDES)            # verbatim, never read
+        self.assertEqual(kept["disabled_categories"], ["Defense"])
+        self.assertEqual(kept["anchors"]["scrapper/energy-aura:Kinetic_Shield:0"],
+                         ["Scrapper_Defense.Energy_Aura.Kinetic_Shield", 0,
+                          "Crafted_Reactive_Defenses_F"])
+
+    def test_a_proc_override_naming_no_pick_is_refused(self):
+        doc = self.proc_sample()
+        doc["build"]["procOverrides"]["scrapper/energy-aura:Not_A_Power:0"] = {
+            "enabled": False, "mode": "auto"}
+        converted = self.reconstruct(doc)
+        self.assertFalse(converted["ok"])
+        self.assertIn("unknown_proc_override", [i["reason"] for i in converted["issues"]])
 
     def test_sidekicks_homecoming_controller_with_four_pools_imports_whole(self):
         doc = self.v5_from_v4("homecoming-troller")   # its Artillery slots included

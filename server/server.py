@@ -6578,6 +6578,7 @@ def build_export_sidekick():
     return jsonify({"ok": True, "filename": (safe_name or "HeroCompanion") + ".skif",
                     "skif": converted["skif"], "dropped": dropped,
                     "dropped_slot_order": converted.get("dropped_slot_order", False),
+                    "dropped_proc_settings": converted.get("dropped_proc_settings") or [],
                     "warnings": legal.get("warnings") or []})
 
 

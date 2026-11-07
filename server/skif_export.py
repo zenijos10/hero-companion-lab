@@ -274,12 +274,18 @@ def export_build(build, hero_powers_by_full, contract_root, hero_powersets=None,
     accolades = _accolades(contract.sources, build.get("accolades") or [], issues)
     if accolades:
         out["accolades"] = accolades
+    overrides, categories, dropped_proc_settings = _proc_settings(build)
+    if overrides:
+        out["procOverrides"] = overrides
+    if categories:
+        out["disabledProcCategories"] = categories
     slot_order, dropped_slot_order = _slot_order(build)
     if slot_order:
         out["slotOrder"] = slot_order
 
     result = {"ok": not issues, "issues": issues, "dropped": dropped,
-              "dropped_slot_order": dropped_slot_order}
+              "dropped_slot_order": dropped_slot_order,
+              "dropped_proc_settings": dropped_proc_settings}
     if issues:
         result["ok"] = False
         return result
@@ -441,6 +447,26 @@ def _accolades(sources, keys, issues):
         elif key.casefold() not in out:     # one entry each, as Sidekick stores them
             out.append(key.casefold())
     return out
+
+
+def _proc_settings(build):
+    """(overrides, disabled categories, dropped override keys) for Sidekick's
+    per-proc controls, passed back verbatim. An override is written only while
+    the piece it described still sits in that slot of that power."""
+    kept = build.get("sidekick_proc_settings")
+    if not isinstance(kept, dict):
+        return {}, [], []
+    slots_of = {p["full_name"]: p.get("slots") or [] for p in build.get("powers") or []}
+    overrides, dropped = {}, []
+    for key, value in (kept.get("overrides") or {}).items():
+        full, index, uid = (kept.get("anchors") or {}).get(key) or (None, None, None)
+        slots = slots_of.get(full)
+        piece = slots[index] if slots is not None and index < len(slots) else None
+        if slots is not None and (piece or {}).get("piece_uid") == uid:
+            overrides[key] = value
+        else:
+            dropped.append(key)
+    return overrides, list(kept.get("disabled_categories") or []), dropped
 
 
 def _slot_order(build):
