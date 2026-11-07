@@ -14,6 +14,10 @@ from sidekick_reconstruct import reconstruct_build
 from preview_skif import _enhancement_lookups, main as preview_main
 
 
+# The Arachnos sample's accolades as Sidekick's current reader stores them.
+ACCOLADES_IN_SAMPLE = ["the_atlas_medallion", "freedom_phalanx_reserve",
+                       "task_force_commander", "portal_jockey"]
+
 # The sample's secondary picks that live in the Crab Spider training branch.
 CRAB_TRAINING_PICKS = ("Crab_Spider_Armor", "Fortification", "Serum", "Summon_Spiderlings")
 
@@ -123,6 +127,38 @@ class RealSidekickReconstructionTests(unittest.TestCase):
                 kept = converted["build"]["sidekick_slot_order"]
                 self.assertEqual(kept["entries"], order)      # verbatim, never interpreted
                 self.assertTrue(kept["shape"])
+
+    def test_the_arachnos_samples_accolades_land_on_our_accolade_keys(self):
+        doc = self.v5_from_v4("homcoming-level-up-arachnos")
+        doc["build"]["accolades"] = ACCOLADES_IN_SAMPLE
+        converted = self.reconstruct(doc)
+        self.assertTrue(converted["ok"], converted["issues"][:5])
+        self.assertEqual(converted["build"]["accolades"], [
+            "The_Atlas_Medallion", "Freedom_Phalanx_Reserve", "Task_Force_Commander",
+            "Portal_Jockey"])
+
+    def test_every_sidekick_accolade_has_one_of_ours(self):
+        from sidekick_preview import SourceSets
+        ours = json.loads((ROOT / "data/accolades.json").read_text(encoding="utf-8"))
+        shard = SourceSets(self.contract).get("Accolades")
+        names = [p["internalName"] for p in shard["powers"]]
+        self.assertEqual(len(names), 28, "denominator: Sidekick's accolade records")
+        doc = self.v5_from_v4("homecoming-troller")
+        doc["build"]["accolades"] = [n.lower() for n in names]   # Sidekick stores them folded
+        converted = self.reconstruct(doc)
+        self.assertTrue(converted["ok"], converted["issues"][:5])
+        self.assertEqual(converted["build"]["accolades"], names)
+        self.assertLessEqual(set(names), set(ours))
+
+    def test_an_unknown_or_repeated_accolade_is_refused(self):
+        for accolades, reason in ((["not_an_accolade"], "unknown_accolade"),
+                                  (["portal_jockey", "Portal_Jockey"], "duplicate_accolade")):
+            with self.subTest(reason):
+                doc = self.v5_from_v4("homecoming-troller")
+                doc["build"]["accolades"] = accolades
+                converted = self.reconstruct(doc)
+                self.assertFalse(converted["ok"])
+                self.assertIn(reason, [i["reason"] for i in converted["issues"]])
 
     def test_sidekicks_homecoming_controller_with_four_pools_imports_whole(self):
         doc = self.v5_from_v4("homecoming-troller")   # its Artillery slots included

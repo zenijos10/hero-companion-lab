@@ -85,7 +85,17 @@ def sample_documents():
             # A D-Sync: Sidekick's DSync_* is our Dsync_*.
             "blaster-dsync": v5_from_v4("sojourner_1784025393210"),
             # Sidekick's slot-by-level history, passed back verbatim.
-            "controller-slot-history": _with_slot_order("homecoming-troller")}
+            "controller-slot-history": _with_slot_order("homecoming-troller"),
+            # Its accolades, as Sidekick's reader stores them (lower-cased).
+            "arachnos-accolades": _with_accolades("homcoming-level-up-arachnos")}
+
+
+def _with_accolades(name):
+    doc = v5_from_v4(name)
+    doc["build"]["accolades"] = [a["id"] for a in json.loads(
+        (UPSTREAM / f"fixtures/skif/v4/{name}.skif").read_text(encoding="utf-8")
+    )["build"]["accolades"]]
+    return doc
 
 
 def _with_slot_order(name):

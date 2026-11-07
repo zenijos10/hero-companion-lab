@@ -14,7 +14,7 @@ from pathlib import Path
 from sidekick_preview import (GRANTED_SET, SourceSets, _Branches, _index_powers,
                               _read_json, _resolve_power, _source_archetype_fits,
                               _source_category_fits, hero_set_path)
-from sidekick_reconstruct import HC_GRANTED_INHERENTS, slot_shape
+from sidekick_reconstruct import HC_GRANTED_INHERENTS, accolade_records, slot_shape
 from sidekick_enhancements import EnhancementResolver
 from skif_document import SkifFormatError, load_document
 
@@ -271,6 +271,9 @@ def export_build(build, hero_powers_by_full, contract_root, hero_powersets=None,
     if chains:
         out["attackChains"] = chains
 
+    accolades = _accolades(contract.sources, build.get("accolades") or [], issues)
+    if accolades:
+        out["accolades"] = accolades
     slot_order, dropped_slot_order = _slot_order(build)
     if slot_order:
         out["slotOrder"] = slot_order
@@ -421,6 +424,22 @@ def _incarnates(build, issues, incarnate_catalog=None):
             continue
         out[matched_slots[0]["slot"].lower()] = {
             "power": pick["full_name"], "active": pick.get("active") is not False}
+    return out
+
+
+def _accolades(sources, keys, issues):
+    """Sidekick's ids for our accolade keys: the game's internal name, lower-cased
+    (how Sidekick stores them). A key Sidekick has no record of refuses the export."""
+    if not keys:
+        return []
+    names = {p["internalName"].casefold() for p in accolade_records(sources)["powers"]
+             if isinstance(p, dict) and isinstance(p.get("internalName"), str)}
+    out = []
+    for key in keys:
+        if not isinstance(key, str) or key.casefold() not in names:
+            issues.append(_issue("accolade_not_exportable", "accolades", key))
+        elif key.casefold() not in out:     # one entry each, as Sidekick stores them
+            out.append(key.casefold())
     return out
 
 

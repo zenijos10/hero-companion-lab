@@ -11,6 +11,7 @@ must not be mistaken for an export of later edits to the HC build.
 import copy
 from pathlib import Path
 
+from engine import accolade_table
 from sidekick_preview import (GRANTED_SET, PreviewContractError, SourceSets, _read_json,
                               _source_record, hero_set_path, preview_build)
 from skif_document import load_document
@@ -19,13 +20,13 @@ from skif_document import load_document
 # The native HC editor cannot express these Sidekick state dimensions yet.
 # Refuse *non-empty* values; empty state is equivalent to the reader's default.
 _UNSUPPORTED = (
-    "accolades", "stances", "modes",
+    "stances", "modes",
     "powerState", "procOverrides", "disabledProcCategories",
     "progress", "whatIfBuffs",
 )
 _KNOWN_BUILD = frozenset((
     "name", "dataset", "archetype", "origin", "level", "primary", "secondary",
-    "pools", "epicPool", "attackChains", "inherents", "incarnates", "slotOrder",
+    "pools", "epicPool", "attackChains", "inherents", "incarnates", "slotOrder", "accolades",
 ) + _UNSUPPORTED)
 _KNOWN_POWER = frozenset(("internalName", "level", "slots", "powerset",
                           "isActive", "activeSubPower"))
@@ -476,6 +477,43 @@ def _translate_incarnates(body, incarnate_catalog, issues):
     return result
 
 
+def accolade_records(sources):
+    """Sidekick's accolade records: the one shard filed under powersets/accolade/
+    (found from the manifest path, so no other shard is read) whose category
+    says so."""
+    shards = [s for s in (sources.get(i) for i, path in sources.paths.items()
+                          if "accolade" in Path(path).parts[-3:-1])
+              if isinstance(s, dict) and s.get("category") == "accolade"]
+    if len(shards) != 1 or not isinstance(shards[0].get("powers"), list):
+        raise PreviewContractError("Sidekick accolade set is missing or ambiguous")
+    return shards[0]
+
+
+def translate_accolades(ids, root, issues):
+    """Our accolade keys (data/accolades.json) for Sidekick's ids. Sidekick stores
+    the game's internal name lower-cased and matches without case; our key is
+    that internal name."""
+    if not ids:
+        return []
+    shard = accolade_records(SourceSets(root))
+    by_folded = {}
+    for record in shard["powers"]:
+        if isinstance(record, dict) and isinstance(record.get("internalName"), str):
+            by_folded.setdefault(record["internalName"].casefold(), []).append(record)
+    out = []
+    for i, source_id in enumerate(ids):
+        where = f"build.accolades[{i}]"
+        records = by_folded.get(source_id.casefold(), [])
+        ours = accolade_table().get(records[0]["internalName"]) if len(records) == 1 else None
+        if not isinstance(ours, dict):
+            issues.append(_issue("unknown_accolade", where, source_id))
+        elif records[0]["internalName"] in out:
+            issues.append(_issue("duplicate_accolade", where, source_id))
+        else:
+            out.append(records[0]["internalName"])
+    return out
+
+
 def slot_shape(powers):
     """What Sidekick's slot history describes: each power holding added slots,
     with its pick level and slot count. Kept with the history so an export can
@@ -514,12 +552,14 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
     issues = [copy.deepcopy(issue) for issue in preview["unresolved"]
               if not (issue["reason"] == "state_not_mapped"
                       and issue["location"] in ("build.origin", "build.attackChains",
-                                                "build.incarnates", "build.slotOrder"))
+                                                "build.incarnates", "build.slotOrder",
+                                                "build.accolades"))
               # Inherent identity is decided below from Sidekick's own table.
               and issue["reason"] != "inherent_not_mapped"]
     issues.extend(_source_state_issues(doc))
     body = doc["build"]
     incarnates = _translate_incarnates(body, incarnate_catalog, issues)
+    accolades = translate_accolades(body.get("accolades") or [], contract_root, issues)
     _source_generic_eligibility(body, contract_root, preview, issues)
     _source_slot_budget(body, issues)
     attack_chains = _translate_attack_chains(body, preview, issues)
@@ -605,6 +645,7 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
         "origin": body.get("origin"),
         "incarnates": incarnates,
         "sidekick_attack_chains": attack_chains,
+        "accolades": accolades,
         "powers": native_powers,
     }
     if body.get("slotOrder"):

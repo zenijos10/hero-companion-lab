@@ -847,6 +847,11 @@ def _accolade_table():
     return _ACCOLADE_TABLE
 
 
+def accolade_table():
+    """Every accolade we know, keyed by the game's internal name (public read)."""
+    return _accolade_table()
+
+
 def accolade_flat(rec, mod_tables, col):
     """(flat_hp, flat_end) a single accolade grants, from the GAME's own scales:
     scale × its modifier table at the AT's column. This is the SAME arithmetic

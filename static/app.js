@@ -269,7 +269,7 @@ async function saveProgress() {
                  named: true,   // a person chose this name — never nudge it
                  custom_targets: build._custom_targets || null };   // ruling 4: persist in the save
   const res = await api("/saves", postJson({ name, id: CURRENT_SAVE && CURRENT_SAVE.id,
-    build, plan, level_reached: build.level_reached || null }));
+    build: buildWithAccolades(), plan, level_reached: build.level_reached || null }));
   if (res && res.ok) {
     CURRENT_SAVE = { id: res.id, name: res.name };
     try { localStorage.setItem("cohLastSave", res.id); } catch (e) {}
@@ -451,6 +451,7 @@ function buildSnapshot() {
   return JSON.stringify({
     a: build.archetype, p: build.primary, s: build.secondary, pl: build.pools, e: build.epic,
     inc: build.incarnates, sc: build.sidekick_attack_chains, so: build.sidekick_slot_order,
+    ac: [...ACCOLADES_CHECKED],
     pw: (build.powers || []).map(pw => [pw.full_name, pw.slots]),
     fl: [build.include_incarnates, build.pvp, build.tier, build.level_reached],
   });
@@ -474,7 +475,7 @@ async function autoSaveTick() {
                  named: !NEEDS_NAME,
                  custom_targets: build._custom_targets || null };   // ruling 4: persist in the save
   const res = await api("/saves", postJson({ name, id: CURRENT_SAVE && CURRENT_SAVE.id,
-    build, plan, level_reached: build.level_reached || null }));
+    build: buildWithAccolades(), plan, level_reached: build.level_reached || null }));
   if (res && res.ok) {
     CURRENT_SAVE = { id: res.id, name: res.name };
     _lastSavedSnapshot = snap;
@@ -8297,6 +8298,13 @@ function _accRow(a) {
 // is the course's width and needs no computation, no resize retrigger, and no
 // unverifiable ResizeObserver. The simplest layout that is legible wins.)
 
+// The build as it is kept or sent: the accolade ticks are part of the character,
+// so saves remember them and an export carries them (the panel's Set stays the
+// one live copy).
+function buildWithAccolades() {
+  return { ...build, accolades: [...ACCOLADES_CHECKED] };
+}
+
 function renderAccolades() {
   const card = $("accolades-card");
   if (!card) return;
@@ -9888,7 +9896,7 @@ async function exportSidekick() {
     return;
   }
   const status = $("gen-status");
-  const snapshot = sidekickExportPayload(build,
+  const snapshot = sidekickExportPayload(buildWithAccolades(),
     (CURRENT_SAVE && CURRENT_SAVE.name) || "Hero Companion Build");
 
   function reportFailure(result) {
@@ -10306,6 +10314,13 @@ async function _applyImportedBuild(b) {
   resetBuildScopedState();    // a swapped-in build is a DIFFERENT character — no leaked
   //                             custom targets / exposure / travel / previews (state-
   //                             lifecycle rule; callers that carry answers re-set them after)
+  // A build that carries its accolade ticks (a save, a Sidekick import) gets them
+  // back: only accolades the panel knows (unknown keys would be ticks nobody can
+  // see or untick). If the list failed to load, keep them all rather than none.
+  if (Array.isArray(b.accolades)) {
+    const known = new Set((await loadAccolades()).map(a => a.key));
+    b.accolades.forEach(k => { if (!known.size || known.has(k)) ACCOLADES_CHECKED.add(k); });
+  }
   // archetype cascade (loads powerset options)
   $("sel-archetype").value = b.archetype || "";
   updateAtEmblem();   // setting .value programmatically does not fire `change`

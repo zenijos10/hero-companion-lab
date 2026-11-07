@@ -89,6 +89,11 @@ out. Rules going forward:
   records; VEAT branch picks carry `powerset` = branch (older files: under the base set), and
   the branch is seated; two branches refuse. D-Syncs bridge on a case-only uid difference.
   Still refused, our data lacks them: Synthetic Hamidon + `Generic_*` specials (16).
+- **Accolades travel both ways (2026-11-07):** Sidekick stores the game's internal name lower-cased;
+  ours (data/accolades.json, via `engine.accolade_table`) is that name, 28/28 map. The build
+  carries `accolades`; the app's `ACCOLADES_CHECKED` stays the live copy, restored on open and
+  written by `buildWithAccolades()` into saves and the export. Saves now remember accolade ticks
+  (before, every reopened save came back with none ticked).
 - **OPEN, the owner's rulings:** the solver's fill-list names ("damage", "hold") do not match the
   power data's ("Damage Increase", "Hold Duration"), so common fills never choose a Damage IO
   (fixing it moves many scores).
