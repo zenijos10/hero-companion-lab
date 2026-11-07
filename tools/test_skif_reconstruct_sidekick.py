@@ -14,6 +14,10 @@ from sidekick_reconstruct import reconstruct_build
 from preview_skif import _enhancement_lookups, main as preview_main
 
 
+# The sample's secondary picks that live in the Crab Spider training branch.
+CRAB_TRAINING_PICKS = ("Crab_Spider_Armor", "Fortification", "Serum", "Summon_Spiderlings")
+
+
 class RealSidekickReconstructionTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -230,6 +234,19 @@ class RealSidekickReconstructionTests(unittest.TestCase):
         doc["build"]["primary"]["powers"].append({
             "internalName": "Mace_Beam", "level": 49, "slots": [None],
             "powerset": "arachnos-soldier/bane-spider-soldier"})
+        converted = self.reconstruct(doc)
+        self.assertFalse(converted["ok"])
+        self.assertIn("mixed_branch_sets", [i["reason"] for i in converted["issues"]])
+
+    def test_primary_and_secondary_from_different_branches_are_refused(self):
+        # One branch choice at 24 sets both: Crab primary + Bane secondary is impossible.
+        doc = self.veat_v5()
+        secondary = doc["build"]["secondary"]
+        secondary["powers"] = [p for p in secondary["powers"] if p["internalName"]
+                               not in CRAB_TRAINING_PICKS]      # no Crab secondary picks left
+        secondary["powers"].append({
+            "internalName": "Surveillance", "level": 49, "slots": [None],
+            "powerset": "arachnos-soldier/bane-spider-training"})
         converted = self.reconstruct(doc)
         self.assertFalse(converted["ok"])
         self.assertIn("mixed_branch_sets", [i["reason"] for i in converted["issues"]])

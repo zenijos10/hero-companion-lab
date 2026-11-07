@@ -555,7 +555,6 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
                 rec = hero_powers_by_full.get(full)
                 if (not isinstance(rec, dict)
                         or rec.get("full_name") != full
-                        or rec.get("powerset_full_name") != matched.get("hero_set")
                         or not _belongs(matched["hero_set"], selected_set,
                                         preview["families"].get(bucket))):
                     issues.append(_issue("inconsistent_power_identity", where, full))

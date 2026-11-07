@@ -50,6 +50,7 @@ class _Contract:
             for slug, entry in (archetypes.get("archetypes") or {}).items()
             if isinstance(entry, dict)}
         self._levels = None
+        self._branches = {}
         self.inverse = (_invert_set_pieces(root, self.boosts, hero_piece_by_uid)
                         if hero_piece_by_uid is not None else {})
 
@@ -86,7 +87,9 @@ class _Contract:
         """(selection id, {hero set: shard}) for a primary or secondary. An
         Arachnos build names its BASE set, as Sidekick does, and each branch pick
         names its branch; every other build is its one seated set."""
-        branches = _Branches(self.root, archetype_slug)
+        if archetype_slug not in self._branches:
+            self._branches[archetype_slug] = _Branches(self.root, archetype_slug)
+        branches = self._branches[archetype_slug]
         members = branches.family(role, seat["id"])
         bases = members - branches.branch_ids
         selection_id = next(iter(bases)) if len(members) > 1 and len(bases) == 1 else seat["id"]
@@ -300,6 +303,8 @@ def _selection(contract, role, set_full, slug, picks, issues, placed):
     powers = []
     for power in picks:
         full = power["full_name"]
+        if full in placed:      # already written by an earlier selection
+            continue
         shard = shards.get(_set_of(power))
         internal = contract.internal_name(shard, full) if shard else None
         if shard is None and _set_of(power) == GRANTED_SET:

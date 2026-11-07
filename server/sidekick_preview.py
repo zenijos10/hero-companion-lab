@@ -212,6 +212,12 @@ class _Branches:
         self.branch_ids = {b.get(key) for b in self._branches
                            for _, key in self._KEYS.values()} - {None}
 
+    def branch_of(self, set_id):
+        """The branch (crab-spider, fortunata, ...) a set belongs to, else None."""
+        hits = [key for key, b in (self._entry.get("branches") or {}).items()
+                if isinstance(b, dict) and set_id in (b.get("primarySet"), b.get("secondarySet"))]
+        return hits[0] if len(hits) == 1 else None
+
     def family(self, bucket, set_id):
         """Every set a pick in this selection may come from: the base set and
         its branches, or the selection's own set alone."""
@@ -373,14 +379,20 @@ def preview_build(document, hero_powers_by_full, contract_root, hero_piece_by_ui
         if len(used_branches) > 1:
             issues.append(_issue("mixed_branch_sets", where, ", ".join(sorted(used_branches))))
         seats[bucket] = next(iter(used_branches)) if len(used_branches) == 1 else set_id
-        families[bucket] = sorted(filter(None, (
-            hero_set_path(sources.get(member) or {}, mids, hero_powers_by_full, epic_choices)
-            for member in family)))
+        if bucket in ("primary", "secondary"):   # pools share one bucket name; never keyed here
+            families[bucket] = sorted(filter(None, (
+                hero_set_path(sources.get(member) or {}, mids, hero_powers_by_full,
+                              epic_choices)
+                for member in family)))
 
     for bucket in ("primary", "secondary", "epicPool"):
         visit(bucket, build.get(bucket))
     for index, selection in enumerate(build.get("pools", [])):
         visit("pools", selection, index)
+    # One branch choice sets both: Crab primary with Bane secondary is impossible.
+    chosen = {branches.branch_of(seats.get(b)) for b in ("primary", "secondary")} - {None}
+    if len(chosen) > 1:
+        issues.append(_issue("mixed_branch_sets", "build.secondary", ", ".join(sorted(chosen))))
 
     # The power identity of an inherent is the reconstruction layer's job
     # (Sidekick's own name table); its enhancements resolve here like any slot.
