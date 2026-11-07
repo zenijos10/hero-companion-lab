@@ -50,6 +50,8 @@ const withAcc = vm.runInNewContext("(" + js.slice(aStart, js.indexOf("\nfunction
 assert.deepEqual(JSON.parse(JSON.stringify(withAcc())), {archetype: "X", accolades: ["Portal_Jockey"]});
 assert.equal((js.match(/build: buildWithAccolades\(\), plan/g) || []).length, 2, "both save writers");
 assert(js.includes("sidekickExportPayload(buildWithAccolades(),"));
-assert(js.includes("if (Array.isArray(b.accolades)) b.accolades.forEach(k => ACCOLADES_CHECKED.add(k));"));
+assert(js.includes("const known = new Set((await loadAccolades()).map(a => a.key));"));
+assert(js.includes("if (!known.size || known.has(k)) ACCOLADES_CHECKED.add(k);"),
+       "only accolades the panel knows are restored");
 assert(js.includes("ac: [...ACCOLADES_CHECKED],"));
 console.log("Sidekick export UI request: passed");

@@ -139,6 +139,13 @@ class SidekickExportRoundTripTests(unittest.TestCase):
         self.assertEqual(exported["build"]["accolades"], ["the_atlas_medallion", "portal_jockey"])
         self.assertEqual(self.imported(load_document(dump_document(exported))), first)
 
+    def test_a_repeated_accolade_is_written_once(self):
+        build = self.imported(self.source)
+        build["accolades"] = ["Portal_Jockey", "portal_jockey"]
+        exported = self.export(build)["skif"]
+        self.assertEqual(exported["build"]["accolades"], ["portal_jockey"])
+        self.assertEqual(self.imported(exported)["accolades"], ["Portal_Jockey"])
+
     def test_an_accolade_sidekick_lacks_refuses_the_export(self):
         build = self.imported(self.source)
         build["accolades"] = ["Not_An_Accolade"]

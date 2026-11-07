@@ -271,7 +271,7 @@ def export_build(build, hero_powers_by_full, contract_root, hero_powersets=None,
     if chains:
         out["attackChains"] = chains
 
-    accolades = _accolades(contract.root, build.get("accolades") or [], issues)
+    accolades = _accolades(contract.sources, build.get("accolades") or [], issues)
     if accolades:
         out["accolades"] = accolades
     slot_order, dropped_slot_order = _slot_order(build)
@@ -427,18 +427,18 @@ def _incarnates(build, issues, incarnate_catalog=None):
     return out
 
 
-def _accolades(root, keys, issues):
+def _accolades(sources, keys, issues):
     """Sidekick's ids for our accolade keys: the game's internal name, lower-cased
     (how Sidekick stores them). A key Sidekick has no record of refuses the export."""
     if not keys:
         return []
-    names = {p["internalName"].casefold() for p in accolade_records(root)["powers"]
+    names = {p["internalName"].casefold() for p in accolade_records(sources)["powers"]
              if isinstance(p, dict) and isinstance(p.get("internalName"), str)}
     out = []
     for key in keys:
         if not isinstance(key, str) or key.casefold() not in names:
             issues.append(_issue("accolade_not_exportable", "accolades", key))
-        else:
+        elif key.casefold() not in out:     # one entry each, as Sidekick stores them
             out.append(key.casefold())
     return out
 

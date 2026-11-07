@@ -477,10 +477,12 @@ def _translate_incarnates(body, incarnate_catalog, issues):
     return result
 
 
-def accolade_records(root):
-    """Sidekick's accolade records: the one shard whose category is "accolade"."""
-    sources = SourceSets(root)
-    shards = [s for s in (sources.get(i) for i in sources.paths)
+def accolade_records(sources):
+    """Sidekick's accolade records: the one shard filed under powersets/accolade/
+    (found from the manifest path, so no other shard is read) whose category
+    says so."""
+    shards = [s for s in (sources.get(i) for i, path in sources.paths.items()
+                          if "accolade" in Path(path).parts[-3:-1])
               if isinstance(s, dict) and s.get("category") == "accolade"]
     if len(shards) != 1 or not isinstance(shards[0].get("powers"), list):
         raise PreviewContractError("Sidekick accolade set is missing or ambiguous")
@@ -493,7 +495,7 @@ def translate_accolades(ids, root, issues):
     that internal name."""
     if not ids:
         return []
-    shard = accolade_records(root)
+    shard = accolade_records(SourceSets(root))
     by_folded = {}
     for record in shard["powers"]:
         if isinstance(record, dict) and isinstance(record.get("internalName"), str):

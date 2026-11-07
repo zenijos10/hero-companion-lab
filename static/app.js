@@ -10314,8 +10314,13 @@ async function _applyImportedBuild(b) {
   resetBuildScopedState();    // a swapped-in build is a DIFFERENT character — no leaked
   //                             custom targets / exposure / travel / previews (state-
   //                             lifecycle rule; callers that carry answers re-set them after)
-  // A build that carries its accolade ticks (a save, a Sidekick import) gets them back.
-  if (Array.isArray(b.accolades)) b.accolades.forEach(k => ACCOLADES_CHECKED.add(k));
+  // A build that carries its accolade ticks (a save, a Sidekick import) gets them
+  // back: only accolades the panel knows (unknown keys would be ticks nobody can
+  // see or untick). If the list failed to load, keep them all rather than none.
+  if (Array.isArray(b.accolades)) {
+    const known = new Set((await loadAccolades()).map(a => a.key));
+    b.accolades.forEach(k => { if (!known.size || known.has(k)) ACCOLADES_CHECKED.add(k); });
+  }
   // archetype cascade (loads powerset options)
   $("sel-archetype").value = b.archetype || "";
   updateAtEmblem();   // setting .value programmatically does not fire `change`
