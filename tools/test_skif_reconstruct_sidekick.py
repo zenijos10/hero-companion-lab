@@ -94,6 +94,116 @@ class RealSidekickReconstructionTests(unittest.TestCase):
         self.assertEqual(len([p for p in build["powers"]
                               if not p["full_name"].startswith("Inherent.")]), picked)
 
+    def test_kheldian_and_arachnos_samples_import_whole(self):
+        # Sidekick files the Kheldian and Arachnos (VEAT) primaries and
+        # secondaries under the "epic" category, the game's own grouping.
+        for name, at in (("homecoming-kheldian", "Class_Peacebringer"),
+                         ("homcoming-level-up-arachnos", "Class_Arachnos_Soldier")):
+            with self.subTest(name):
+                converted = self.reconstruct(self.v5_from_v4(name))
+                self.assertTrue(converted["ok"], converted["issues"][:5])
+                self.assertEqual(converted["build"]["archetype"], at)
+
+    def test_kheldian_form_attacks_land_on_our_granted_records(self):
+        # Sidekick's own record: autoIssue + free, and its requires names
+        # Inherent.Inherent.Bright_Nova_Bolt, the record we keep it under.
+        build = self.reconstruct(self.v5_from_v4("homecoming-kheldian"))["build"]
+        bolt = next(p for p in build["powers"]
+                    if p["full_name"] == "Inherent.Inherent.Bright_Nova_Bolt")
+        self.assertEqual((bolt["powerset_full_name"], bolt["pick_level"], len(bolt["slots"])),
+                         ("Inherent.Inherent", 4, 6))
+        self.assertEqual(build["primary"], "Peacebringer_Offensive.Luminous_Blast")
+
+    def test_every_kheldian_and_arachnos_power_the_game_offers_resolves(self):
+        # Coverage over all 16 sets Sidekick files under "epic" (the Kheldian
+        # and Arachnos primaries/secondaries), not just the two samples.
+        from sidekick_preview import SourceSets, _index_powers, _resolve_source_power
+        sources = SourceSets(self.contract)
+        index = _index_powers(self.hero)
+        offered, unresolved = 0, []
+        for set_id in sources.paths:
+            shard = sources.get(set_id)
+            if shard.get("category") != "epic":
+                continue
+            for record in shard["powers"]:
+                if record.get("available", 0) < 0:
+                    continue    # never offered (Quantum Boost: a sub-power, no slots)
+                offered += 1
+                if _resolve_source_power(record, shard, sources.mids, self.hero, index,
+                                         set_id, [], None) is None:
+                    unresolved.append((set_id, record["internalName"]))
+        self.assertEqual(unresolved, [])
+        self.assertEqual(offered, 166, "denominator: offered powers in the 16 sets")
+
+    def test_kheldian_travel_inherent_imports_slotted(self):
+        doc = self.v5_from_v4("homecoming-kheldian")
+        doc["build"]["secondary"]["powers"].append(
+            {"internalName": "Energy_Flight", "level": 1,
+             "slots": [{"type": "io-generic", "stat": "EnduranceReduction", "level": 50}]})
+        converted = self.reconstruct(doc)
+        self.assertTrue(converted["ok"], converted["issues"][:5])
+        self.assertIn("Inherent.Inherent.Energy_Flight",
+                      [p["full_name"] for p in converted["build"]["powers"]])
+
+    def veat_v5(self):
+        # Sidekick's current writer: the selection names the BASE set, and a
+        # branch pick names its own set.
+        doc = self.v5_from_v4("homcoming-level-up-arachnos")
+        for power in doc["build"]["primary"]["powers"]:
+            if power["internalName"] in ("Longfang", "Aim", "Suppression", "Slice",
+                                         "Frenzy", "Arm_Lash"):
+                power["powerset"] = "arachnos-soldier/crab-spider-soldier"
+        return doc
+
+    def test_arachnos_branch_picks_seat_the_branch_and_keep_base_picks(self):
+        for label, doc in (("current v5", self.veat_v5()),
+                           ("older file, branch picks under the base set",
+                            self.v5_from_v4("homcoming-level-up-arachnos"))):
+            with self.subTest(label):
+                converted = self.reconstruct(doc)
+                self.assertTrue(converted["ok"], converted["issues"][:5])
+                build = converted["build"]
+                self.assertEqual(build["primary"], "Arachnos_Soldiers.Crab_Spider_Soldier")
+                sets = {p["full_name"]: p["powerset_full_name"] for p in build["powers"]}
+                self.assertEqual(sets["Arachnos_Soldiers.Crab_Spider_Soldier.Longfang"],
+                                 "Arachnos_Soldiers.Crab_Spider_Soldier")
+                self.assertEqual(sets["Arachnos_Soldiers.Arachnos_Soldier.Single_Shot"],
+                                 "Arachnos_Soldiers.Arachnos_Soldier")
+
+    def test_a_branch_pick_is_judged_by_its_own_records_io_rules(self):
+        doc = self.veat_v5()
+        longfang = next(p for p in doc["build"]["primary"]["powers"]
+                        if p["internalName"] == "Longfang")
+        longfang["slots"][0] = {"type": "io-generic", "stat": "Damage", "level": 50}
+        converted = self.reconstruct(doc)
+        self.assertTrue(converted["ok"], converted["issues"][:5])
+        longfang["slots"][0]["stat"] = "Healing"
+        refused = self.reconstruct(doc)
+        self.assertIn("invalid_generic_enhancement", [i["reason"] for i in refused["issues"]])
+
+    def test_picks_from_two_arachnos_branches_are_refused(self):
+        doc = self.veat_v5()
+        doc["build"]["primary"]["powers"].append({
+            "internalName": "Mace_Beam", "level": 49, "slots": [None],
+            "powerset": "arachnos-soldier/bane-spider-soldier"})
+        converted = self.reconstruct(doc)
+        self.assertFalse(converted["ok"])
+        self.assertIn("mixed_branch_sets", [i["reason"] for i in converted["issues"]])
+
+    def test_a_branch_of_another_bucket_stays_refused(self):
+        doc = self.veat_v5()
+        doc["build"]["primary"]["powers"][2]["powerset"] = "arachnos-soldier/crab-spider-training"
+        converted = self.reconstruct(doc)
+        self.assertFalse(converted["ok"])
+        self.assertIn("cross_set_power_not_mapped", [i["reason"] for i in converted["issues"]])
+
+    def test_an_epic_category_primary_of_another_archetype_is_refused(self):
+        doc = self.v5_from_v4("homecoming-kheldian")
+        doc["build"]["primary"]["id"] = "warshade/umbral-blast"
+        converted = self.reconstruct(doc)
+        self.assertFalse(converted["ok"])
+        self.assertIn("source_archetype_mismatch", [i["reason"] for i in converted["issues"]])
+
     def test_renamed_epic_resolves_by_archetype_and_identical_roster(self):
         # Sidekick: Epic.Melee_Psionic_Mastery (labelled "scrapper");
         # Hero Companion: Epic.Psionic_Mastery_ScrapStalk, which Stalkers take.

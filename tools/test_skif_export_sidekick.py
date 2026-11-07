@@ -76,6 +76,32 @@ class SidekickExportRoundTripTests(unittest.TestCase):
         self.assertEqual([p["id"] for p in exported["build"]["pools"]], ["leaping"])
         self.assertEqual(self.imported(exported), first)
 
+    def sample(self, name):
+        from export_skif_samples import UPSTREAM, v5_from_v4
+        self.assertEqual(UPSTREAM, self.checkout)
+        return v5_from_v4(name)
+
+    def test_kheldian_and_arachnos_builds_round_trip(self):
+        for name in ("homecoming-kheldian", "homcoming-level-up-arachnos"):
+            with self.subTest(name):
+                first = self.imported(self.sample(name))
+                exported = self.export(first)["skif"]
+                self.assertEqual(self.imported(load_document(dump_document(exported))), first)
+
+    def test_kheldian_form_attacks_export_inside_their_powerset(self):
+        exported = self.export(self.imported(self.sample("homecoming-kheldian")))["skif"]["build"]
+        self.assertIn("Bright_Nova_Bolt",
+                      [p["internalName"] for p in exported["primary"]["powers"]])
+        self.assertNotIn("inherents", exported)
+
+    def test_arachnos_export_names_the_base_set_and_each_branch_pick(self):
+        exported = self.export(self.imported(
+            self.sample("homcoming-level-up-arachnos")))["skif"]["build"]
+        self.assertEqual(exported["primary"]["id"], "arachnos-soldier/arachnos-soldier")
+        sets = {p["internalName"]: p.get("powerset") for p in exported["primary"]["powers"]}
+        self.assertEqual(sets["Longfang"], "arachnos-soldier/crab-spider-soldier")
+        self.assertIsNone(sets["Single_Shot"])
+
     def test_export_writes_sidekicks_own_identities(self):
         doc = self.rich_source()
         exported = self.export(self.imported(doc))["skif"]["build"]

@@ -77,7 +77,11 @@ def sample_documents():
     return {"published": published, "inherents-incarnates": rich,
             "pool-renamed-epic": pooled,
             # Four pools, real inherents, and Artillery (our Crafted_Shrapnel_*).
-            "controller-four-pools": v5_from_v4("homecoming-troller")}
+            "controller-four-pools": v5_from_v4("homecoming-troller"),
+            # Form attacks travel inside their powerset (ours: Inherent.Inherent).
+            "peacebringer-forms": v5_from_v4("homecoming-kheldian"),
+            # Base set named, each Crab Spider pick names its branch.
+            "arachnos-crab-branch": v5_from_v4("homcoming-level-up-arachnos")}
 
 
 def main(out_dir):
