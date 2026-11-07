@@ -14,7 +14,9 @@ from pathlib import Path
 from sidekick_preview import (GRANTED_SET, SourceSets, _Branches, _index_powers,
                               _read_json, _resolve_power, _source_archetype_fits,
                               _source_category_fits, hero_set_path)
-from sidekick_reconstruct import HC_GRANTED_INHERENTS, accolade_records, slot_shape
+from engine import ACTIVE_POWER_TYPES, NONCOMBAT_POWERS
+from sidekick_reconstruct import (HC_GRANTED_INHERENTS, accolade_records, is_auto,
+                                  slot_shape)
 from sidekick_enhancements import EnhancementResolver
 from skif_document import SkifFormatError, load_document
 
@@ -331,6 +333,8 @@ def _selection(contract, role, set_full, slug, picks, issues, placed):
         if shard["id"] != selection_id:
             written["powerset"] = shard["id"]
         written["slots"] = _slots(contract, power, issues)
+        if _switched_on(contract, power):
+            written["isActive"] = True
         powers.append(written)
     return {"id": selection_id, "powers": powers}
 
@@ -350,19 +354,40 @@ def _slots(contract, power, issues):
     return out
 
 
+def _switched_on(contract, power):
+    """Our "count in totals" checkbox is Sidekick's isActive. Unset, it follows
+    our default (engine.ACTIVE_POWER_TYPES); Sidekick writes the switch on an
+    Auto too, and its math counts an Auto either way. A power we never count
+    (Rest, engine.NONCOMBAT_POWERS) is never switched on in Sidekick."""
+    if power["full_name"] in NONCOMBAT_POWERS:
+        return False
+    rec = contract.hero.get(power["full_name"]) or {}
+    include = power.get("include_in_totals")
+    if include is None:
+        include = rec.get("power_type") in ACTIVE_POWER_TYPES
+    return bool(include) or is_auto(rec)
+
+
 def _inherents(contract, build, issues):
-    """Only an inherent the user authored on travels (Sidekick's own rule)."""
+    """Only an inherent the user authored on travels (Sidekick's own rule):
+    slots placed or filled, or a toggle/click switched on (Sprint)."""
     out = []
     for power in build.get("powers") or []:
         full = power["full_name"]
         slots = power.get("slots") or []
-        if full not in HC_GRANTED_INHERENTS or (len(slots) <= 1 and not any(slots)):
+        rec = contract.hero.get(full) or {}
+        switched = not is_auto(rec) and _switched_on(contract, power)
+        if full not in HC_GRANTED_INHERENTS or (len(slots) <= 1 and not any(slots)
+                                                and not switched):
             continue
         internal = contract.inherent_names().get(full)
         if internal is None:
             issues.append(_issue("inherent_not_exportable", full, full))
             continue
-        out.append({"internalName": internal, "level": 1, "slots": _slots(contract, power, issues)})
+        written = {"internalName": internal, "level": 1, "slots": _slots(contract, power, issues)}
+        if _switched_on(contract, power):
+            written["isActive"] = True
+        out.append(written)
     return out
 
 
@@ -465,7 +490,8 @@ def _proc_settings(build):
     overrides, dropped = {}, []
     for key, value in stored.items():
         anchor = anchors.get(key)
-        if not (isinstance(anchor, list) and len(anchor) == 3 and type(anchor[1]) is int):
+        if not (isinstance(anchor, list) and len(anchor) == 3 and isinstance(anchor[0], str)
+                and type(anchor[1]) is int):
             dropped.append(key)         # unanchored (named no pick at import) or malformed
             continue
         full, index, uid = anchor

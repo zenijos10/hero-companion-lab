@@ -343,14 +343,24 @@ class ReconstructionTests(unittest.TestCase):
                       [i["reason"] for i in result["issues"]])
 
     def test_active_subpower_and_unknown_power_fields_refuse(self):
-        for changes in ({"isActive": True}, {"activeSubPower": "ModeX"},
-                        {"futureFlag": False}):
+        for changes in ({"activeSubPower": "ModeX"}, {"futureFlag": False}):
             doc = fixture()
             doc["build"]["primary"]["powers"][0].update(changes)
             with self.subTest(changes=changes):
                 result = self.convert(doc)
                 self.assertFalse(result["ok"])
                 self.assertNotIn("build", result)
+
+    def test_the_on_off_switch_is_our_count_in_totals_checkbox(self):
+        # The owner's ruling (2026-11-07): isActive maps to include_in_totals.
+        for switched in (True, False):
+            doc = fixture()
+            if switched:
+                doc["build"]["primary"]["powers"][0]["isActive"] = True
+            with self.subTest(isActive=switched):
+                result = self.convert(doc)
+                self.assertTrue(result["ok"], result["issues"])
+                self.assertIs(result["build"]["powers"][0]["include_in_totals"], switched)
 
     def test_unknown_power_or_enhancement_refuses_the_entire_build(self):
         doc = fixture()
@@ -517,7 +527,7 @@ class ReconstructionTests(unittest.TestCase):
 
     def test_inherent_state_and_enhancements_are_held_to_the_same_rules(self):
         cases = [
-            ({"internalName": "Sprint", "level": 1, "slots": [None], "isActive": True},
+            ({"internalName": "Sprint", "level": 1, "slots": [None], "activeSubPower": "X"},
              "unsupported_source_state"),
             ({"internalName": "Health", "level": 1, "slots": [None], "mystery": 1},
              "unsupported_source_state"),

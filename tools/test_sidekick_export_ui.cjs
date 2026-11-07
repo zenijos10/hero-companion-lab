@@ -32,7 +32,7 @@ assert(js.includes('$("export-skif-btn").addEventListener("click", exportSidekic
 const withOrder = fn({...original, sidekick_slot_order: {entries: [{powerName: "P", slotIndex: 1}],
                                                          shape: []}}, "A");
 assert.equal(withOrder.build.sidekick_slot_order.entries[0].powerName, "P");
-const nStart = js.indexOf("function sidekickSlotOrderNote(");
+const nStart = js.indexOf("function sidekickExportDropNote(");
 const nEnd = js.indexOf("async function exportSidekick()", nStart);
 const note = vm.runInNewContext("(" + js.slice(nStart, nEnd).trim() + ")", {});
 assert.match(note({dropped_slot_order: true}), /slot-by-level history was left out/);
@@ -41,7 +41,7 @@ assert.match(note({dropped_proc_settings: ["a:b:0"]}), /1 Sidekick proc setting\
 assert(js.includes("build.sidekick_proc_settings = null;"), "a new character resets them");
 assert(js.includes("build.sidekick_proc_settings = b.sidekick_proc_settings"), "resume restores them");
 assert(js.includes("sp: build.sidekick_proc_settings,"), "autosave notices them");
-assert(js.includes("+ sidekickSlotOrderNote(result);"));
+assert(js.includes("+ sidekickExportDropNote(result);"));
 // A new character never inherits the last one's history; resume restores it.
 assert(/build\.sidekick_attack_chains = \[\];\r?\n  build\.sidekick_slot_order = null;/.test(js));
 assert(js.includes("build.sidekick_slot_order = b.sidekick_slot_order"));

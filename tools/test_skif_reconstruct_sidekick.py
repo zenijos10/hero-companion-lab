@@ -193,6 +193,29 @@ class RealSidekickReconstructionTests(unittest.TestCase):
         self.assertEqual(kept["anchors"]["Inherent:Health:0"][:2], ["Inherent.Fitness.Health", 0])
         self.assertIsNotNone(kept["anchors"]["Inherent:Health:0"][2])
 
+    def test_sidekicks_on_off_switch_becomes_our_count_in_totals_checkbox(self):
+        # Sidekick's math: an Auto power always counts; a toggle or click counts
+        # only when switched on (coh_math gather.rs). Ours: include_in_totals.
+        from export_skif_samples import UPSTREAM
+        for name in ("homecoming-troller", "controller_import_1785756407256",
+                     "homecoming-kheldian", "homcoming-level-up-arachnos"):
+            with self.subTest(name):
+                doc = self.v5_from_v4(name)
+                build = self.reconstruct(doc)["build"]
+                switched = {p["internalName"].casefold(): bool(p.get("isActive"))
+                            for b in ("primary", "secondary") for p in doc["build"][b]["powers"]}
+                checked = 0
+                for power in build["powers"]:
+                    leaf = power["full_name"].rsplit(".", 1)[-1].casefold()
+                    if leaf not in switched or power["full_name"].startswith("Inherent."):
+                        continue
+                    if power["power_type"] == 1:        # Auto: always counted
+                        self.assertIs(power["include_in_totals"], True)
+                    else:
+                        self.assertEqual(power["include_in_totals"], switched[leaf], leaf)
+                        checked += 1
+                self.assertGreater(checked, 5)
+
     def test_sidekicks_homecoming_controller_with_four_pools_imports_whole(self):
         doc = self.v5_from_v4("homecoming-troller")   # its Artillery slots included
         converted = reconstruct_build(doc, self.hero, self.hero_sets, self.contract,

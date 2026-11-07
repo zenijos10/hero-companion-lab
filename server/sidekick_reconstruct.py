@@ -158,7 +158,8 @@ def _power_field_issues(issues, selection, where):
 def _one_power_issues(issues, power, power_where):
     for key in sorted(set(power) - _KNOWN_POWER):
         issues.append(_issue("unsupported_source_state", f"{power_where}.{key}", key))
-    if power.get("isActive") is True or power.get("activeSubPower"):
+    # isActive maps to include_in_totals; a sub-power choice has no home yet.
+    if power.get("activeSubPower"):
         issues.append(_issue("unsupported_source_state", power_where, "active power mode"))
     for j, slot in enumerate(power["slots"]):
         if slot is None:
@@ -231,7 +232,7 @@ def _translate_inherents(body, root, hero_powers_by_full, enhancements,
             "accepted_set_category_ids": copy.deepcopy(rec.get("accepted_set_category_ids", [])),
             "accepted_set_categories": copy.deepcopy(rec.get("accepted_set_categories", [])),
             "power_type": rec.get("power_type"),
-            "include_in_totals": rec.get("power_type") == 1,
+            "include_in_totals": _counts_in_totals(rec, power),
             "earned_slot_count": len(slots),
             "slotCount": len(slots),
             "slots": slots,
@@ -483,6 +484,18 @@ def _translate_incarnates(body, incarnate_catalog, issues):
     return result
 
 
+def is_auto(rec):
+    """An Auto power (ours: power_type 1) counts whatever Sidekick's switch says."""
+    return rec.get("power_type") in (1, "Auto")
+
+
+def _counts_in_totals(rec, power):
+    """Sidekick's on/off switch (isActive) is our "count in totals" checkbox.
+    Its math counts an Auto power always and a toggle or click only when
+    switched on (coh_math gather.rs at the pinned commit)."""
+    return is_auto(rec) or bool(power.get("isActive"))
+
+
 def accolade_records(sources):
     """Sidekick's accolade records: the one shard filed under powersets/accolade/
     (found from the manifest path, so no other shard is read) whose category
@@ -536,7 +549,7 @@ def _proc_settings(body, addresses, native_powers):
     for key in overrides:
         address, _, index = key.rpartition(":")
         power = by_full.get(addresses.get(address))
-        if power is None or not index.isdigit():
+        if power is None or not (index.isascii() and index.isdigit()):
             continue    # names no pick here (e.g. respecced away): kept, unanchored, so export drops it
         slots = power.get("slots") or []
         piece = slots[int(index)] if int(index) < len(slots) else None
@@ -659,6 +672,7 @@ def reconstruct_build(skif, hero_powers_by_full, hero_powersets,
                     "earned_slot_count": len(slots),
                     "slotCount": len(slots),
                     "slots": slots,
+                    "include_in_totals": _counts_in_totals(rec, power),
                 })
     native_powers.extend(_translate_inherents(
         body, contract_root, hero_powers_by_full, enhancements,

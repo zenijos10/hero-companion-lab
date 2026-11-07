@@ -100,6 +100,18 @@ out. Rules going forward:
   wait on the operating-health ruling). Override keys are "<powerset>:<power>:<slot>"; an
   anchor records our power/slot/piece, and export writes an override back only while that
   piece is still there, else reports it in `dropped_proc_settings`.
+- **Sidekick's per-power on/off switch (`isActive`) IS our `include_in_totals` (owner,
+  2026-11-07).** Sidekick's math (coh_math gather.rs) counts an Auto always and a toggle/click
+  only when switched on, so import sets the checkbox for toggles/clicks only (`is_auto` /
+  `_counts_in_totals`); export writes `isActive` from the checkbox (unset = our default), and
+  an inherent switched on with no slots (Sprint) travels; Rest (engine.NONCOMBAT_POWERS) is
+  never switched on. **Solve KEEPS an explicitly set checkbox** (owner, 2026-11-07,
+  `solver._kept_include`; it used to reset every one from power_type, undoing an untick or an
+  imported switch); unset = the default. Every server generator writes the default, so champion
+  and generated solves are byte-identical (demo 39/39, slot conservation, HO, target-level all
+  unchanged); the app's Sprint grant (unticked) now stays unticked after Solve, as designed. ⚠ The census missed it
+  for a day: `v5_from_v4` stripped `isActive` (7 of 8 samples carry it) — a test converter
+  that drops a field hides every blocker in that field.
 - **OPEN, the owner's rulings:** the solver's fill-list names ("damage", "hold") do not match the
   power data's ("Damage Increase", "Hold Duration"), so common fills never choose a Damage IO
   (fixing it moves many scores).

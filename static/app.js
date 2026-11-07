@@ -9886,7 +9886,7 @@ function sidekickExportPayload(nativeBuild, name, allowDropped = false) {
 
 // The slots changed since import, so Sidekick's own slot-by-level history no
 // longer describes them: the export leaves it out and says so.
-function sidekickSlotOrderNote(result) {
+function sidekickExportDropNote(result) {
   const dropped = (result && result.dropped_proc_settings) || [];
   return (result && result.dropped_slot_order
     ? " Sidekick's slot-by-level history was left out because the slots changed since import;"
@@ -9968,7 +9968,7 @@ async function exportSidekick() {
       if (status) status.textContent = (outcome && outcome.path
         ? `⬇ Sidekick build saved to ${outcome.path}. Open the .skif file in CoH Sidekick.`
         : "⬇ Sidekick build exported. Open the .skif from Downloads in CoH Sidekick.")
-        + sidekickSlotOrderNote(result);
+        + sidekickExportDropNote(result);
     } catch (error) {
       reportFailure({response: "Could not save the Sidekick file: " + error});
     }

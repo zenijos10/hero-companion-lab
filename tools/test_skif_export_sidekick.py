@@ -192,6 +192,47 @@ class SidekickExportRoundTripTests(unittest.TestCase):
         self.assertEqual(sorted(result["dropped_proc_settings"]),
                          sorted(self.proc_doc()["build"]["procOverrides"]))
 
+    def test_the_on_off_switch_round_trips_both_ways(self):
+        doc = self.sample("controller_import_1785756407256")
+        first = self.imported(doc)
+        exported = self.export(first)["skif"]["build"]
+        on = lambda b: sorted(p["internalName"].casefold() for k in ("primary", "secondary")
+                              for p in b[k]["powers"] if p.get("isActive"))
+        self.assertEqual(on(exported), on(doc["build"]))
+        self.assertEqual(self.imported({"version": 5, "build": exported}), first)
+
+    def test_ticking_our_checkbox_switches_it_on_in_sidekick(self):
+        build = self.imported(self.sample("homecoming-troller"))
+        power = next(p for p in build["powers"] if p.get("include_in_totals") is False)
+        power["include_in_totals"] = True
+        exported = self.export(build)["skif"]["build"]
+        leaf = power["full_name"].rsplit(".", 1)[-1]
+        written = next(p for k in ("primary", "secondary") for p in exported[k]["powers"]
+                       if p["internalName"].casefold() == leaf.casefold())
+        self.assertTrue(written.get("isActive"))
+
+    def test_sprint_switched_on_travels_both_ways_without_slots(self):
+        doc = copy.deepcopy(self.source)
+        doc["build"]["inherents"] = [{"internalName": "Sprint", "level": 1, "slots": [None],
+                                      "isActive": True}]
+        first = self.imported(doc)
+        sprint = next(p for p in first["powers"] if p["full_name"] == "Inherent.Inherent.Sprint")
+        self.assertIs(sprint["include_in_totals"], True)
+        exported = self.export(first)["skif"]["build"]
+        self.assertEqual(exported["inherents"], [{"internalName": "Sprint", "level": 1,
+                                                  "slots": [None], "isActive": True}])
+        self.assertEqual(self.imported({"version": 5, "build": exported}), first)
+
+    def test_rest_is_never_switched_on_in_sidekick(self):
+        # We never count Rest (engine.NONCOMBAT_POWERS); a Solve ticks every
+        # toggle, and Rest is one, so its tick must not reach Sidekick's totals.
+        build = self.imported(self.source)
+        build["powers"].append({"full_name": "Inherent.Inherent.Rest", "slots": [None],
+                                "slotCount": 1, "include_in_totals": True,
+                                "powerset_full_name": "Inherent.Inherent"})
+        exported = self.export(build)["skif"]["build"]
+        self.assertNotIn("Rest", [p["internalName"] for p in exported.get("inherents", [])])
+
     def test_kheldian_form_attacks_export_inside_their_powerset(self):
         exported = self.export(self.imported(self.sample("homecoming-kheldian")))["skif"]["build"]
         self.assertIn("Bright_Nova_Bolt",

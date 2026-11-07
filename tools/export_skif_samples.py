@@ -41,6 +41,8 @@ def v5_from_v4(name, buckets=("primary", "secondary", "pools", "inherents")):
     def power(p):
         out = {k: v for k, v in p.items() if k in ("internalName", "level")}
         out["slots"] = [slot(sl) for sl in p["slots"]]
+        if p.get("isActive"):           # Sidekick writes the switch only when on
+            out["isActive"] = True
         return out
 
     def selection(sel):
