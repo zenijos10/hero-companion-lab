@@ -116,6 +116,16 @@ class SidekickExportRoundTripTests(unittest.TestCase):
         self.assertEqual([(s["piece_uid"], s["attuned"]) for s in again],
                          [("Crafted_Shrapnel_A", False), ("Crafted_Apocalypse_A", True)])
 
+    def test_character_level_survives_both_directions(self):
+        # The app keeps the character's level as level_reached; a level-32
+        # Sidekick character must not come back as level 50.
+        doc = copy.deepcopy(self.source)
+        doc["build"]["level"] = 32
+        build = self.imported(doc)
+        self.assertEqual(build["level_reached"], 32)
+        app_shape = {k: v for k, v in build.items() if k != "char_level"}
+        self.assertEqual(self.export(app_shape)["skif"]["build"]["level"], 32)
+
     def test_unslotted_inherents_are_not_written(self):
         build = self.imported(self.source)
         build["powers"].append({"full_name": "Inherent.Fitness.Swift", "slots": [None],

@@ -192,7 +192,9 @@ def export_build(build, hero_powers_by_full, contract_root, hero_powersets=None,
     slug = contract.archetype_slugs.get(build.get("archetype"))
     if not slug:
         issues.append(_issue("archetype_not_exportable", "archetype", build.get("archetype")))
-    out = {"dataset": "homecoming", "archetype": slug, "level": build.get("char_level") or 50}
+    # The app keeps the character's level as level_reached (none on a level-50 plan).
+    level = build.get("char_level") or build.get("level_reached") or 50
+    out = {"dataset": "homecoming", "archetype": slug, "level": level}
     if name or build.get("name"):
         out["name"] = name or build.get("name")
     if isinstance(build.get("origin"), str):
