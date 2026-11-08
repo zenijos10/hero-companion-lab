@@ -58,6 +58,9 @@ class BuildEvaluateRouteTests(unittest.TestCase):
             {"build": self.build, "scenario": "unknown"},
             {"build": dict(self.build, exemplar_level=35)},
             {"build": dict(self.build, powers=[None])},
+            {"build": dict(self.build, powers=[{"full_name": [], "slots": []}])},
+            {"build": dict(self.build, powers=[{"full_name": "X", "slots": "bad"}])},
+            {"build": dict(self.build, powers=[{"full_name": "X", "slots": [3]}])},
             {"build": dict(self.build, archetype="NoSuchArchetype")},
         )
         for body in cases:
