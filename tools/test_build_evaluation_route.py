@@ -46,6 +46,8 @@ class BuildEvaluateRouteTests(unittest.TestCase):
 
     def test_original_general_solver_preset_is_unchanged(self):
         self.assertEqual(fp.SCENARIOS["general"]["shift"], 1)
+        # the rating scenario is NOT a solver content: it must not leak into SCENARIOS
+        self.assertNotIn("rating_plus4", fp.SCENARIOS)
         response = self.client.post("/build/evaluate",
                                     json={"build": self.build, "scenario": "general"})
         self.assertEqual(response.status_code, 200)
@@ -70,12 +72,37 @@ class BuildEvaluateRouteTests(unittest.TestCase):
             {"build": dict(self.build, powers=[{"full_name": "X", "slots": "bad"}])},
             {"build": dict(self.build, powers=[{"full_name": "X", "slots": [3]}])},
             {"build": dict(self.build, archetype="NoSuchArchetype")},
+            {"build": dict(self.build, pvp=True)},
         )
         for body in cases:
             with self.subTest(body=str(body)[:80]):
                 response = self.client.post("/build/evaluate", json=body)
                 self.assertEqual(response.status_code, 400)
                 self.assertFalse(response.get_json()["ok"])
+
+
+    def test_full_level_exemplar_values_evaluate_like_calculate(self):
+        for level in (50, 0, ""):
+            with self.subTest(level=level):
+                response = self.client.post(
+                    "/build/evaluate", json={"build": dict(self.build, exemplar_level=level)})
+                self.assertEqual(response.status_code, 200)
+
+    def test_suppressible_defense_is_rated_in_combat(self):
+        """A real Hide-class power: /build/calculate's in_combat value is what
+        /build/evaluate reports as defense."""
+        hide = "Stalker_Defense.Super_Reflexes.Hide"
+        build = {"archetype": "Class_Stalker", "powers": [{"full_name": hide, "slots": []}]}
+        if hide not in srv.POWER_BY_FULL:
+            self.skipTest("no Hide record")
+        calc = self.client.post("/build/calculate", json=build).get_json()
+        fight = {t: r.get("in_combat") for t, r in calc["defense"].items() if "in_combat" in r}
+        self.assertTrue(fight, "Hide should carry suppressible defense")
+        data = self.client.post("/build/evaluate", json={"build": build}).get_json()
+        survival = data["measurements"]["survival"]
+        for t, value in fight.items():
+            self.assertAlmostEqual(survival["defense"][t]["value"], value, places=2)
+            self.assertIn(t, survival["defense_out_of_combat"])
 
 
 if __name__ == "__main__":

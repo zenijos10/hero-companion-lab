@@ -2,11 +2,9 @@ name: Build evaluation M2
 on:
   pull_request:
     paths:
-      - "server/build_evaluation.py"
-      - "server/engine.py"
-      - "server/first_principles.py"
-      - "server/role_output.py"
-      - "server/server.py"
+      - "server/**"
+      - "data/**"
+      - "requirements*.txt"
       - "tools/test_build_evaluation_contract.py"
       - "tools/test_build_evaluation_route.py"
       - "tools/test_user_paths.py"

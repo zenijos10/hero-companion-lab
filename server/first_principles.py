@@ -49,13 +49,6 @@ SCENARIOS = {
     # re-valuing the resistance behind it. Cascade risk scales with how debuff-heavy the content is.
     "general":   dict(enemies=4,  enemy_dps=90,  teammates=0, team_dps=110, length=30.0,  shift=1, rank_acc=1.05, ctrl_land=0.95, debuff_res=0.0,  enemy_regen=5,   def_debuff_in=0.03, kb_in=0.04, slow_in=0.05),
     "team":      dict(enemies=8,  enemy_dps=90,  teammates=7, team_dps=110, length=25.0,  shift=2, rank_acc=1.10, ctrl_land=0.92, debuff_res=0.0,  enemy_regen=8,   def_debuff_in=0.04, kb_in=0.05, slow_in=0.08),
-    # M2 RATING CONTRACT: +4 version of the existing general solo encounter.
-    # Isolated name, explicitly selected by /build/evaluate only; DOES NOT change
-    # the old general=+1 solver/optimizer preset or the farming encounters.
-    # Other general encounter assumptions remain fixed for reproducible comparisons.
-    "rating_plus4": dict(enemies=4, enemy_dps=90, teammates=0, team_dps=110, length=30.0,
-                         shift=4, rank_acc=1.05, ctrl_land=0.95, debuff_res=0.0,
-                         enemy_regen=5, def_debuff_in=0.03, kb_in=0.04, slow_in=0.05),
     "itrial":    dict(enemies=10, enemy_dps=130, teammates=7, team_dps=130, length=30.0,  shift=3, rank_acc=1.20, ctrl_land=0.87, debuff_res=0.0,  enemy_regen=15,  def_debuff_in=0.07, kb_in=0.06, slow_in=0.15),
     "fire_farm": dict(dmg_type="Fire", enemies=10, enemy_dps=110, teammates=0, team_dps=0,   length=20.0,  shift=4, rank_acc=1.00, ctrl_land=0.95, debuff_res=0.0,  enemy_regen=5,   def_debuff_in=0.05, kb_in=0.02, slow_in=0.0),
     # v31 FARM SCENARIOS (Maelwys's encounter math, given freely on the forum):
@@ -970,10 +963,21 @@ def _domination_duration_bonus(powers, global_recharge):
     return _DOM_DURATION_BONUS * uptime
 
 
+def hasten_recharge_average(powers, passive_rech):
+    """Hasten's time-averaged +recharge (fraction) for a build with this passive
+    recharge (fraction): +70% for 120s of every 450s base cycle, the cycle sped up
+    by passive recharge and ~+95% of its own slotting. 0.0 without Hasten. The ONE
+    copy: encounter_value and the evaluation contract both read it."""
+    if not any((p.get("full_name") or "").endswith(".Hasten") for p in (powers or [])):
+        return 0.0
+    cycle = 450.0 / (1.0 + passive_rech + 0.95)
+    return 0.70 * min(1.0, 120.0 / max(cycle, 1.0))
+
+
 def encounter_value(archetype, powers, ctx, totals, scenario="general", arch_row=None,
-                    role_output_mod=None):
+                    role_output_mod=None, scenario_params=None):
     """Expected contribution of this build to the scenario's fight. Pure arithmetic — see header."""
-    sc = SCENARIOS.get(scenario) or SCENARIOS["general"]
+    sc = scenario_params or SCENARIOS.get(scenario) or SCENARIOS["general"]
     off = totals.get("offense") or {}
     ro = role_output_mod
     # Purple Patch (wiki-verified): EVERYTHING the player does to higher foes scales down —
@@ -990,10 +994,8 @@ def encounter_value(archetype, powers, ctx, totals, scenario="general", arch_row
     # (fully). Elasticities are model constants (flagged), the uptime arithmetic is the game's.
     passive_rech = _pct(totals, "recharge")
     hasten_mult_dmg = hasten_mult_ctrl = 1.0
-    h_avg = 0.0
-    if any((p.get("full_name") or "").endswith(".Hasten") for p in (powers or [])):
-        cycle = 450.0 / (1.0 + passive_rech + 0.95)
-        h_avg = 0.70 * min(1.0, 120.0 / max(cycle, 1.0))
+    h_avg = hasten_recharge_average(powers, passive_rech)
+    if h_avg:
         hasten_mult_dmg = 1.0 + 0.5 * h_avg / (1.0 + passive_rech)
         hasten_mult_ctrl = 1.0 + h_avg / (1.0 + passive_rech)
     # ENHANCEMENT- + UPTIME-AWARE debuffs (v10 Envenom fix, v11 crash-nuke fix): −def/−tohit

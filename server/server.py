@@ -2910,6 +2910,24 @@ def build_validate():
     return jsonify(_complete_build_validation(request.get_json(force=True) or {}))
 
 
+def _prepare_incarnate_fields(build, ctx, res_cap):
+    """When incarnates fold into the totals, an Alpha res/def boost needs each
+    armor toggle's OWN base res/def: enrich the (frontend) powers with the DB
+    fields _attach_base_resdef relies on, then attach it. Gated so a normal
+    recompute pays nothing extra. Shared by /build/calculate and /build/evaluate
+    so both measure the same build."""
+    if not build.get("include_incarnates"):
+        return
+    for p in build.get("powers", []):
+        rec = POWER_BY_FULL.get(p.get("full_name"))
+        if not rec:
+            continue
+        for k in ("accepted_enhancement_types", "is_attack", "power_type", "base_recharge"):
+            if not p.get(k):
+                p[k] = rec.get(k)
+    _attach_base_resdef(build.get("powers", []), build.get("archetype"), ctx, res_cap)
+
+
 @app.route("/build/evaluate", methods=["POST"])
 def build_evaluate():
     """Read-only M2 measurements; neither solve nor save the submitted build.
@@ -2917,6 +2935,8 @@ def build_evaluate():
     Accepts {"build": <Sidekick-compatible build>, "scenario": "rating_plus4"}.
     Scenario defaults to rating_plus4 (+4 enemies). The existing general
     optimizer preset remains +1; no scoring model is modified by this route.
+    Structural checks, the clean copy (no boosters, no external buffs, in-combat
+    defense) and the PvP/exemplar refusals all live in build_evaluation.evaluate.
     """
     body = request.get_json(force=True)
     if not isinstance(body, dict) or not isinstance(body.get("build"), dict):
@@ -2926,43 +2946,14 @@ def build_evaluate():
     at = ARCH_BY_NAME.get(build.get("archetype")) if isinstance(build.get("archetype"), str) else None
     if not at or not at.get("playable"):
         return jsonify({"ok": False, "error": "Unknown playable archetype."}), 400
-    if not isinstance(build.get("powers"), list) or any(
-            not isinstance(p, dict) for p in build["powers"]):
-        return jsonify({"ok": False, "error": "Expected powers array of objects."}), 400
-    if any(not isinstance(p.get("full_name"), str) or not p["full_name"].strip()
-           for p in build["powers"]):
-        return jsonify({"ok": False, "error": "Each power needs a full_name string."}), 400
-    if any(p.get("slots") is not None and
-           (not isinstance(p["slots"], list) or
-            any(s is not None and not isinstance(s, dict) for s in p["slots"]))
-           for p in build["powers"]):
-        return jsonify({"ok": False, "error": "Power slots must be arrays of objects or null."}), 400
-    # Exemplar needs the full display-only suppression and set-bonus handling
-    # from /build/calculate; refuse rather than silently rate the wrong level.
-    if build.get("exemplar_level") is not None:
-        return jsonify({"ok": False,
-                        "error": "Exemplar evaluation is not yet supported."}), 400
-
     res_cap = round(at["res_cap"] * 100, 1)
     ctx = _stat_ctx(build["archetype"])
-    prepared = copy.deepcopy(build)
-    # Preserve /build/calculate's incarnate preparation. Without the source
-    # power records, Alpha enhanced armor can be silently understated.
-    if prepared.get("include_incarnates"):
-        for p in prepared["powers"]:
-            rec = POWER_BY_FULL.get(p.get("full_name"))
-            if not rec:
-                continue
-            for key in ("accepted_enhancement_types", "is_attack",
-                        "power_type", "base_recharge"):
-                if not p.get(key):
-                    p[key] = rec.get(key)
-        _attach_base_resdef(prepared["powers"], prepared["archetype"], ctx, res_cap)
     try:
         result = build_evaluation.evaluate(
-            prepared, scenario, ctx=ctx, set_bonuses=SET_BONUSES,
+            build, scenario, ctx=ctx, set_bonuses=SET_BONUSES,
             res_cap=res_cap, archetype_record=at,
-            db_name=DB_NAME, db_version=DB_VERSION, app_version=APP_VERSION)
+            db_name=DB_NAME, db_version=DB_VERSION, app_version=APP_VERSION,
+            prepare=lambda b: _prepare_incarnate_fields(b, ctx, res_cap))
     except ValueError as exc:
         return jsonify({"ok": False, "error": str(exc)}), 400
     return jsonify(result)
@@ -3000,19 +2991,7 @@ def build_calculate():
             ctx = dict(ctx)
             ctx["exemplar"] = {"level": exl, "exempt": _EXEMPLAR_EXEMPT_UIDS,
                                "set_min": _EXEMPLAR_SET_MIN}
-    # When incarnates are folded into the totals, an Alpha res/def boost needs each
-    # armor toggle's OWN base res/def — enrich the (frontend) powers with the DB
-    # fields _attach_base_resdef relies on, then attach it. Gated so a normal
-    # recompute pays nothing extra.
-    if build.get("include_incarnates"):
-        for p in build.get("powers", []):
-            rec = POWER_BY_FULL.get(p.get("full_name"))
-            if not rec:
-                continue
-            for k in ("accepted_enhancement_types", "is_attack", "power_type", "base_recharge"):
-                if not p.get(k):
-                    p[k] = rec.get(k)
-        _attach_base_resdef(build.get("powers", []), build.get("archetype"), ctx, res_cap)
+    _prepare_incarnate_fields(build, ctx, res_cap)   # Alpha res/def needs base res/def
     # Stats provenance (Joel's spec): the attribution ledger rides the MAIN
     # calculate only — the suppression/exemplar companion calls below reuse the
     # same ctx with the flag popped, so they pay nothing.
