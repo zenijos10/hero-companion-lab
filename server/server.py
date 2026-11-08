@@ -2929,6 +2929,14 @@ def build_evaluate():
     if not isinstance(build.get("powers"), list) or any(
             not isinstance(p, dict) for p in build["powers"]):
         return jsonify({"ok": False, "error": "Expected powers array of objects."}), 400
+    if any(not isinstance(p.get("full_name"), str) or not p["full_name"].strip()
+           for p in build["powers"]):
+        return jsonify({"ok": False, "error": "Each power needs a full_name string."}), 400
+    if any(p.get("slots") is not None and
+           (not isinstance(p["slots"], list) or
+            any(s is not None and not isinstance(s, dict) for s in p["slots"]))
+           for p in build["powers"]):
+        return jsonify({"ok": False, "error": "Power slots must be arrays of objects or null."}), 400
     # Exemplar needs the full display-only suppression and set-bonus handling
     # from /build/calculate; refuse rather than silently rate the wrong level.
     if build.get("exemplar_level") is not None:
