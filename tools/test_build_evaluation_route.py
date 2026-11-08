@@ -51,6 +51,14 @@ class BuildEvaluateRouteTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json()["scenario"]["enemy_level_shift"], 1)
 
+    def test_unknown_power_is_disclosed_instead_of_hidden(self):
+        build = copy.deepcopy(self.build)
+        build["powers"].append({"full_name": "Missing.Powerset.Power", "slots": []})
+        response = self.client.post("/build/evaluate", json={"build": build})
+        self.assertEqual(response.status_code, 200, response.get_data(as_text=True)[:400])
+        self.assertIn("Missing.Powerset.Power",
+                      response.get_json()["unsupported"]["unknown_power_records"])
+
     def test_invalid_requests_fail_cleanly(self):
         cases = (
             {},
