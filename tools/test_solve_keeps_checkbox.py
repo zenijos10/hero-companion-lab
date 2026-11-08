@@ -75,6 +75,18 @@ class SolveKeepsCheckboxTests(unittest.TestCase):
         self.assertTrue(resdef(None))           # running by default: credited
         self.assertIsNone(resdef(False))        # switched off: nothing to size for
 
+    def test_the_assessment_solve_keeps_the_checkbox_too(self):
+        """_assess_solve (the import/improvement report's solve) carries the flag
+        on its own copy of the power dict; pin it the way /build/solve is pinned."""
+        powers = [{"full_name": p["full_name"], "slots": [None],
+                   "include_in_totals": False if p["full_name"] == TOGGLE else None}
+                  for p in self.picks]
+        r = srv._assess_solve("Class_Scrapper", powers, {}, "premium", None, [], False,
+                              False, False, with_powers=True, content="general")
+        self.assertTrue(r and r[1], r)
+        solved = {p["full_name"]: p for p in r[1]}
+        self.assertIs(solved[TOGGLE]["include_in_totals"], False)
+
     def test_one_rule_for_engine_solver_and_routes(self):
         for include, kind, want in ((None, 2, True), (None, 1, True), (None, 0, False),
                                     (False, 2, False), (True, 0, True), (0, 1, False)):

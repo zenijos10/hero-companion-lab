@@ -2182,7 +2182,8 @@ def _place_globals(powers, piece_globals, sets_by_category, totals, seed_unique=
             # turn the correctness fix off in normal use.
             if (_PROC_HOST_GATE and g.get("needs_running_host")
                     and (p.get("power_type") not in (1, 2)
-                         or not engine.counts_in_totals(p))):   # switched off: not running
+                         # a toggle switched off is not running (an Auto always is)
+                         or (p.get("power_type") == 2 and not engine.counts_in_totals(p)))):
                 continue
             if len(p["_slots"]) >= p.get("_slot_budget", 6):
                 continue

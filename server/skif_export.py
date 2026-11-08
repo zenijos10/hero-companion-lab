@@ -14,7 +14,7 @@ from pathlib import Path
 from sidekick_preview import (GRANTED_SET, SourceSets, _Branches, _index_powers,
                               _read_json, _resolve_power, _source_archetype_fits,
                               _source_category_fits, hero_set_path)
-from engine import ACTIVE_POWER_TYPES, NONCOMBAT_POWERS
+from engine import NONCOMBAT_POWERS, counts_in_totals
 from sidekick_reconstruct import (HC_GRANTED_INHERENTS, accolade_records, is_auto,
                                   slot_shape)
 from sidekick_enhancements import EnhancementResolver
@@ -356,16 +356,13 @@ def _slots(contract, power, issues):
 
 def _switched_on(contract, power):
     """Our "count in totals" checkbox is Sidekick's isActive. Unset, it follows
-    our default (engine.ACTIVE_POWER_TYPES); Sidekick writes the switch on an
+    our default (engine.counts_in_totals); Sidekick writes the switch on an
     Auto too, and its math counts an Auto either way. A power we never count
     (Rest, engine.NONCOMBAT_POWERS) is never switched on in Sidekick."""
     if power["full_name"] in NONCOMBAT_POWERS:
         return False
     rec = contract.hero.get(power["full_name"]) or {}
-    include = power.get("include_in_totals")
-    if include is None:
-        include = rec.get("power_type") in ACTIVE_POWER_TYPES
-    return bool(include) or is_auto(rec)
+    return counts_in_totals(power, rec.get("power_type")) or is_auto(rec)
 
 
 def _inherents(contract, build, issues):
