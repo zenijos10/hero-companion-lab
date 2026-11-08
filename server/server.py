@@ -3162,6 +3162,8 @@ def _attach_base_resdef(powers, archetype, ctx, res_cap):
     (no slots), as fractions, and stash on p['_base_rd'] — the solver credits the
     enhancement a res/def set gives the toggle so it sizes the set up to cap survival."""
     for p in powers:
+        if not engine.counts_in_totals(p):
+            continue    # a toggle the player switched off contributes nothing to size for
         types = {t.lower() for t in (p.get("accepted_enhancement_types") or [])}
         is_res = p.get("power_type") == 2 and not p.get("is_attack") and "resist damage" in types
         is_def = (p.get("power_type") == 2 and not p.get("is_attack")
@@ -3324,6 +3326,7 @@ def _assess_solve(archetype, powers_in, targets, tier, perk_focus, roles,
                        "_existing_slots": p.get("slots") or [],
                        "_earned": p.get("earned_slot_count")
                        or len([s for s in (p.get("slots") or []) if s]),
+                       "include_in_totals": p.get("include_in_totals"),
                        "_buff_priority": _is_support_powerset(rec["powerset_full_name"])})
     if not powers:
         return None
@@ -3332,7 +3335,7 @@ def _assess_solve(archetype, powers_in, targets, tier, perk_focus, roles,
     res_cap = round(at["res_cap"] * 100, 1) if at else engine.RESISTANCE_HARD_CAP
     binit = {"archetype": archetype, "powers": [
         {"full_name": p["full_name"], "power_type": p["power_type"],
-         "include_in_totals": p["power_type"] in (1, 2), "slots": []} for p in powers]}
+         "include_in_totals": engine.counts_in_totals(p), "slots": []} for p in powers]}
     bt = engine.calculate_build(binit, SET_BONUSES, res_cap=res_cap, ctx=ctx)
     _endurance_recovery_floor(bt, targets)   # physics-derived +recovery vs this build's drain
     base = {}
@@ -5238,6 +5241,9 @@ def build_solve():
                        "base_recharge": rec.get("base_recharge"),
                        "max_slot_count": rec.get("max_slot_count"),
                        "accepted_enhancement_types": rec.get("accepted_enhancement_types", []),
+                       # The player's "count in totals" checkbox (None = default):
+                       # the solve keeps it and sizes nothing for a switched-off toggle.
+                       "include_in_totals": p.get("include_in_totals"),
                        # v35 UX batch: PER-POWER LOCK — the user froze this power;
                        # its slotting must come back byte-identical from ANY solve,
                        # so its existing slots ride along even on a full re-slot.
@@ -5272,7 +5278,7 @@ def build_solve():
     # base innate (powers, no slots) -> solver fraction keys
     binit = {"archetype": archetype, "powers": [
         {"full_name": p["full_name"], "power_type": p["power_type"],
-         "include_in_totals": p["power_type"] in (1, 2), "slots": []} for p in powers]}
+         "include_in_totals": engine.counts_in_totals(p), "slots": []} for p in powers]}
     bt = engine.calculate_build(binit, SET_BONUSES, res_cap=res_cap, ctx=ctx)
     _endurance_recovery_floor(bt, targets)   # physics-derived +recovery vs this build's drain
     base = {}
@@ -6879,7 +6885,7 @@ def _solved_base(archetype, powers):
     res_cap = round(at["res_cap"] * 100, 1) if at else engine.RESISTANCE_HARD_CAP
     binit = {"archetype": archetype, "powers": [
         {"full_name": p["full_name"], "power_type": p["power_type"],
-         "include_in_totals": p["power_type"] in (1, 2), "slots": []} for p in powers]}
+         "include_in_totals": engine.counts_in_totals(p), "slots": []} for p in powers]}
     bt = engine.calculate_build(binit, SET_BONUSES, res_cap=res_cap, ctx=ctx)
     base = {}
     for t, d in bt["defense"].items():
