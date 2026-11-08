@@ -49,6 +49,13 @@ SCENARIOS = {
     # re-valuing the resistance behind it. Cascade risk scales with how debuff-heavy the content is.
     "general":   dict(enemies=4,  enemy_dps=90,  teammates=0, team_dps=110, length=30.0,  shift=1, rank_acc=1.05, ctrl_land=0.95, debuff_res=0.0,  enemy_regen=5,   def_debuff_in=0.03, kb_in=0.04, slow_in=0.05),
     "team":      dict(enemies=8,  enemy_dps=90,  teammates=7, team_dps=110, length=25.0,  shift=2, rank_acc=1.10, ctrl_land=0.92, debuff_res=0.0,  enemy_regen=8,   def_debuff_in=0.04, kb_in=0.05, slow_in=0.08),
+    # M2 RATING CONTRACT: +4 version of the existing general solo encounter.
+    # Isolated name, explicitly selected by /build/evaluate only; DOES NOT change
+    # the old general=+1 solver/optimizer preset or the farming encounters.
+    # Other general encounter assumptions remain fixed for reproducible comparisons.
+    "rating_plus4": dict(enemies=4, enemy_dps=90, teammates=0, team_dps=110, length=30.0,
+                         shift=4, rank_acc=1.05, ctrl_land=0.95, debuff_res=0.0,
+                         enemy_regen=5, def_debuff_in=0.03, kb_in=0.04, slow_in=0.05),
     "itrial":    dict(enemies=10, enemy_dps=130, teammates=7, team_dps=130, length=30.0,  shift=3, rank_acc=1.20, ctrl_land=0.87, debuff_res=0.0,  enemy_regen=15,  def_debuff_in=0.07, kb_in=0.06, slow_in=0.15),
     "fire_farm": dict(dmg_type="Fire", enemies=10, enemy_dps=110, teammates=0, team_dps=0,   length=20.0,  shift=4, rank_acc=1.00, ctrl_land=0.95, debuff_res=0.0,  enemy_regen=5,   def_debuff_in=0.05, kb_in=0.02, slow_in=0.0),
     # v31 FARM SCENARIOS (Maelwys's encounter math, given freely on the forum):
