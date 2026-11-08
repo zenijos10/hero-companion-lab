@@ -61,7 +61,8 @@ class EvaluationContractTests(unittest.TestCase):
                                  db_name="Homecoming", db_version="test-123",
                                  app_version="dev")
             self.assertEqual(ep.call_args.kwargs["scenario"], scenario)
-            self.assertEqual(calc.call_count, 2)        # in combat + out of combat
+            # in combat, plus out of combat only when a suppressible effect exists
+            self.assertEqual(calc.call_count, 2 if out_of_combat is not None else 1)
             self.encounter_kwargs = ep.call_args.kwargs
             self.debuff_recharge = debuffs.call_args.kwargs["global_recharge"]
             return result
@@ -127,22 +128,28 @@ class EvaluationContractTests(unittest.TestCase):
             with self.subTest(level=level):
                 self.assertTrue(self.evaluate(build=dict(self.build, exemplar_level=level))["ok"])
 
-    def test_boosters_and_external_buffs_are_removed_and_disclosed(self):
+    def test_owned_boosters_are_rated_and_external_buffs_removed(self):
         build = copy.deepcopy(self.build)
         build["powers"][0]["slots"] = [{"piece_uid": "X", "boost": 5}, None,
-                                       {"piece_uid": "Y", "boost": 0}]
+                                       {"piece_uid": "Y", "boost": 0},
+                                       {"piece_uid": "Z", "boost": -2}]
         build["include_external"] = True
+        build["include_amplifiers"] = True      # both set: neither may survive
         result = self.evaluate(build=build)
         rated = self.calc_builds[0]
-        self.assertTrue(all("boost" not in s for s in rated["powers"][0]["slots"] if s))
+        self.assertEqual([s and s.get("boost") for s in rated["powers"][0]["slots"]],
+                         [5, None, 0, -2])      # owned levels (and below-level IOs) kept
         self.assertNotIn("include_external", rated)
+        self.assertNotIn("include_amplifiers", rated)
         self.assertIs(rated["suppression"], True)
         self.assertEqual(result["inputs_normalized"],
-                         {"boosters_removed": 1, "external_buffs_removed": True,
+                         {"boosted_pieces_rated": 1, "external_buffs_removed": True,
                           "defense_basis": "in_combat"})
-        self.assertEqual(build["powers"][0]["slots"][0]["boost"], 5)   # caller untouched
+        self.assertNotIn("suppression", build)   # caller untouched
 
     def test_defense_is_in_combat_with_out_of_combat_companion(self):
+        self.ctx["power_by_full"]["Test.One.Power"] = {
+            "self_effects": [{"suppression": ev.engine.SUPPRESS_IN_COMBAT}]}
         ooc = dict(self.totals, defense={"Melee": {"value": 45.0}, "AoE": {"value": 88.0}})
         self.totals["defense"] = {"Melee": {"value": 45.0}, "AoE": {"value": 10.0}}
         survival = self.evaluate(out_of_combat=ooc)["measurements"]["survival"]
@@ -152,12 +159,17 @@ class EvaluationContractTests(unittest.TestCase):
 
     def test_scenario_constants_are_fingerprinted(self):
         first = self.evaluate()
-        self.assertIs(self.encounter_kwargs["scenario_params"]["shift"], 4)
+        self.assertEqual(self.encounter_kwargs["scenario_params"]["shift"], 4)
         self.scenarios["general"]["enemies"] = 5        # tune a constant, no version bump
         second = self.evaluate()
         self.assertNotEqual(first["versions"]["scenario_fingerprint"],
                             second["versions"]["scenario_fingerprint"])
         self.assertEqual(second["scenario"]["parameters"]["enemies"], 5)
+
+    def test_no_out_of_combat_pass_without_suppressible_effects(self):
+        survival = self.evaluate()["measurements"]["survival"]
+        self.assertEqual(len(self.calc_builds), 1)
+        self.assertEqual(survival["defense_out_of_combat"], {})
 
     def test_missing_numeric_outputs_never_coerce_to_zero(self):
         self.totals["offense"].pop("st_dps")

@@ -72,19 +72,37 @@ def _validate(build):
         raise ValueError("Exemplar evaluation is not yet supported.")
 
 
+_EXTERNAL_BUFF_FLAGS = ("include_external", "include_amplifiers")
+
+
 def _clean_copy(build):
-    """A copy rated on clean values (the boost boundary): booster previews and
-    external/amplifier buffs removed, combat suppression on. Returns what changed."""
+    """The copy that is rated: the player's own build, in combat. Other people's
+    buffs and inspiration amplifiers are removed; combat suppression is on.
+
+    Boosters are KEPT: `slot.boost` is the level the player owns (the Sidekick,
+    Mids and in-game importers write it there; an HO at +3 is a level-53 HO), so
+    stripping it would rate a weaker build than the one in game. A booster
+    PREVIEW is the client's to leave out of an evaluation payload; the server
+    cannot tell the two apart and says how many boosted pieces it rated."""
     clean = copy.deepcopy(build)
-    boosted = 0
-    for p in clean["powers"]:
-        for slot in p.get("slots") or []:
-            if slot and slot.pop("boost", None):
-                boosted += 1
-    external = any(clean.pop(k, None) for k in ("include_external", "include_amplifiers"))
+    external = [k for k in _EXTERNAL_BUFF_FLAGS if clean.pop(k, None)]
     clean["suppression"] = True
-    return clean, {"boosters_removed": boosted, "external_buffs_removed": external,
+    boosted = sum(1 for p in clean["powers"] for slot in p.get("slots") or []
+                  if slot and (slot.get("boost") or 0) > 0)
+    return clean, {"boosted_pieces_rated": boosted,
+                   "external_buffs_removed": bool(external),
                    "defense_basis": "in_combat"}
+
+
+def _has_suppressible_effects(powers, power_records):
+    """True when any power carries a combat-suppressed self effect (Hide class):
+    only then can the out-of-combat defense differ from the in-combat one."""
+    for p in powers:
+        rec = power_records.get(p["full_name"]) or {}
+        if any((fx.get("suppression") or 0) & engine.SUPPRESS_IN_COMBAT
+               for fx in rec.get("self_effects") or []):
+            return True
+    return False
 
 
 def _out_of_combat_rows(in_combat, out_of_combat):
@@ -140,8 +158,11 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
 
     totals = engine.calculate_build(build_copy, set_bonuses,
                                     res_cap=res_cap, ctx=dict(ctx))
-    out_of_combat = engine.calculate_build(dict(build_copy, suppression=False),
-                                           set_bonuses, res_cap=res_cap, ctx=dict(ctx))
+    out_of_combat = {}
+    if _has_suppressible_effects(build_copy["powers"], power_records):
+        out_of_combat = engine.calculate_build(
+            dict(copy.deepcopy(build_copy), suppression=False),
+            set_bonuses, res_cap=res_cap, ctx=dict(ctx))
     encounter = first_principles.encounter_value(
         archetype, build_copy["powers"], ctx, totals, scenario=scenario,
         arch_row=archetype_record, role_output_mod=role_output, scenario_params=sc)
