@@ -80,6 +80,25 @@ BUILD = {"archetype": "Class_Blaster", "primary": "Blaster_Ranged.Fire_Blast",
          "powers": j(r).get("powers") or []}
 check("fixture autopick returns powers", BUILD["powers"], j(r))
 
+# M2: read-only evaluation against +4 enemies; no solve or save side effects.
+T("/build/evaluate")
+_e4 = C.post("/build/evaluate", json={"build": BUILD})
+_e4_data = j(_e4)
+check("/build/evaluate returns versioned +4 measurements",
+      _e4.status_code == 200 and _e4_data.get("schema_version") == 1
+      and (_e4_data.get("scenario") or {}).get("enemy_level_shift") == 4
+      and "scenario_personal_dps" in ((_e4_data.get("measurements") or {}).get("offense") or {}),
+      _e4.status_code)
+_e1 = j(C.post("/build/evaluate", json={"build": BUILD, "scenario": "general"}))
+check("/build/evaluate preserves explicit general +1",
+      (_e1.get("scenario") or {}).get("enemy_level_shift") == 1)
+check("/build/evaluate rejects an unknown scenario",
+      C.post("/build/evaluate", json={"build": BUILD, "scenario": "nonsense"}).status_code == 400)
+check("/build/evaluate rejects an unsupported exemplar level",
+      C.post("/build/evaluate",
+             json={"build": dict(BUILD, exemplar_level=35)}).status_code == 400)
+
+
 # ── read-only catalogs ──────────────────────────────────────────────────────
 T("/"); check("/ serves the app shell", C.get("/").status_code == 200)
 T("/health"); check("/health ok", j(C.get("/health")).get("ok"))
