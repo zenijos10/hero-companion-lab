@@ -158,6 +158,19 @@ ED_SCHEDULE = {"Defense": 1, "Resistance": 1, "ToHit": 1, "Range": 1,
                "Interrupt": 2, "Mez": 0}
 # Power types that are "always on" and counted in passive totals.
 ACTIVE_POWER_TYPES = {1, 2}   # Auto, Toggle
+
+
+def counts_in_totals(power, power_type=None):
+    """The per-power "count in totals" checkbox (include_in_totals). A value the
+    player or an import set wins; unset (None) follows the default: Autos and
+    toggles count, clicks do not. The ONE copy of this rule: the engine's totals,
+    the solver and the solve routes all ask here (owner's ruling 2026-11-07:
+    Solve keeps an explicit choice)."""
+    include = power.get("include_in_totals")
+    if include is None:
+        kind = power_type if power_type is not None else power.get("power_type")
+        return kind in ACTIVE_POWER_TYPES
+    return bool(include)
 # ⚠⚠ THE ENHANCEMENT ASPECT IS "RechargeTime", NEVER "Recharge" (found
 # 2026-08-08). Three places asked ed_by_aspect / _scaled_boosts for "Recharge"
 # and NO piece in the game carries that aspect - 633 carry "RechargeTime" - so
@@ -514,9 +527,7 @@ def _power_totals(build, totals, ctx):
             continue
         _snap = _tsnap(totals) if attr is not None else None
         # Per-power override; default to auto/toggle powers being always-on.
-        include = power.get("include_in_totals")
-        if include is None:
-            include = p.get("power_type") in ACTIVE_POWER_TYPES
+        include = counts_in_totals(power, p.get("power_type"))
         self_fx = p.get("self_effects") or []
         if not self_fx:
             continue
@@ -2392,9 +2403,7 @@ def _endurance_balance(build, display, offense, ctx):
             continue
         # Honor the per-power totals checkbox: an unchecked toggle (a mule host you
         # never run, or a what-if "Weave off" check) doesn't drain endurance either.
-        include = power.get("include_in_totals")
-        if include is None:
-            include = p.get("power_type") in ACTIVE_POWER_TYPES
+        include = counts_in_totals(power, p.get("power_type"))
         if not include:
             continue
         ap = p.get("activate_period") or 0

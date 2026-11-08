@@ -105,11 +105,17 @@ out. Rules going forward:
   only when switched on, so import sets the checkbox for toggles/clicks only (`is_auto` /
   `_counts_in_totals`); export writes `isActive` from the checkbox (unset = our default), and
   an inherent switched on with no slots (Sprint) travels; Rest (engine.NONCOMBAT_POWERS) is
-  never switched on. **Solve KEEPS an explicitly set checkbox** (owner, 2026-11-07,
-  `solver._kept_include`; it used to reset every one from power_type, undoing an untick or an
-  imported switch); unset = the default. Every server generator writes the default, so champion
-  and generated solves are byte-identical (demo 39/39, slot conservation, HO, target-level all
-  unchanged); the app's Sprint grant (unticked) now stays unticked after Solve, as designed. ⚠ The census missed it
+  never switched on. **Solve KEEPS an explicitly set checkbox** (owner, 2026-11-07): ONE rule,
+  `engine.counts_in_totals` (set value wins, unset = Autos/toggles on), used by the engine, the
+  solver (output, armor-toggle credit, running-host proc gate) and the solve routes (base totals,
+  `_attach_base_resdef`, carried on the power dicts of /build/solve + `_assess_solve`); the app
+  sends the flag from the main Solve, refit and respec payloads. ⚠ The FIRST attempt (#18) patched
+  only `_finalize_powers` and was a no-op: /build/solve rebuilt each power from POWER_BY_FULL and
+  dropped the flag, and its unit test fed hand-built dicts — caught by review, now pinned by
+  `tools/test_solve_keeps_checkbox.py` through the REAL route (fails on the old code). Measured:
+  52/52 champion contexts solve identically through the app's payload with vs without the flags
+  (the app's unticked Sprint/Rest change nothing); demo 39/39, slot conservation, HO, target-level
+  unchanged. ⚠ The census missed it
   for a day: `v5_from_v4` stripped `isActive` (7 of 8 samples carry it) — a test converter
   that drops a field hides every blocker in that field.
 - **OPEN, the owner's rulings:** the solver's fill-list names ("damage", "hold") do not match the

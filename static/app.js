@@ -5268,8 +5268,9 @@ async function buildRespecPlan() {
   if (go) { go.disabled = true; go.textContent = "⏳ Solving the respec…"; }
   const content = ($("preset-content") && $("preset-content").value) || "general";
   const role = ($("preset-role") && $("preset-role").value) || null;
+  // include_in_totals rides along: the solve keeps the player's checkboxes.
   const presolve = build.powers.map(p => ({ full_name: p.full_name, slots: p.slots,
-    earned_slot_count: p.earned_slot_count }));
+    earned_slot_count: p.earned_slot_count, include_in_totals: p.include_in_totals }));
   const res = await api("/build/solve", postJson({
     archetype: build.archetype, content, role, tier: build.tier || "premium", no_ho: noHo(),
     roles: (typeof selectedRoles === "function" ? selectedRoles() : []), pvp: build.pvp,
@@ -11381,6 +11382,7 @@ async function solveSlotting(perkFocus, opts) {
     const presolvePowers = build.powers.map(p => ({ full_name: p.full_name,
       slots: p.slots, earned_slot_count: p.earned_slot_count,
       pick_level: p.pick_level,          // the target-level solve judges usability by it
+      include_in_totals: p.include_in_totals,   // the solve keeps the player's checkbox
       locked: !!p._locked }));
     const res = await api("/build/solve", postJson({
       archetype: build.archetype, goal, tier: build.tier || "premium", no_ho: noHo(),

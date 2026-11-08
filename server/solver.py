@@ -999,9 +999,12 @@ def solve_ilp(powers, targets_pct, sets_by_category, piece_globals, base_totals,
         # Maneuvers 1-slot): Maneuvers had NEVER earned the credit on any AT. The
         # long-recharge click armors this gate feared are power_type 0 — already
         # excluded by the toggle check.
-        p["_armor_res"] = (p.get("power_type") == 2 and not p["_is_attack"]
+        # A toggle the player switched off (include_in_totals False) is not
+        # running, so its own res/def earns no enhancement credit.
+        _runs = p.get("power_type") == 2 and engine.counts_in_totals(p)
+        p["_armor_res"] = (_runs and not p["_is_attack"]
                            and "resist damage" in _types)
-        p["_armor_def"] = (p.get("power_type") == 2 and not p["_is_attack"]
+        p["_armor_def"] = (_runs and not p["_is_attack"]
                            and "defense buff" in _types
                            and not p["_armor_res"])
         # Squishy AT + armor toggle (the epic shield case): floor it at 2 enhanced pieces — no
@@ -2178,7 +2181,8 @@ def _place_globals(powers, piece_globals, sets_by_category, totals, seed_unique=
             # this makes (see tools/measure_proc_host_gate.py), not a way to
             # turn the correctness fix off in normal use.
             if (_PROC_HOST_GATE and g.get("needs_running_host")
-                    and p.get("power_type") not in (1, 2)):
+                    and (p.get("power_type") not in (1, 2)
+                         or not engine.counts_in_totals(p))):   # switched off: not running
                 continue
             if len(p["_slots"]) >= p.get("_slot_budget", 6):
                 continue
@@ -2198,14 +2202,6 @@ def _place_globals(powers, piece_globals, sets_by_category, totals, seed_unique=
                     break
 
 
-def _kept_include(p):
-    """The power's "count in totals" checkbox: a choice the player (or an
-    import) made is kept; unset follows the default, toggles and Autos on.
-    (Owner's ruling 2026-11-07: Solve used to reset every one of them.)"""
-    include = p.get("include_in_totals")
-    return include if isinstance(include, bool) else p.get("power_type") in (1, 2)
-
-
 def _finalize_powers(powers):
     out = []
     for p in powers:
@@ -2219,7 +2215,7 @@ def _finalize_powers(powers):
                 "accepted_set_category_ids": p.get("accepted_set_category_ids", []),
                 "accepted_set_categories": p.get("accepted_set_categories", []),
                 "power_type": p.get("power_type"),
-                "include_in_totals": _kept_include(p),
+                "include_in_totals": engine.counts_in_totals(p),
                 "slotCount": max(1, len(slots)), "slots": slots or [None],
                 "locked": True})
             continue
@@ -2238,7 +2234,7 @@ def _finalize_powers(powers):
             "accepted_set_category_ids": p.get("accepted_set_category_ids", []),
             "accepted_set_categories": p.get("accepted_set_categories", []),
             "power_type": p.get("power_type"),
-            "include_in_totals": _kept_include(p),
+            "include_in_totals": engine.counts_in_totals(p),
             "slotCount": max(1, len(slots)), "slots": slots or [None]})
     return out
 
