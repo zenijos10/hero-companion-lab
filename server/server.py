@@ -41,6 +41,7 @@ import sidekick_web_import          # noqa: E402
 import skif_export                  # noqa: E402
 import sidekick_contract            # noqa: E402
 import role_output                 # noqa: E402
+import build_evaluation             # noqa: E402
 
 # Packaged (PyInstaller) build: bundled read-only assets (data/, static/, VERSION,
 # client_config.json) live under the bundle root, not the source tree.
@@ -2907,6 +2908,56 @@ def _complete_build_validation(build):
 @app.route("/build/validate", methods=["POST"])
 def build_validate():
     return jsonify(_complete_build_validation(request.get_json(force=True) or {}))
+
+
+@app.route("/build/evaluate", methods=["POST"])
+def build_evaluate():
+    """Read-only M2 measurements; neither solve nor save the submitted build.
+
+    Accepts {"build": <Sidekick-compatible build>, "scenario": "rating_plus4"}.
+    Scenario defaults to rating_plus4 (+4 enemies). The existing general
+    optimizer preset remains +1; no scoring model is modified by this route.
+    """
+    body = request.get_json(force=True)
+    if not isinstance(body, dict) or not isinstance(body.get("build"), dict):
+        return jsonify({"ok": False, "error": "Expected a build object."}), 400
+    build = body["build"]
+    scenario = body.get("scenario", build_evaluation.DEFAULT_SCENARIO)
+    at = ARCH_BY_NAME.get(build.get("archetype")) if isinstance(build.get("archetype"), str) else None
+    if not at or not at.get("playable"):
+        return jsonify({"ok": False, "error": "Unknown playable archetype."}), 400
+    if not isinstance(build.get("powers"), list) or any(
+            not isinstance(p, dict) for p in build["powers"]):
+        return jsonify({"ok": False, "error": "Expected powers array of objects."}), 400
+    # Exemplar needs the full display-only suppression and set-bonus handling
+    # from /build/calculate; refuse rather than silently rate the wrong level.
+    if build.get("exemplar_level") is not None:
+        return jsonify({"ok": False,
+                        "error": "Exemplar evaluation is not yet supported."}), 400
+
+    res_cap = round(at["res_cap"] * 100, 1)
+    ctx = _stat_ctx(build["archetype"])
+    prepared = copy.deepcopy(build)
+    # Preserve /build/calculate's incarnate preparation. Without the source
+    # power records, Alpha enhanced armor can be silently understated.
+    if prepared.get("include_incarnates"):
+        for p in prepared["powers"]:
+            rec = POWER_BY_FULL.get(p.get("full_name"))
+            if not rec:
+                continue
+            for key in ("accepted_enhancement_types", "is_attack",
+                        "power_type", "base_recharge"):
+                if not p.get(key):
+                    p[key] = rec.get(key)
+        _attach_base_resdef(prepared["powers"], prepared["archetype"], ctx, res_cap)
+    try:
+        result = build_evaluation.evaluate(
+            prepared, scenario, ctx=ctx, set_bonuses=SET_BONUSES,
+            res_cap=res_cap, archetype_record=at,
+            db_name=DB_NAME, db_version=DB_VERSION, app_version=APP_VERSION)
+    except ValueError as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 400
+    return jsonify(result)
 
 
 @app.route("/build/calculate", methods=["POST"])
