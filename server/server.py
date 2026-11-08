@@ -8949,13 +8949,13 @@ def leveling_steps():
 
     # Seed the build with the auto-granted inherents (Fitness etc.) so their contribution is baseline.
     cum = [{"full_name": p["full_name"], "power_type": p.get("power_type"),
-            "include_in_totals": p.get("power_type") in (1, 2), "slots": p.get("slots") or []}
+            "include_in_totals": engine.counts_in_totals(p), "slots": p.get("slots") or []}
            for p in inherent_powers]
     inherent_seed = list(cum)
 
     def _cum_entry(p):
         return {"full_name": p["full_name"], "power_type": p.get("power_type"),
-                "include_in_totals": p.get("power_type") in (1, 2), "slots": p.get("slots") or []}
+                "include_in_totals": engine.counts_in_totals(p), "slots": p.get("slots") or []}
 
     out, prev, slots_running = [], None, 0
     tips_done, epic_done = set(), False
