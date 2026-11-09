@@ -1167,17 +1167,18 @@ def encounter_value(archetype, powers, ctx, totals, scenario="general", arch_row
     # chain is damage nobody is there to cast. Same 0.4/0.6 combination as the
     # general case so scores stay comparable across contents.
     if scenario == "farm_afk":
-        my_dps = ((off.get("afk_st_dps") or 0) * 0.4
-                  + (off.get("afk_aoe_dps") or 0) * min(sc["enemies"], 10) * 0.6)
+        _st_raw, _aoe_raw = (off.get("afk_st_dps") or 0), (off.get("afk_aoe_dps") or 0)
     else:
-        my_dps = (off.get("st_dps") or 0) * 0.4 + (off.get("aoe_dps") or 0) * min(sc["enemies"], 10) * 0.6
+        _st_raw, _aoe_raw = (off.get("st_dps") or 0), (off.get("aoe_dps") or 0)
+    my_dps = _st_raw * 0.4 + _aoe_raw * min(sc["enemies"], 10) * 0.6
     # v30 SLOW RESIST: incoming −recharge (sc slow_in) stretches the attack chain;
     # resist recovers it. Recharge-bound share of output = 0.5, the model's
     # established elasticity (Hasten/team-recharge terms). Buff/debuff CYCLE
     # stretching (Hasten/Farsight uptime under slows — the same lever Joel's
     # Hasten-aversion guards) is additional and unmodeled: honest UNDERSTATEMENT.
     slow_res = ((_bx.get("slow_resist") or {}).get("value") or 0.0) / 100.0
-    my_dps *= 1.0 - 0.5 * sc.get("slow_in", 0.0) * (1.0 - min(slow_res, 1.0))
+    _slow_f = 1.0 - 0.5 * sc.get("slow_in", 0.0) * (1.0 - min(slow_res, 1.0))
+    my_dps *= _slow_f
     # ── v38 PET DPS, own physics (wiki-sourced: docs/pet-tohit-sources.md) ──
     # Pets no longer ride the PLAYER's hit chance and purple patch (the silent
     # v10..v37 arrangement — "always hitting" on the display, the player's
@@ -1250,6 +1251,9 @@ def encounter_value(archetype, powers, ctx, totals, scenario="general", arch_row
     # personal share only — pets are structurally outside my_dps now (v38).
     _mm = _meter_damage_mult(archetype, sc, totals)
     my_dps *= _mm
+    # Display-only: the factor every personal damage number passes through here
+    # (the score keeps composing my_dps above; nothing below reads this).
+    _personal_f = _slow_f * p_out * pp * hasten_mult_dmg * _mm
     my_dps += pet_dps
     # ENDURANCE ECONOMY v35 (fight-duration model — Joel's §8 rulings 2026-07-21; replaces the
     # v10 sqrt haircut + 0.45 floor AND the v20 silent end_relief): the honest physics of a
@@ -1419,6 +1423,12 @@ def encounter_value(archetype, powers, ctx, totals, scenario="general", arch_row
         "availability": round(availability, 3),
         "availability_objective": round(avail_obj, 3), "ttl": round(ttl, 1),
         "my_dps": round(my_dps, 1), "amplified": round(amplified, 1),
+        # the parts of my_dps, each after the same scenario factors (hit chance,
+        # purple patch, slows, Hasten, inherent meter, endurance): display only
+        "st_dps_scenario": round(_st_raw * _personal_f * end_factor, 1),
+        "aoe_dps_scenario_per_target": round(_aoe_raw * _personal_f * end_factor, 1),
+        "aoe_targets": min(sc["enemies"], 10),
+        "pet_dps_scenario": round(pet_dps * end_factor, 1),
         "prevented": round(prevented, 1),
         "hit_ml": round(p_ml, 3), "hit_rn": round(p_rn, 3), "hit_out": round(p_out, 3),
         "end_profile": [round(d_chain, 4), round(d_tog, 4), round(rec_ps, 4), round(e_max, 2)],

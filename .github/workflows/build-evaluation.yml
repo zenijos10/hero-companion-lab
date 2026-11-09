@@ -7,6 +7,7 @@ on:
       - "requirements*.txt"
       - "tools/test_build_evaluation_contract.py"
       - "tools/test_build_evaluation_route.py"
+      - "tools/test_build_evaluation_builds.py"
       - "tools/test_user_paths.py"
       - ".github/workflows/build-evaluation.yml"
   workflow_dispatch:
@@ -21,11 +22,24 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Fetch pinned upstream Sidekick v5 fixture (real imported build)
+        uses: actions/checkout@v4
+        with:
+          repository: wednesdaywoe/coh-sidekick
+          ref: 90e9b8eeaf59a2350e62587968f523a1e1371f88
+          path: _sidekick_contract_fixture
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            contract/homecoming/
+            fixtures/skif/
+          persist-credentials: false
       - name: Install runtime dependencies
         run: python -m pip install -r requirements.txt
       - name: Contract unit tests
         run: python tools/test_build_evaluation_contract.py
       - name: Flask endpoint and game data smoke
         run: python tools/test_build_evaluation_route.py
+      - name: Real builds (pets, controls, incarnates, emergency clicks, Sidekick import)
+        run: python tools/test_build_evaluation_builds.py
       - name: Route-coverage smoke battery
         run: python tools/test_user_paths.py

@@ -94,7 +94,7 @@ class EvaluationContractTests(unittest.TestCase):
         build["powers"].append({"full_name": "No.Such.Power", "slots": []})
         result = self.evaluate(build=build)
         self.assertEqual(result["unsupported"]["unknown_power_records"], ["No.Such.Power"])
-        self.assertEqual(result["unsupported"]["effect_level_audit"], "not_implemented")
+        self.assertEqual(result["unsupported"]["effect_level_audit"], "power_level")
 
     def test_invalid_inputs_rejected(self):
         for scenario in ("bad", None, {"id": "general"}):
@@ -144,7 +144,8 @@ class EvaluationContractTests(unittest.TestCase):
         self.assertIs(rated["suppression"], True)
         self.assertEqual(result["inputs_normalized"],
                          {"boosted_pieces_rated": 1, "external_buffs_removed": True,
-                          "defense_basis": "in_combat"})
+                          "defense_basis": "in_combat",
+                          "emergency_excluded_from_sustained": []})
         self.assertNotIn("suppression", build)   # caller untouched
 
     def test_defense_is_in_combat_with_out_of_combat_companion(self):
@@ -165,6 +166,60 @@ class EvaluationContractTests(unittest.TestCase):
         self.assertNotEqual(first["versions"]["scenario_fingerprint"],
                             second["versions"]["scenario_fingerprint"])
         self.assertEqual(second["scenario"]["parameters"]["enemies"], 5)
+
+    def test_emergency_click_is_out_of_sustained_and_measured_alone(self):
+        self.ctx["power_by_full"]["Test.One.Power"] = {
+            "power_type": 0, "base_recharge": 1000.0, "display_name": "Panic",
+            "self_effects": [
+                {"effect": "Resistance", "damage_type": "Fire", "scale": 7.0, "duration": 180.0},
+                {"effect": "Recovery", "scale": -100.0, "duration": 20.0}]}
+        build = copy.deepcopy(self.build)
+        build["powers"][0]["include_in_totals"] = True      # the player ticked it
+        active = dict(self.totals, resistance={"Fire": {"value": 90.0}})
+
+        def calculate(b, *_a, **_k):
+            self.calc_builds.append(copy.deepcopy(b))
+            return active if b["powers"][0].get("include_in_totals") else self.totals
+        with patch.object(ev.engine, "calculate_build", side_effect=calculate):
+            self.calc_builds = []
+            result = ev.evaluate(build, "general", ctx=self.ctx, set_bonuses={}, res_cap=75,
+                                 archetype_record={"name": "Class_Test"}, db_name="H",
+                                 db_version="t", app_version="dev")
+        self.assertIs(self.calc_builds[0]["powers"][0]["include_in_totals"], False)
+        self.assertEqual(result["inputs_normalized"]["emergency_excluded_from_sustained"],
+                         ["Test.One.Power"])
+        (row,) = result["measurements"]["survival"]["emergency_powers"]
+        self.assertEqual(row["while_active_gain_percent_points"]["resistance"], {"Fire": 15.0})
+        self.assertEqual(row["duration_seconds"]["value"], 180.0)
+        self.assertAlmostEqual(row["recharge_seconds"]["value"], round(1000.0 / 1.5, 1))
+        self.assertAlmostEqual(row["uptime"]["value"], round(180.0 / (1000.0 / 1.5), 3))
+        self.assertEqual(row["penalties"], [{"effect": "Recovery", "scale": -100.0,
+                                             "duration_seconds": 20.0}])
+
+    def test_unsupported_detail_and_confidence(self):
+        self.ctx["power_by_full"].update({
+            "Test.One.Power": {"pet_powersets": ["Redirects.Test"]},
+            "Test.One.Mez": {"self_effects": [{"effect": "MezProtection", "scale": -50.0}]}})
+        build = copy.deepcopy(self.build)
+        build["powers"] += [{"full_name": "Test.One.Mez", "slots": []},
+                            {"full_name": "No.Such.Power", "slots": []}]
+        result = self.evaluate(build=build)
+        reasons = {(u["power"], u["reason"]) for u in result["unsupported"]["powers"]}
+        self.assertEqual(reasons, {("Test.One.Power", "no_modeled_effects"),
+                                   ("Test.One.Mez", "mez_protection_not_scored"),
+                                   ("No.Such.Power", "unknown_record")})
+        conf = result["confidence"]
+        self.assertEqual((conf["powers_modeled"]["value"], conf["powers_total"]), (1, 3))
+        self.assertIn("provisional", conf["sections"]["scenario"])
+
+    def test_scenario_st_aoe_and_pets_are_reported_separately(self):
+        self.encounter.update(st_dps_scenario=30.0, aoe_dps_scenario_per_target=5.0,
+                              aoe_targets=4, pet_dps_scenario=7.0)
+        off = self.evaluate()["measurements"]["offense"]
+        self.assertEqual(off["scenario_single_target_dps"]["value"], 30.0)
+        self.assertEqual(off["scenario_aoe_dps_per_target"]["value"], 5.0)
+        self.assertEqual(off["scenario_aoe_targets"], 4)
+        self.assertEqual(off["scenario_pet_dps"]["value"], 7.0)
 
     def test_no_out_of_combat_pass_without_suppressible_effects(self):
         survival = self.evaluate()["measurements"]["survival"]
