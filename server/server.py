@@ -41,6 +41,7 @@ import sidekick_web_import          # noqa: E402
 import skif_export                  # noqa: E402
 import sidekick_contract            # noqa: E402
 import role_output                 # noqa: E402
+import build_evaluation             # noqa: E402
 
 # Packaged (PyInstaller) build: bundled read-only assets (data/, static/, VERSION,
 # client_config.json) live under the bundle root, not the source tree.
@@ -2909,6 +2910,55 @@ def build_validate():
     return jsonify(_complete_build_validation(request.get_json(force=True) or {}))
 
 
+def _prepare_incarnate_fields(build, ctx, res_cap):
+    """When incarnates fold into the totals, an Alpha res/def boost needs each
+    armor toggle's OWN base res/def: enrich the (frontend) powers with the DB
+    fields _attach_base_resdef relies on, then attach it. Gated so a normal
+    recompute pays nothing extra. Shared by /build/calculate and /build/evaluate
+    so both measure the same build."""
+    if not build.get("include_incarnates"):
+        return
+    for p in build.get("powers", []):
+        rec = POWER_BY_FULL.get(p.get("full_name"))
+        if not rec:
+            continue
+        for k in ("accepted_enhancement_types", "is_attack", "power_type", "base_recharge"):
+            if not p.get(k):
+                p[k] = rec.get(k)
+    _attach_base_resdef(build.get("powers", []), build.get("archetype"), ctx, res_cap)
+
+
+@app.route("/build/evaluate", methods=["POST"])
+def build_evaluate():
+    """Read-only M2 measurements; neither solve nor save the submitted build.
+
+    Accepts {"build": <Sidekick-compatible build>, "scenario": "rating_plus4"}.
+    Scenario defaults to rating_plus4 (+4 enemies). The existing general
+    optimizer preset remains +1; no scoring model is modified by this route.
+    Structural checks, the clean copy (no boosters, no external buffs, in-combat
+    defense) and the PvP/exemplar refusals all live in build_evaluation.evaluate.
+    """
+    body = request.get_json(force=True)
+    if not isinstance(body, dict) or not isinstance(body.get("build"), dict):
+        return jsonify({"ok": False, "error": "Expected a build object."}), 400
+    build = body["build"]
+    scenario = body.get("scenario", build_evaluation.DEFAULT_SCENARIO)
+    at = ARCH_BY_NAME.get(build.get("archetype")) if isinstance(build.get("archetype"), str) else None
+    if not at or not at.get("playable"):
+        return jsonify({"ok": False, "error": "Unknown playable archetype."}), 400
+    res_cap = round(at["res_cap"] * 100, 1)
+    ctx = _stat_ctx(build["archetype"])
+    try:
+        result = build_evaluation.evaluate(
+            build, scenario, ctx=ctx, set_bonuses=SET_BONUSES,
+            res_cap=res_cap, archetype_record=at,
+            db_name=DB_NAME, db_version=DB_VERSION, app_version=APP_VERSION,
+            prepare=lambda b: _prepare_incarnate_fields(b, ctx, res_cap))
+    except ValueError as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 400
+    return jsonify(result)
+
+
 @app.route("/build/calculate", methods=["POST"])
 def build_calculate():
     build = request.get_json(force=True) or {}
@@ -2941,19 +2991,7 @@ def build_calculate():
             ctx = dict(ctx)
             ctx["exemplar"] = {"level": exl, "exempt": _EXEMPLAR_EXEMPT_UIDS,
                                "set_min": _EXEMPLAR_SET_MIN}
-    # When incarnates are folded into the totals, an Alpha res/def boost needs each
-    # armor toggle's OWN base res/def — enrich the (frontend) powers with the DB
-    # fields _attach_base_resdef relies on, then attach it. Gated so a normal
-    # recompute pays nothing extra.
-    if build.get("include_incarnates"):
-        for p in build.get("powers", []):
-            rec = POWER_BY_FULL.get(p.get("full_name"))
-            if not rec:
-                continue
-            for k in ("accepted_enhancement_types", "is_attack", "power_type", "base_recharge"):
-                if not p.get(k):
-                    p[k] = rec.get(k)
-        _attach_base_resdef(build.get("powers", []), build.get("archetype"), ctx, res_cap)
+    _prepare_incarnate_fields(build, ctx, res_cap)   # Alpha res/def needs base res/def
     # Stats provenance (Joel's spec): the attribution ledger rides the MAIN
     # calculate only — the suppression/exemplar companion calls below reuse the
     # same ctx with the flag popped, so they pay nothing.

@@ -963,10 +963,21 @@ def _domination_duration_bonus(powers, global_recharge):
     return _DOM_DURATION_BONUS * uptime
 
 
+def hasten_recharge_average(powers, passive_rech):
+    """Hasten's time-averaged +recharge (fraction) for a build with this passive
+    recharge (fraction): +70% for 120s of every 450s base cycle, the cycle sped up
+    by passive recharge and ~+95% of its own slotting. 0.0 without Hasten. The ONE
+    copy: encounter_value and the evaluation contract both read it."""
+    if not any((p.get("full_name") or "").endswith(".Hasten") for p in (powers or [])):
+        return 0.0
+    cycle = 450.0 / (1.0 + passive_rech + 0.95)
+    return 0.70 * min(1.0, 120.0 / max(cycle, 1.0))
+
+
 def encounter_value(archetype, powers, ctx, totals, scenario="general", arch_row=None,
-                    role_output_mod=None):
+                    role_output_mod=None, scenario_params=None):
     """Expected contribution of this build to the scenario's fight. Pure arithmetic — see header."""
-    sc = SCENARIOS.get(scenario) or SCENARIOS["general"]
+    sc = scenario_params or SCENARIOS.get(scenario) or SCENARIOS["general"]
     off = totals.get("offense") or {}
     ro = role_output_mod
     # Purple Patch (wiki-verified): EVERYTHING the player does to higher foes scales down —
@@ -983,10 +994,8 @@ def encounter_value(archetype, powers, ctx, totals, scenario="general", arch_row
     # (fully). Elasticities are model constants (flagged), the uptime arithmetic is the game's.
     passive_rech = _pct(totals, "recharge")
     hasten_mult_dmg = hasten_mult_ctrl = 1.0
-    h_avg = 0.0
-    if any((p.get("full_name") or "").endswith(".Hasten") for p in (powers or [])):
-        cycle = 450.0 / (1.0 + passive_rech + 0.95)
-        h_avg = 0.70 * min(1.0, 120.0 / max(cycle, 1.0))
+    h_avg = hasten_recharge_average(powers, passive_rech)
+    if h_avg:
         hasten_mult_dmg = 1.0 + 0.5 * h_avg / (1.0 + passive_rech)
         hasten_mult_ctrl = 1.0 + h_avg / (1.0 + passive_rech)
     # ENHANCEMENT- + UPTIME-AWARE debuffs (v10 Envenom fix, v11 crash-nuke fix): −def/−tohit
