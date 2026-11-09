@@ -81,6 +81,23 @@ Representative scalars have value, unit, basis, and status (modeled or unknown).
 - [x] Add per-build unsupported-effect detail and confidence metadata.
 - [ ] **Blocked on game knowledge / owner rulings:** verify provisional mechanics against the live game and calibrate encounter assumptions. Nothing here can be settled from code; each needs an in-game measurement or a ruling (see below).
 
+### M3: team support (`measurements.support.team_support`)
+
+`server/support_ledger.py`, display only. Every magnitude, uptime and share comes from the helpers the score uses (`role_output.row_peak_pct`, `click_uptime`, `attack_share`, `_power_enh`, `power_control_uptime`'s rules; `first_principles.player_effect_strength`), extracted from the score's own functions without moving it: 72 old-vs-new comparisons of the support totals on 12 support builds and the 28-score parity pin all match.
+
+Per picked power with support output:
+- coverage: `area` (aoe / single_target) and `max_targets`; `cost`: cast seconds and endurance per minute of keeping it running (clicks cast on cooldown, toggles per activate period).
+- `buffs` / `debuffs` per effect (typed spreads collapsed, the score's rule): peak %, uptime, average % (peak x uptime), sustained (uptime >= 0.98) or burst, stated chance; `instant` effects (a click row with no duration) carry no uptime or average. Debuffs add `landing_peak_percent`: vs the rating scenario (purple patch at its shift) and vs an AV (purple patch at +2 and the AV's 85% debuff resistance, which never applies to -Resistance).
+- `heals`: ally or self, per cast per target, targets, per second over the enhanced cycle, sustained or emergency (cycle >= 60 s); in the score's heal units, not literal HP.
+- `controls` per mez: magnitude, enhanced duration, uptime, sustained, kind (hard/soft) and the ranks one application affects (mez lands when magnitude EXCEEDS protection: minion 1, lieutenant 2, boss 3, elite boss 6, AV 53).
+- resurrect powers carry `conditional`: their buffs land only on a revived ally.
+
+`summary`: buffs averaged sustained vs burst; debuffs single-target judged vs an AV and area judged vs the scenario's spawn; ally heals sustained vs emergency per second. Instant effects and resurrect buffs are excluded from it.
+
+Acceptance (real builds, `tools/test_build_evaluation_builds.py`): a Cold Domination build's single-target -Regeneration against an AV reads high while its area -Damage does not; a Force Field build reads > 20% sustained Defense with zero healing; -Resistance ignores AV debuff resistance while -Regeneration does not; Elixir of Life is conditional and out of the averages. Negative-controlled.
+
+**Found, not fixed (moves scores; KNOWN-GAPS.md):** the score's support totals count resurrect buffs and instant click effects as permanent.
+
 ### ⚠ Rating-release blocker (owner review of #25)
 
 **No M4 offense grade may ship for a build whose `confidence.offense_complete` is false.** The classification is done (`docs/EFFECTLESS-POWERS.md`): of 336 player-pickable records with no effect rows, **31 deal damage the model does not read**: 2 have their effects in twin records we already ship (Archery's Ranged Shot, Fire Manipulation's Burn) and 29 have no record of ours carrying them (Savage Leap on four ATs, Rain of Arrows, Suppressive Fire, Psionic Lance, Storm Blast's Direct Strike, Aura of Insanity, Sniper Rifle, LRM Rocket and others). The rest are 142 non-damage effects we do not carry (Taunt, Gamma Boost class), 100 mode switches, 49 auto-granted records and 14 Mastermind upgrades priced elsewhere. Remaining before offense grades ship (owner rulings, they move scores): read the 2 twin-backed redirects, and source the other 29 from the client (PATCH-WATCH export) with regression tests, or grade affected offense as Unknown/Incomplete. This measurement API is improved, not game-certified.

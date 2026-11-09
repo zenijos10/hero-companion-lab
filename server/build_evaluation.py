@@ -14,6 +14,7 @@ import effectless
 import engine
 import first_principles
 import role_output
+import support_ledger
 
 EVALUATION_SCHEMA_VERSION = 1
 DEFAULT_SCENARIO = "rating_plus4"
@@ -351,6 +352,7 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
         build_copy["powers"], ctx, global_recharge=global_recharge)
     buffs = role_output.enhanced_team_buffs(
         build_copy["powers"], ctx, global_recharge=global_recharge)
+    team_support = support_ledger.build_ledger(build_copy["powers"], ctx, global_recharge, sc)
     emergency = _emergency_ledger(build_copy, totals, power_records, ctx, set_bonuses,
                                   res_cap, global_recharge)
     unsupported, modeled_elsewhere = _unsupported_powers(
@@ -452,6 +454,9 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
                 "hard_control_uptime": control_uptime,
                 "team_buff_percent_by_effect": dict(sorted(buffs.items())),
                 "enemy_debuff_percent_by_effect": dict(sorted(debuffs.items())),
+                # M3: per power and effect: magnitude, coverage, uptime, sustained vs
+                # burst, landing vs the scenario and vs an AV, and opportunity cost
+                "team_support": team_support,
                 "healing_proxy": {"team_per_second": healing.get("team_hps"),
                                   "self_per_second": healing.get("self_hps"),
                                   "resurrection_powers": healing.get("rez"),

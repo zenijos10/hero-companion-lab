@@ -130,6 +130,15 @@ def build():
         "ships for a build whose confidence.offense_complete is false. "
         "Related, unverified: encounter_value's upgrade rule picks Ninjas' "
         "Smoke Flash as an upgrade (two cheapest effect-less casts).",
+        "**Support totals count two kinds of effect as permanent** (found by "
+        "the M3 support ledger, 2026-11-09; display already honest, SCORE not "
+        "changed). (1) Resurrect powers' buffs: Elixir of Life's 90 s "
+        "+100% recharge / +200% recovery outlast its enhanced recharge, so "
+        "role_output.enhanced_team_buffs credits a permanent team buff that "
+        "in the game lands only on an ally it revives. (2) Click rows with no "
+        "duration (instant effects: Poison Trap's -Recovery, endurance "
+        "drains) take uptime 1.0 in click_uptime. Both move scores when "
+        "fixed: owner's ruling, harden-before-certify applies.",
         "**Domination's magnitude half** - adds or replaces is ambiguous in "
         "the client (3 of 41 pairs fit neither reading). Duration half is "
         "shipped; magnitude deliberately not guessed.",
