@@ -963,6 +963,23 @@ def _domination_duration_bonus(powers, global_recharge):
     return _DOM_DURATION_BONUS * uptime
 
 
+def mastermind_upgrade_records(recs):
+    """The (at most two) upgrade powers a Mastermind re-casts after resummoning:
+    effect-less clicks in a summon powerset (grant-power redirects the parser
+    sees as empty), lowest cast times first (the tie-break when a set also
+    parses a click buff effect-less, Beast Mastery). They carry no effect rows,
+    yet encounter_value prices them through their cast time. The ONE copy:
+    the evaluation contract reads it to tell "modeled elsewhere" from "unread"."""
+    recs = [r for r in (recs or []) if r]
+    summon_sets = {r.get("powerset_full_name") for r in recs if r.get("summons")}
+    cands = [r for r in recs
+             if r.get("powerset_full_name") in summon_sets
+             and not r.get("summons") and not r.get("damage_effects")
+             and not r.get("buff_effects") and not r.get("heal_effects")
+             and (r.get("cast_time") or 0) > 0]
+    return sorted(cands, key=lambda r: r.get("cast_time") or 0.0)[:2]
+
+
 def hasten_recharge_average(powers, passive_rech):
     """Hasten's time-averaged +recharge (fraction) for a build with this passive
     recharge (fraction): +70% for 120s of every 450s base cycle, the cycle sped up
@@ -1221,14 +1238,7 @@ def encounter_value(archetype, powers, ctx, totals, scenario="general", arch_row
         # when a set also parses a click buff effect-less (Beast Mastery).
         pbf = (ctx or {}).get("power_by_full") or {}
         recs = [pbf.get(p.get("full_name")) for p in (powers or [])]
-        summon_sets = {r.get("powerset_full_name") for r in recs
-                       if r and r.get("summons")}
-        cands = sorted((r.get("cast_time") or 0.0) for r in recs
-                       if r and r.get("powerset_full_name") in summon_sets
-                       and not r.get("summons") and not r.get("damage_effects")
-                       and not r.get("buff_effects") and not r.get("heal_effects")
-                       and (r.get("cast_time") or 0) > 0)
-        _up_cast = sum(cands[:2])
+        _up_cast = sum((r.get("cast_time") or 0.0) for r in mastermind_upgrade_records(recs))
         _aura = _pet_aura(archetype, powers)
         _det_dps, _det_down = _detonator_dps(powers, recs, ctx, sc, totals, tohit_deb,
                                              _bodies, base_hp, _up_cast, _aura, _pets,

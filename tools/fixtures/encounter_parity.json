@@ -1,0 +1,4271 @@
+{
+ "builds": [
+  {
+   "archetype": "Class_Mastermind",
+   "expected": {
+    "av": {
+     "amplified": 2.0,
+     "availability": 0.971,
+     "contribution": 13.6,
+     "my_dps": 11.0,
+     "prevented": 1.0,
+     "ttl": 920.5
+    },
+    "farm_active": {
+     "amplified": 4.0,
+     "availability": 0.805,
+     "contribution": 125.6,
+     "my_dps": 36.0,
+     "prevented": 85.6,
+     "ttl": 33.1
+    },
+    "farm_afk": {
+     "amplified": 0.3,
+     "availability": 0.017,
+     "contribution": 1.3,
+     "my_dps": 2.6,
+     "prevented": 72.9,
+     "ttl": 10.2
+    },
+    "fire_farm": {
+     "amplified": 4.0,
+     "availability": 0.805,
+     "contribution": 101.1,
+     "my_dps": 36.0,
+     "prevented": 85.6,
+     "ttl": 33.1
+    },
+    "general": {
+     "amplified": 16.4,
+     "availability": 0.99,
+     "contribution": 146.9,
+     "my_dps": 79.5,
+     "prevented": 52.5,
+     "ttl": 920.5
+    },
+    "itrial": {
+     "amplified": 393.2,
+     "availability": 0.834,
+     "contribution": 925.5,
+     "my_dps": 56.0,
+     "prevented": 660.5,
+     "ttl": 56.3
+    },
+    "team": {
+     "amplified": 229.9,
+     "availability": 0.987,
+     "contribution": 654.4,
+     "my_dps": 76.2,
+     "prevented": 356.6,
+     "ttl": 318.3
+    }
+   },
+   "powers": [
+    {
+     "full_name": "Mastermind_Summon.Mercenaries.Soldiers",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 27,
+       "image": "ExpedientReinforcement.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Recharge",
+       "piece_uid": "Crafted_Expedient_Reinforcement_A",
+       "set_name": "Expedient Reinforcement",
+       "set_uid": "Expedient_Reinforcement"
+      },
+      {
+       "category_id": 27,
+       "image": "ExpedientReinforcement.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Damage",
+       "piece_uid": "Crafted_Expedient_Reinforcement_B",
+       "set_name": "Expedient Reinforcement",
+       "set_uid": "Expedient_Reinforcement"
+      },
+      {
+       "category_id": 27,
+       "image": "ExpedientReinforcement.png",
+       "io_level": 50,
+       "piece_name": "Damage/Endurance",
+       "piece_uid": "Crafted_Expedient_Reinforcement_C",
+       "set_name": "Expedient Reinforcement",
+       "set_uid": "Expedient_Reinforcement"
+      },
+      {
+       "category_id": 27,
+       "image": "ExpedientReinforcement.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Damage/Recharge",
+       "piece_uid": "Crafted_Expedient_Reinforcement_D",
+       "set_name": "Expedient Reinforcement",
+       "set_uid": "Expedient_Reinforcement"
+      }
+     ]
+    },
+    {
+     "full_name": "Mastermind_Buff.Force_Field.Force_Bolt",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 23,
+       "image": "sKineticCrash.png",
+       "io_level": 50,
+       "piece_name": "Damage/Knockback",
+       "piece_uid": "Crafted_Kinetic_Crash_A",
+       "set_name": "Kinetic Crash",
+       "set_uid": "Kinetic_Crash"
+      },
+      {
+       "category_id": 23,
+       "image": "sKineticCrash.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Knockback",
+       "piece_uid": "Crafted_Kinetic_Crash_B",
+       "set_name": "Kinetic Crash",
+       "set_uid": "Kinetic_Crash"
+      },
+      {
+       "category_id": 23,
+       "image": "sKineticCrash.png",
+       "io_level": 50,
+       "piece_name": "Recharge/Knockback",
+       "piece_uid": "Crafted_Kinetic_Crash_C",
+       "set_name": "Kinetic Crash",
+       "set_uid": "Kinetic_Crash"
+      },
+      {
+       "category_id": 23,
+       "image": "sKineticCrash.png",
+       "io_level": 50,
+       "piece_name": "Recharge/Endurance",
+       "piece_uid": "Crafted_Kinetic_Crash_D",
+       "set_name": "Kinetic Crash",
+       "set_uid": "Kinetic_Crash"
+      },
+      {
+       "category_id": 23,
+       "image": "sKineticCrash.png",
+       "io_level": 50,
+       "piece_name": "Damage/Endurance/Knockback",
+       "piece_uid": "Crafted_Kinetic_Crash_E",
+       "set_name": "Kinetic Crash",
+       "set_uid": "Kinetic_Crash"
+      },
+      {
+       "_proc": true,
+       "category_id": 23,
+       "image": "sForceFeedback.png",
+       "io_level": 50,
+       "piece_name": "Chance for +Recharge",
+       "piece_uid": "Crafted_Force_Feedback_F",
+       "set_name": "Force Feedback",
+       "set_uid": "Force Feedback"
+      }
+     ]
+    },
+    {
+     "full_name": "Mastermind_Buff.Force_Field.Deflection_Shield",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 7,
+       "image": "sLuckOfTheGambler.png",
+       "io_level": 50,
+       "piece_name": "Defense/Increased Global Recharge Speed",
+       "piece_uid": "Crafted_Luck_of_the_Gambler_F",
+       "set_name": "Luck of the Gambler",
+       "set_uid": "Luck_of_the_Gambler"
+      },
+      {
+       "category_id": 7,
+       "image": "sShieldWall.png",
+       "io_level": 50,
+       "piece_name": "+Res (Teleportation), +5% Res (All)",
+       "piece_uid": "Crafted_Shield_Wall_F",
+       "set_name": "Shield Wall",
+       "set_uid": "Shield_Wall"
+      },
+      {
+       "category_id": 7,
+       "image": "ReactiveDefenses.png",
+       "io_level": 50,
+       "piece_name": "Scaling Resist Damage",
+       "piece_uid": "Crafted_Reactive_Defenses_F",
+       "set_name": "Reactive Defenses",
+       "set_uid": "Reactive_Defenses"
+      },
+      {
+       "category_id": 7,
+       "image": "sKismet.png",
+       "io_level": 30,
+       "piece_name": "Accuracy +6%",
+       "piece_uid": "Crafted_Kismet_E",
+       "set_name": "Kismet",
+       "set_uid": "Kismet"
+      }
+     ]
+    },
+    {
+     "full_name": "Inherent.Fitness.Health",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 9,
+       "image": "sNuminasConvalesence.png",
+       "io_level": 50,
+       "piece_name": "+Regeneration/+Recovery",
+       "piece_uid": "Crafted_Numinas_Convalesence_F",
+       "set_name": "Numina's Convalesence",
+       "set_uid": "Numinas_Convalesence"
+      },
+      {
+       "category_id": 9,
+       "image": "sMiracle.png",
+       "io_level": 40,
+       "piece_name": "+Recovery",
+       "piece_uid": "Crafted_Miracle_F",
+       "set_name": "Miracle",
+       "set_uid": "Miracle"
+      },
+      {
+       "category_id": 9,
+       "image": "sRegenerativeTissue.png",
+       "io_level": 30,
+       "piece_name": "+Regeneration",
+       "piece_uid": "Crafted_Regenerative_Tissue_E",
+       "set_name": "Regenerative Tissue",
+       "set_uid": "Regenerative_Tissue"
+      },
+      {
+       "category_id": 9,
+       "image": "sPanacea.png",
+       "io_level": 50,
+       "piece_name": "+Hit Points/Endurance",
+       "piece_uid": "Crafted_Panacea_F",
+       "set_name": "Panacea",
+       "set_uid": "Panacea"
+      }
+     ]
+    },
+    {
+     "full_name": "Inherent.Fitness.Stamina",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 22,
+       "image": "sPerformanceSHift.png",
+       "io_level": 50,
+       "piece_name": "Chance for +End",
+       "piece_uid": "Crafted_Performance_Shifter_F",
+       "set_name": "Performance Shifter",
+       "set_uid": "Performance_Shifter"
+      },
+      {
+       "category_id": 22,
+       "image": "Power_Transfer.png",
+       "io_level": 50,
+       "piece_name": "Chance to Heal Self",
+       "piece_uid": "Crafted_Power_Transfer_F",
+       "set_name": "Power Transfer",
+       "set_uid": "Power_Transfer"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Speed.Super_Speed",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 46,
+       "image": "Thrust.png",
+       "io_level": 50,
+       "piece_name": "Running",
+       "piece_uid": "Crafted_Thrust_A",
+       "set_name": "Thrust",
+       "set_uid": "Thrust"
+      },
+      {
+       "category_id": 46,
+       "image": "Thrust.png",
+       "io_level": 50,
+       "piece_name": "Endurance/Running",
+       "piece_uid": "Crafted_Thrust_B",
+       "set_name": "Thrust",
+       "set_uid": "Thrust"
+      },
+      {
+       "category_id": 46,
+       "image": "Thrust.png",
+       "io_level": 50,
+       "piece_name": "Endurance",
+       "piece_uid": "Crafted_Thrust_C",
+       "set_name": "Thrust",
+       "set_uid": "Thrust"
+      },
+      {
+       "category_id": 46,
+       "image": "Thrust.png",
+       "io_level": 50,
+       "piece_name": "Thrust: Running Speed/Increased Run Speed",
+       "piece_uid": "Crafted_Thrust_D",
+       "set_name": "Thrust",
+       "set_uid": "Thrust"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Fighting.Boxing",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": null,
+       "image": "Acc.png",
+       "io_level": 50,
+       "piece_name": "Accuracy IO",
+       "piece_uid": "Crafted_Accuracy",
+       "set_name": "Common IO",
+       "set_uid": null
+      }
+     ]
+    },
+    {
+     "full_name": "Mastermind_Buff.Force_Field.Insulation_Shield",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 7,
+       "image": "sLuckOfTheGambler.png",
+       "io_level": 50,
+       "piece_name": "Defense/Increased Global Recharge Speed",
+       "piece_uid": "Crafted_Luck_of_the_Gambler_F",
+       "set_name": "Luck of the Gambler",
+       "set_uid": "Luck_of_the_Gambler"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Speed.Hasten",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": null,
+       "image": "Recharge.png",
+       "io_level": 50,
+       "piece_name": "Recharge Reduction IO",
+       "piece_uid": "Crafted_Recharge",
+       "set_name": "Common IO",
+       "set_uid": null
+      },
+      {
+       "category_id": null,
+       "image": "Recharge.png",
+       "io_level": 50,
+       "piece_name": "Recharge Reduction IO",
+       "piece_uid": "Crafted_Recharge",
+       "set_name": "Common IO",
+       "set_uid": null
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Leadership.Defense",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 7,
+       "image": "sLuckOfTheGambler.png",
+       "io_level": 50,
+       "piece_name": "Defense/Increased Global Recharge Speed",
+       "piece_uid": "Crafted_Luck_of_the_Gambler_F",
+       "set_name": "Luck of the Gambler",
+       "set_uid": "Luck_of_the_Gambler"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense/Endurance",
+       "piece_uid": "Crafted_Red_Fortune_A",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense/Recharge",
+       "piece_uid": "Crafted_Red_Fortune_B",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Endurance/Recharge",
+       "piece_uid": "Crafted_Red_Fortune_C",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense/Endurance/Recharge",
+       "piece_uid": "Crafted_Red_Fortune_D",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense",
+       "piece_uid": "Crafted_Red_Fortune_E",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Fighting.Tough",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 8,
+       "image": "sImperviumArmor.png",
+       "io_level": 40,
+       "piece_name": "Psionic Resistance",
+       "piece_uid": "Crafted_Impervium_Armor_F",
+       "set_name": "Impervium Armor",
+       "set_uid": "Impervium_Armor"
+      },
+      {
+       "category_id": 8,
+       "image": "sImperviousSkin.png",
+       "io_level": 30,
+       "piece_name": "Resistance/Endurance",
+       "piece_uid": "Crafted_Impervious_Skin_A",
+       "set_name": "Impervious Skin",
+       "set_uid": "Impervious_Skin"
+      },
+      {
+       "category_id": 8,
+       "image": "sImperviousSkin.png",
+       "io_level": 30,
+       "piece_name": "Resistance/Recharge",
+       "piece_uid": "Crafted_Impervious_Skin_B",
+       "set_name": "Impervious Skin",
+       "set_uid": "Impervious_Skin"
+      },
+      {
+       "category_id": 8,
+       "image": "sImperviousSkin.png",
+       "io_level": 30,
+       "piece_name": "Endurance/Recharge",
+       "piece_uid": "Crafted_Impervious_Skin_C",
+       "set_name": "Impervious Skin",
+       "set_uid": "Impervious_Skin"
+      },
+      {
+       "category_id": 8,
+       "image": "sImperviousSkin.png",
+       "io_level": 30,
+       "piece_name": "Resistance/Endurance/Recharge",
+       "piece_uid": "Crafted_Impervious_Skin_D",
+       "set_name": "Impervious Skin",
+       "set_uid": "Impervious_Skin"
+      },
+      {
+       "category_id": 8,
+       "image": "sImperviousSkin.png",
+       "io_level": 30,
+       "piece_name": "Status Resistance/Regeneration",
+       "piece_uid": "Crafted_Impervious_Skin_E",
+       "set_name": "Impervious Skin",
+       "set_uid": "Impervious_Skin"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Fighting.Weave",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense/Endurance",
+       "piece_uid": "Crafted_Red_Fortune_A",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense/Recharge",
+       "piece_uid": "Crafted_Red_Fortune_B",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Endurance/Recharge",
+       "piece_uid": "Crafted_Red_Fortune_C",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense/Endurance/Recharge",
+       "piece_uid": "Crafted_Red_Fortune_D",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense",
+       "piece_uid": "Crafted_Red_Fortune_E",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      }
+     ]
+    },
+    {
+     "full_name": "Mastermind_Buff.Force_Field.Personal_Force_Field",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 7,
+       "image": "sSerendipity.png",
+       "io_level": 40,
+       "piece_name": "Defense/Endurance",
+       "piece_uid": "Crafted_Serendipity_A",
+       "set_name": "Serendipity",
+       "set_uid": "Serendipity"
+      },
+      {
+       "category_id": 7,
+       "image": "sSerendipity.png",
+       "io_level": 40,
+       "piece_name": "Defense/Recharge",
+       "piece_uid": "Crafted_Serendipity_B",
+       "set_name": "Serendipity",
+       "set_uid": "Serendipity"
+      },
+      {
+       "category_id": 7,
+       "image": "sLuckOfTheGambler.png",
+       "io_level": 50,
+       "piece_name": "Defense/Endurance",
+       "piece_uid": "Crafted_Luck_of_the_Gambler_A",
+       "set_name": "Luck of the Gambler",
+       "set_uid": "Luck_of_the_Gambler"
+      },
+      {
+       "category_id": 7,
+       "image": "sLuckOfTheGambler.png",
+       "io_level": 50,
+       "piece_name": "Defense/Recharge",
+       "piece_uid": "Crafted_Luck_of_the_Gambler_B",
+       "set_name": "Luck of the Gambler",
+       "set_uid": "Luck_of_the_Gambler"
+      },
+      {
+       "category_id": 7,
+       "image": "sLuckOfTheGambler.png",
+       "io_level": 50,
+       "piece_name": "Endurance/Recharge",
+       "piece_uid": "Crafted_Luck_of_the_Gambler_C",
+       "set_name": "Luck of the Gambler",
+       "set_uid": "Luck_of_the_Gambler"
+      },
+      {
+       "category_id": 7,
+       "image": "sLuckOfTheGambler.png",
+       "io_level": 50,
+       "piece_name": "Defense/Endurance/Recharge",
+       "piece_uid": "Crafted_Luck_of_the_Gambler_D",
+       "set_name": "Luck of the Gambler",
+       "set_uid": "Luck_of_the_Gambler"
+      }
+     ]
+    },
+    {
+     "full_name": "Mastermind_Buff.Force_Field.Dispersion_Bubble",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense/Endurance",
+       "piece_uid": "Crafted_Red_Fortune_A",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense/Recharge",
+       "piece_uid": "Crafted_Red_Fortune_B",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Endurance/Recharge",
+       "piece_uid": "Crafted_Red_Fortune_C",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense/Endurance/Recharge",
+       "piece_uid": "Crafted_Red_Fortune_D",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense",
+       "piece_uid": "Crafted_Red_Fortune_E",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Leaping.Combat_Jumping",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 7,
+       "image": "sLuckOfTheGambler.png",
+       "io_level": 50,
+       "piece_name": "Defense/Increased Global Recharge Speed",
+       "piece_uid": "Crafted_Luck_of_the_Gambler_F",
+       "set_name": "Luck of the Gambler",
+       "set_uid": "Luck_of_the_Gambler"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense/Endurance",
+       "piece_uid": "Crafted_Red_Fortune_A",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense/Recharge",
+       "piece_uid": "Crafted_Red_Fortune_B",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Endurance/Recharge",
+       "piece_uid": "Crafted_Red_Fortune_C",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense/Endurance/Recharge",
+       "piece_uid": "Crafted_Red_Fortune_D",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense",
+       "piece_uid": "Crafted_Red_Fortune_E",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      }
+     ]
+    },
+    {
+     "full_name": "Mastermind_Buff.Force_Field.Detention_Field",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": null,
+       "image": "Recharge.png",
+       "io_level": 50,
+       "piece_name": "Recharge Reduction IO",
+       "piece_uid": "Crafted_Recharge",
+       "set_name": "Common IO",
+       "set_uid": null
+      },
+      {
+       "category_id": null,
+       "image": "Recharge.png",
+       "io_level": 50,
+       "piece_name": "Recharge Reduction IO",
+       "piece_uid": "Crafted_Recharge",
+       "set_name": "Common IO",
+       "set_uid": null
+      }
+     ]
+    },
+    {
+     "full_name": "Mastermind_Summon.Mercenaries.Spec_Ops",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 27,
+       "image": "CallToArms.png",
+       "io_level": 30,
+       "piece_name": "Accuracy/Recharge",
+       "piece_uid": "Crafted_Call_to_Arms_A",
+       "set_name": "Call to Arms",
+       "set_uid": "Call_to_Arms"
+      },
+      {
+       "category_id": 27,
+       "image": "CallToArms.png",
+       "io_level": 30,
+       "piece_name": "Accuracy/Damage",
+       "piece_uid": "Crafted_Call_to_Arms_B",
+       "set_name": "Call to Arms",
+       "set_uid": "Call_to_Arms"
+      },
+      {
+       "category_id": 27,
+       "image": "CallToArms.png",
+       "io_level": 30,
+       "piece_name": "Damage/Endurance",
+       "piece_uid": "Crafted_Call_to_Arms_C",
+       "set_name": "Call to Arms",
+       "set_uid": "Call_to_Arms"
+      },
+      {
+       "category_id": 27,
+       "image": "CallToArms.png",
+       "io_level": 30,
+       "piece_name": "Accuracy/Damage/Recharge",
+       "piece_uid": "Crafted_Call_to_Arms_D",
+       "set_name": "Call to Arms",
+       "set_uid": "Call_to_Arms"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Leadership.Tactics",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": null,
+       "image": "ToHitBuff.png",
+       "io_level": 50,
+       "piece_name": "To Hit Buff IO",
+       "piece_uid": "Crafted_ToHit_Buff",
+       "set_name": "Common IO",
+       "set_uid": null
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Leadership.Assault",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": null,
+       "image": "EndRdx.png",
+       "io_level": 50,
+       "piece_name": "Endurance Reduction IO",
+       "piece_uid": "Crafted_Endurance_Discount",
+       "set_name": "Common IO",
+       "set_uid": null
+      }
+     ]
+    },
+    {
+     "full_name": "Mastermind_Summon.Mercenaries.Serum",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 8,
+       "image": "sSteadfastProtection.png",
+       "io_level": 30,
+       "piece_name": "Resistance/+Def 3%",
+       "piece_uid": "Crafted_Steadfast_Protection_B",
+       "set_name": "Steadfast Protection",
+       "set_uid": "Steadfast_Protection"
+      },
+      {
+       "category_id": 8,
+       "image": "sGladiatorsArmor.png",
+       "io_level": 50,
+       "piece_name": "TP Protection +3% Def (All)",
+       "piece_uid": "Crafted_Gladiators_Armor_F",
+       "set_name": "Gladiator's Armor",
+       "set_uid": "Gladiators_Armor"
+      },
+      {
+       "category_id": 8,
+       "image": "sImperviumArmor.png",
+       "io_level": 40,
+       "piece_name": "Psionic Resistance",
+       "piece_uid": "Crafted_Impervium_Armor_F",
+       "set_name": "Impervium Armor",
+       "set_uid": "Impervium_Armor"
+      },
+      {
+       "category_id": 8,
+       "image": "sAegis.png",
+       "io_level": 50,
+       "piece_name": "Psionic/Status Resistance",
+       "piece_uid": "Crafted_Aegis_F",
+       "set_name": "Aegis",
+       "set_uid": "Aegis"
+      },
+      {
+       "category_id": 8,
+       "image": "UnbreakableGuard.png",
+       "io_level": 50,
+       "piece_name": "+Max HP",
+       "piece_uid": "Crafted_Unbreakable_Guard_F",
+       "set_name": "Unbreakable Guard",
+       "set_uid": "Unbreakable_Guard"
+      }
+     ]
+    },
+    {
+     "full_name": "Epic.Mastermind_Mace_Mastery.Scorpion_Shield",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 7,
+       "image": "sLuckOfTheGambler.png",
+       "io_level": 50,
+       "piece_name": "Defense/Endurance",
+       "piece_uid": "Crafted_Luck_of_the_Gambler_A",
+       "set_name": "Luck of the Gambler",
+       "set_uid": "Luck_of_the_Gambler"
+      },
+      {
+       "category_id": 7,
+       "image": "sLuckOfTheGambler.png",
+       "io_level": 50,
+       "piece_name": "Defense/Recharge",
+       "piece_uid": "Crafted_Luck_of_the_Gambler_B",
+       "set_name": "Luck of the Gambler",
+       "set_uid": "Luck_of_the_Gambler"
+      },
+      {
+       "category_id": 7,
+       "image": "sLuckOfTheGambler.png",
+       "io_level": 50,
+       "piece_name": "Endurance/Recharge",
+       "piece_uid": "Crafted_Luck_of_the_Gambler_C",
+       "set_name": "Luck of the Gambler",
+       "set_uid": "Luck_of_the_Gambler"
+      },
+      {
+       "category_id": 7,
+       "image": "sLuckOfTheGambler.png",
+       "io_level": 50,
+       "piece_name": "Defense/Endurance/Recharge",
+       "piece_uid": "Crafted_Luck_of_the_Gambler_D",
+       "set_name": "Luck of the Gambler",
+       "set_uid": "Luck_of_the_Gambler"
+      },
+      {
+       "category_id": 7,
+       "image": "sLuckOfTheGambler.png",
+       "io_level": 50,
+       "piece_name": "Defense",
+       "piece_uid": "Crafted_Luck_of_the_Gambler_E",
+       "set_name": "Luck of the Gambler",
+       "set_uid": "Luck_of_the_Gambler"
+      }
+     ]
+    },
+    {
+     "full_name": "Mastermind_Summon.Mercenaries.Commando",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 27,
+       "image": "ExpedientReinforcement.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Recharge",
+       "piece_uid": "Crafted_Expedient_Reinforcement_A",
+       "set_name": "Expedient Reinforcement",
+       "set_uid": "Expedient_Reinforcement"
+      },
+      {
+       "category_id": 27,
+       "image": "ExpedientReinforcement.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Damage",
+       "piece_uid": "Crafted_Expedient_Reinforcement_B",
+       "set_name": "Expedient Reinforcement",
+       "set_uid": "Expedient_Reinforcement"
+      },
+      {
+       "category_id": 27,
+       "image": "ExpedientReinforcement.png",
+       "io_level": 50,
+       "piece_name": "Damage/Endurance",
+       "piece_uid": "Crafted_Expedient_Reinforcement_C",
+       "set_name": "Expedient Reinforcement",
+       "set_uid": "Expedient_Reinforcement"
+      },
+      {
+       "category_id": 27,
+       "image": "ExpedientReinforcement.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Damage/Recharge",
+       "piece_uid": "Crafted_Expedient_Reinforcement_D",
+       "set_name": "Expedient Reinforcement",
+       "set_uid": "Expedient_Reinforcement"
+      }
+     ]
+    },
+    {
+     "full_name": "Epic.Mastermind_Mace_Mastery.Power_Boost",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": null,
+       "image": "Recharge.png",
+       "io_level": 50,
+       "piece_name": "Recharge Reduction IO",
+       "piece_uid": "Crafted_Recharge",
+       "set_name": "Common IO",
+       "set_uid": null
+      },
+      {
+       "category_id": null,
+       "image": "Recharge.png",
+       "io_level": 50,
+       "piece_name": "Recharge Reduction IO",
+       "piece_uid": "Crafted_Recharge",
+       "set_name": "Common IO",
+       "set_uid": null
+      }
+     ]
+    },
+    {
+     "full_name": "Mastermind_Buff.Force_Field.Repulsion_Field",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 23,
+       "image": "sExplosiveStrike.png",
+       "io_level": 20,
+       "piece_name": "Damage/Knockback",
+       "piece_uid": "Crafted_Explosive_Strike_A",
+       "set_name": "Explosive Strike",
+       "set_uid": "Explosive_Strike"
+      },
+      {
+       "category_id": 23,
+       "image": "sExplosiveStrike.png",
+       "io_level": 20,
+       "piece_name": "Accuracy/Knockback",
+       "piece_uid": "Crafted_Explosive_Strike_B",
+       "set_name": "Explosive Strike",
+       "set_uid": "Explosive_Strike"
+      }
+     ]
+    },
+    {
+     "full_name": "Mastermind_Buff.Force_Field.Repulsion_Bomb",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "_proc": true,
+       "category_id": 23,
+       "image": "Annihilation.png",
+       "io_level": 50,
+       "piece_name": "Chance for Res Debuff",
+       "piece_uid": "Crafted_Annihilation_F",
+       "set_name": "Annihilation",
+       "set_uid": "Annihilation"
+      },
+      {
+       "_proc": true,
+       "category_id": 23,
+       "image": "sPositronsBlast.png",
+       "io_level": 50,
+       "piece_name": "Chance of Damage(Energy)",
+       "piece_uid": "Crafted_Positrons_Blast_F",
+       "set_name": "Positron's Blast",
+       "set_uid": "Positron's Blast"
+      }
+     ]
+    },
+    {
+     "full_name": "Mastermind_Buff.Force_Field.Force_Bubble",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 7,
+       "image": "sLuckOfTheGambler.png",
+       "io_level": 50,
+       "piece_name": "Defense/Increased Global Recharge Speed",
+       "piece_uid": "Crafted_Luck_of_the_Gambler_F",
+       "set_name": "Luck of the Gambler",
+       "set_uid": "Luck_of_the_Gambler"
+      },
+      {
+       "category_id": 7,
+       "image": "sKismet.png",
+       "io_level": 30,
+       "piece_name": "Defense/Endurance",
+       "piece_uid": "Crafted_Kismet_A",
+       "set_name": "Kismet",
+       "set_uid": "Kismet"
+      },
+      {
+       "category_id": 7,
+       "image": "sKismet.png",
+       "io_level": 30,
+       "piece_name": "Defense/Recharge",
+       "piece_uid": "Crafted_Kismet_B",
+       "set_name": "Kismet",
+       "set_uid": "Kismet"
+      }
+     ]
+    },
+    {
+     "full_name": "Mastermind_Summon.Mercenaries.Equip_Mercenary",
+     "include_in_totals": null,
+     "slots": []
+    },
+    {
+     "full_name": "Mastermind_Summon.Mercenaries.Tactical_Upgrade",
+     "include_in_totals": null,
+     "slots": []
+    }
+   ]
+  },
+  {
+   "archetype": "Class_Controller",
+   "expected": {
+    "av": {
+     "amplified": 0.5,
+     "availability": 0.112,
+     "contribution": 2.8,
+     "my_dps": 2.3,
+     "prevented": 22.1,
+     "ttl": 28.6
+    },
+    "farm_active": {
+     "amplified": 5.4,
+     "availability": 0.153,
+     "contribution": 1101.1,
+     "my_dps": 38.5,
+     "prevented": 1057.2,
+     "ttl": 3.3
+    },
+    "farm_afk": {
+     "amplified": 0.2,
+     "availability": 0.002,
+     "contribution": 2.0,
+     "my_dps": 1.2,
+     "prevented": 1002.1,
+     "ttl": 1.2
+    },
+    "fire_farm": {
+     "amplified": 5.4,
+     "availability": 0.153,
+     "contribution": 168.2,
+     "my_dps": 38.5,
+     "prevented": 1057.2,
+     "ttl": 3.3
+    },
+    "general": {
+     "amplified": 9.4,
+     "availability": 0.834,
+     "contribution": 343.4,
+     "my_dps": 35.5,
+     "prevented": 366.8,
+     "ttl": 53.9
+    },
+    "itrial": {
+     "amplified": 411.1,
+     "availability": 0.172,
+     "contribution": 309.7,
+     "my_dps": 33.2,
+     "prevented": 1353.2,
+     "ttl": 5.7
+    },
+    "team": {
+     "amplified": 257.9,
+     "availability": 0.488,
+     "contribution": 524.8,
+     "my_dps": 46.4,
+     "prevented": 771.2,
+     "ttl": 16.7
+    }
+   },
+   "powers": [
+    {
+     "full_name": "Controller_Control.Mind_Control.Mesmerize",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 14,
+       "image": "sLethargicRepose.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Recharge",
+       "piece_uid": "Crafted_Lethargic_Repose_A",
+       "set_name": "Lethargic Repose",
+       "set_uid": "Lethargic_Repose"
+      },
+      {
+       "category_id": 14,
+       "image": "sLethargicRepose.png",
+       "io_level": 50,
+       "piece_name": "Endurance/Sleep",
+       "piece_uid": "Crafted_Lethargic_Repose_B",
+       "set_name": "Lethargic Repose",
+       "set_uid": "Lethargic_Repose"
+      },
+      {
+       "category_id": 14,
+       "image": "sLethargicRepose.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Endurance",
+       "piece_uid": "Crafted_Lethargic_Repose_C",
+       "set_name": "Lethargic Repose",
+       "set_uid": "Lethargic_Repose"
+      },
+      {
+       "category_id": 14,
+       "image": "sLethargicRepose.png",
+       "io_level": 50,
+       "piece_name": "Sleep/Range",
+       "piece_uid": "Crafted_Lethargic_Repose_D",
+       "set_name": "Lethargic Repose",
+       "set_uid": "Lethargic_Repose"
+      },
+      {
+       "category_id": 14,
+       "image": "sLethargicRepose.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Sleep/Recharge",
+       "piece_uid": "Crafted_Lethargic_Repose_E",
+       "set_name": "Lethargic Repose",
+       "set_uid": "Lethargic_Repose"
+      }
+     ]
+    },
+    {
+     "full_name": "Controller_Buff.Kinetics.Transfusion",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 9,
+       "image": "sNuminasConvalesence.png",
+       "io_level": 50,
+       "piece_name": "+Regeneration/+Recovery",
+       "piece_uid": "Crafted_Numinas_Convalesence_F",
+       "set_name": "Numina's Convalesence",
+       "set_uid": "Numinas_Convalesence"
+      },
+      {
+       "category_id": 9,
+       "image": "sMiracle.png",
+       "io_level": 40,
+       "piece_name": "+Recovery",
+       "piece_uid": "Crafted_Miracle_F",
+       "set_name": "Miracle",
+       "set_uid": "Miracle"
+      },
+      {
+       "category_id": 9,
+       "image": "sRegenerativeTissue.png",
+       "io_level": 30,
+       "piece_name": "+Regeneration",
+       "piece_uid": "Crafted_Regenerative_Tissue_E",
+       "set_name": "Regenerative Tissue",
+       "set_uid": "Regenerative_Tissue"
+      },
+      {
+       "category_id": 29,
+       "image": "TheftOfEssence.png",
+       "io_level": 30,
+       "piece_name": "Chance for +Endurance",
+       "piece_uid": "Crafted_Theft_of_Essence_F",
+       "set_name": "Theft of Essence",
+       "set_uid": "Theft_of_Essence"
+      }
+     ]
+    },
+    {
+     "full_name": "Controller_Buff.Kinetics.Siphon_Power",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": null,
+       "image": "Acc.png",
+       "io_level": 50,
+       "piece_name": "Accuracy IO",
+       "piece_uid": "Crafted_Accuracy",
+       "set_name": "Common IO",
+       "set_uid": null
+      }
+     ]
+    },
+    {
+     "full_name": "Inherent.Fitness.Health",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 9,
+       "image": "sPanacea.png",
+       "io_level": 50,
+       "piece_name": "+Hit Points/Endurance",
+       "piece_uid": "Crafted_Panacea_F",
+       "set_name": "Panacea",
+       "set_uid": "Panacea"
+      }
+     ]
+    },
+    {
+     "full_name": "Inherent.Fitness.Stamina",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 22,
+       "image": "sPerformanceSHift.png",
+       "io_level": 50,
+       "piece_name": "Chance for +End",
+       "piece_uid": "Crafted_Performance_Shifter_F",
+       "set_name": "Performance Shifter",
+       "set_uid": "Performance_Shifter"
+      },
+      {
+       "category_id": 22,
+       "image": "Power_Transfer.png",
+       "io_level": 50,
+       "piece_name": "Chance to Heal Self",
+       "piece_uid": "Crafted_Power_Transfer_F",
+       "set_name": "Power Transfer",
+       "set_uid": "Power_Transfer"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Speed.Super_Speed",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 28,
+       "image": "Zephyr.png",
+       "io_level": 50,
+       "piece_name": "Run Speed, Jump, Flight Speed, Range",
+       "piece_uid": "Crafted_Blessing_of_the_Zephyr_A",
+       "set_name": "Blessing of the Zephyr",
+       "set_uid": "Blessing_of_the_Zephyr"
+      },
+      {
+       "category_id": 28,
+       "image": "Zephyr.png",
+       "io_level": 50,
+       "piece_name": "Run Speed, Jump, Flight Speed, Range/Endurance",
+       "piece_uid": "Crafted_Blessing_of_the_Zephyr_B",
+       "set_name": "Blessing of the Zephyr",
+       "set_uid": "Blessing_of_the_Zephyr"
+      },
+      {
+       "category_id": 28,
+       "image": "Zephyr.png",
+       "io_level": 50,
+       "piece_name": "Knockback Reduction (4 points)",
+       "piece_uid": "Crafted_Blessing_of_the_Zephyr_C",
+       "set_name": "Blessing of the Zephyr",
+       "set_uid": "Blessing_of_the_Zephyr"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Fighting.Boxing",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": null,
+       "image": "Acc.png",
+       "io_level": 50,
+       "piece_name": "Accuracy IO",
+       "piece_uid": "Crafted_Accuracy",
+       "set_name": "Common IO",
+       "set_uid": null
+      }
+     ]
+    },
+    {
+     "full_name": "Controller_Control.Mind_Control.Levitate",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 23,
+       "image": "sKineticCrash.png",
+       "io_level": 50,
+       "piece_name": "Damage/Knockback",
+       "piece_uid": "Crafted_Kinetic_Crash_A",
+       "set_name": "Kinetic Crash",
+       "set_uid": "Kinetic_Crash"
+      },
+      {
+       "category_id": 23,
+       "image": "sKineticCrash.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Knockback",
+       "piece_uid": "Crafted_Kinetic_Crash_B",
+       "set_name": "Kinetic Crash",
+       "set_uid": "Kinetic_Crash"
+      }
+     ]
+    },
+    {
+     "full_name": "Controller_Control.Mind_Control.Dominate",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 2,
+       "image": "SEO_WintersBite.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Damage",
+       "piece_uid": "Superior_Attuned_Winters_Bite_A",
+       "set_name": "Superior Winter's Bite",
+       "set_uid": "Superior_Winters_Bite"
+      },
+      {
+       "category_id": 2,
+       "image": "SEO_WintersBite.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Damage/Endurance",
+       "piece_uid": "Superior_Attuned_Winters_Bite_C",
+       "set_name": "Superior Winter's Bite",
+       "set_uid": "Superior_Winters_Bite"
+      },
+      {
+       "category_id": 2,
+       "image": "SEO_WintersBite.png",
+       "io_level": 50,
+       "piece_name": "Damage/RechargeTime",
+       "piece_uid": "Superior_Attuned_Winters_Bite_B",
+       "set_name": "Superior Winter's Bite",
+       "set_uid": "Superior_Winters_Bite"
+      },
+      {
+       "_proc": true,
+       "category_id": 2,
+       "image": "UD_Overwhelming_Force.png",
+       "io_level": 50,
+       "piece_name": "Damage/Chance for Knockdown/Knockback to Knockdown",
+       "piece_uid": "Attuned_Overwhelming_Force_F",
+       "set_name": "Overwhelming Force",
+       "set_uid": "Overwhelming Force"
+      },
+      {
+       "_proc": true,
+       "category_id": 2,
+       "image": "cupids_crush.png",
+       "io_level": 50,
+       "piece_name": "Damage/Chance for Confuse",
+       "piece_uid": "Attuned_Cupids_Crush_F",
+       "set_name": "Cupid's Crush",
+       "set_uid": "Cupid's Crush"
+      },
+      {
+       "category_id": 2,
+       "image": "SEO_WintersBite.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Damage/Recharge",
+       "piece_uid": "Superior_Attuned_Winters_Bite_D",
+       "set_name": "Superior Winter's Bite",
+       "set_uid": "Superior_Winters_Bite"
+      }
+     ]
+    },
+    {
+     "full_name": "Controller_Buff.Kinetics.Repel",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 23,
+       "image": "sExplosiveStrike.png",
+       "io_level": 20,
+       "piece_name": "Damage/Knockback",
+       "piece_uid": "Crafted_Explosive_Strike_A",
+       "set_name": "Explosive Strike",
+       "set_uid": "Explosive_Strike"
+      },
+      {
+       "category_id": 23,
+       "image": "sExplosiveStrike.png",
+       "io_level": 20,
+       "piece_name": "Accuracy/Knockback",
+       "piece_uid": "Crafted_Explosive_Strike_B",
+       "set_name": "Explosive Strike",
+       "set_uid": "Explosive_Strike"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Fighting.Tough",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 8,
+       "image": "sSteadfastProtection.png",
+       "io_level": 30,
+       "piece_name": "Resistance/+Def 3%",
+       "piece_uid": "Crafted_Steadfast_Protection_B",
+       "set_name": "Steadfast Protection",
+       "set_uid": "Steadfast_Protection"
+      },
+      {
+       "category_id": 8,
+       "image": "sGladiatorsArmor.png",
+       "io_level": 50,
+       "piece_name": "TP Protection +3% Def (All)",
+       "piece_uid": "Crafted_Gladiators_Armor_F",
+       "set_name": "Gladiator's Armor",
+       "set_uid": "Gladiators_Armor"
+      },
+      {
+       "category_id": 8,
+       "image": "sImperviumArmor.png",
+       "io_level": 40,
+       "piece_name": "Psionic Resistance",
+       "piece_uid": "Crafted_Impervium_Armor_F",
+       "set_name": "Impervium Armor",
+       "set_uid": "Impervium_Armor"
+      },
+      {
+       "category_id": 8,
+       "image": "sAegis.png",
+       "io_level": 50,
+       "piece_name": "Psionic/Status Resistance",
+       "piece_uid": "Crafted_Aegis_F",
+       "set_name": "Aegis",
+       "set_uid": "Aegis"
+      },
+      {
+       "category_id": 8,
+       "image": "UnbreakableGuard.png",
+       "io_level": 50,
+       "piece_name": "+Max HP",
+       "piece_uid": "Crafted_Unbreakable_Guard_F",
+       "set_name": "Unbreakable Guard",
+       "set_uid": "Unbreakable_Guard"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Fighting.Weave",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 7,
+       "image": "sLuckOfTheGambler.png",
+       "io_level": 50,
+       "piece_name": "Defense/Increased Global Recharge Speed",
+       "piece_uid": "Crafted_Luck_of_the_Gambler_F",
+       "set_name": "Luck of the Gambler",
+       "set_uid": "Luck_of_the_Gambler"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense/Endurance",
+       "piece_uid": "Crafted_Red_Fortune_A",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense/Recharge",
+       "piece_uid": "Crafted_Red_Fortune_B",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Endurance/Recharge",
+       "piece_uid": "Crafted_Red_Fortune_C",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense/Endurance/Recharge",
+       "piece_uid": "Crafted_Red_Fortune_D",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense",
+       "piece_uid": "Crafted_Red_Fortune_E",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Speed.Hasten",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": null,
+       "image": "Recharge.png",
+       "io_level": 50,
+       "piece_name": "Recharge Reduction IO",
+       "piece_uid": "Crafted_Recharge",
+       "set_name": "Common IO",
+       "set_uid": null
+      },
+      {
+       "category_id": null,
+       "image": "Recharge.png",
+       "io_level": 50,
+       "piece_name": "Recharge Reduction IO",
+       "piece_uid": "Crafted_Recharge",
+       "set_name": "Common IO",
+       "set_uid": null
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Leadership.Defense",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 7,
+       "image": "sLuckOfTheGambler.png",
+       "io_level": 50,
+       "piece_name": "Defense/Increased Global Recharge Speed",
+       "piece_uid": "Crafted_Luck_of_the_Gambler_F",
+       "set_name": "Luck of the Gambler",
+       "set_uid": "Luck_of_the_Gambler"
+      },
+      {
+       "category_id": 7,
+       "image": "sKismet.png",
+       "io_level": 30,
+       "piece_name": "Defense/Endurance",
+       "piece_uid": "Crafted_Kismet_A",
+       "set_name": "Kismet",
+       "set_uid": "Kismet"
+      },
+      {
+       "category_id": 7,
+       "image": "sKismet.png",
+       "io_level": 30,
+       "piece_name": "Defense/Recharge",
+       "piece_uid": "Crafted_Kismet_B",
+       "set_name": "Kismet",
+       "set_uid": "Kismet"
+      },
+      {
+       "category_id": 7,
+       "image": "sKismet.png",
+       "io_level": 30,
+       "piece_name": "Endurance/Recharge",
+       "piece_uid": "Crafted_Kismet_C",
+       "set_name": "Kismet",
+       "set_uid": "Kismet"
+      },
+      {
+       "category_id": 7,
+       "image": "sKismet.png",
+       "io_level": 30,
+       "piece_name": "Defense/Endurance/Recharge",
+       "piece_uid": "Crafted_Kismet_D",
+       "set_name": "Kismet",
+       "set_uid": "Kismet"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Leaping.Combat_Jumping",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 7,
+       "image": "sLuckOfTheGambler.png",
+       "io_level": 50,
+       "piece_name": "Defense/Increased Global Recharge Speed",
+       "piece_uid": "Crafted_Luck_of_the_Gambler_F",
+       "set_name": "Luck of the Gambler",
+       "set_uid": "Luck_of_the_Gambler"
+      },
+      {
+       "category_id": 7,
+       "image": "sShieldWall.png",
+       "io_level": 50,
+       "piece_name": "+Res (Teleportation), +5% Res (All)",
+       "piece_uid": "Crafted_Shield_Wall_F",
+       "set_name": "Shield Wall",
+       "set_uid": "Shield_Wall"
+      },
+      {
+       "category_id": 7,
+       "image": "ReactiveDefenses.png",
+       "io_level": 50,
+       "piece_name": "Scaling Resist Damage",
+       "piece_uid": "Crafted_Reactive_Defenses_F",
+       "set_name": "Reactive Defenses",
+       "set_uid": "Reactive_Defenses"
+      },
+      {
+       "category_id": 7,
+       "image": "sKismet.png",
+       "io_level": 30,
+       "piece_name": "Accuracy +6%",
+       "piece_uid": "Crafted_Kismet_E",
+       "set_name": "Kismet",
+       "set_uid": "Kismet"
+      }
+     ]
+    },
+    {
+     "full_name": "Controller_Control.Mind_Control.Confuse",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "_ho": true,
+       "category_id": 16,
+       "image": "HOEndoplasm.png",
+       "piece_name": "Endoplasm Exposure",
+       "piece_uid": "Hamidon_Accuracy_Mez",
+       "set_name": "Hamidon Origin",
+       "set_uid": "Hamidon_Origin"
+      },
+      {
+       "_ho": true,
+       "category_id": 16,
+       "image": "HOEndoplasm.png",
+       "piece_name": "Endoplasm Exposure",
+       "piece_uid": "Hamidon_Accuracy_Mez",
+       "set_name": "Hamidon Origin",
+       "set_uid": "Hamidon_Origin"
+      },
+      {
+       "_proc": true,
+       "category_id": 16,
+       "image": "sCacophony.png",
+       "io_level": 30,
+       "piece_name": "Chance of Damage(Energy)",
+       "piece_uid": "Crafted_Cacophany_F",
+       "set_name": "Cacophany",
+       "set_uid": "Cacophany"
+      },
+      {
+       "_proc": true,
+       "category_id": 16,
+       "image": "sMalaisesIllusions.png",
+       "io_level": 50,
+       "piece_name": "Chance of Damage(Psionic)",
+       "piece_uid": "Crafted_Malaises_Illusions_F",
+       "set_name": "Malaise's Illusions",
+       "set_uid": "Malaise's Illusions"
+      },
+      {
+       "_ho": true,
+       "category_id": 16,
+       "image": "HOEndoplasm.png",
+       "piece_name": "Endoplasm Exposure",
+       "piece_uid": "Hamidon_Accuracy_Mez",
+       "set_name": "Hamidon Origin",
+       "set_uid": "Hamidon_Origin"
+      }
+     ]
+    },
+    {
+     "full_name": "Controller_Control.Mind_Control.Mass_Hypnosis",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 14,
+       "image": "sLethargicRepose.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Recharge",
+       "piece_uid": "Crafted_Lethargic_Repose_A",
+       "set_name": "Lethargic Repose",
+       "set_uid": "Lethargic_Repose"
+      },
+      {
+       "category_id": 14,
+       "image": "sLethargicRepose.png",
+       "io_level": 50,
+       "piece_name": "Endurance/Sleep",
+       "piece_uid": "Crafted_Lethargic_Repose_B",
+       "set_name": "Lethargic Repose",
+       "set_uid": "Lethargic_Repose"
+      },
+      {
+       "category_id": 14,
+       "image": "sLethargicRepose.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Endurance",
+       "piece_uid": "Crafted_Lethargic_Repose_C",
+       "set_name": "Lethargic Repose",
+       "set_uid": "Lethargic_Repose"
+      },
+      {
+       "category_id": 14,
+       "image": "sLethargicRepose.png",
+       "io_level": 50,
+       "piece_name": "Sleep/Range",
+       "piece_uid": "Crafted_Lethargic_Repose_D",
+       "set_name": "Lethargic Repose",
+       "set_uid": "Lethargic_Repose"
+      },
+      {
+       "category_id": 14,
+       "image": "sLethargicRepose.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Sleep/Recharge",
+       "piece_uid": "Crafted_Lethargic_Repose_E",
+       "set_name": "Lethargic Repose",
+       "set_uid": "Lethargic_Repose"
+      }
+     ]
+    },
+    {
+     "full_name": "Controller_Control.Mind_Control.Telekinesis",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 12,
+       "image": "sGravAnchor.png",
+       "io_level": 50,
+       "piece_name": "Immobilize",
+       "piece_uid": "Crafted_Gravitational_Anchor_A",
+       "set_name": "Gravitational Anchor",
+       "set_uid": "Gravitational_Anchor"
+      },
+      {
+       "category_id": 12,
+       "image": "sGravAnchor.png",
+       "io_level": 50,
+       "piece_name": "Immobilize/Recharge",
+       "piece_uid": "Crafted_Gravitational_Anchor_B",
+       "set_name": "Gravitational Anchor",
+       "set_uid": "Gravitational_Anchor"
+      },
+      {
+       "category_id": 12,
+       "image": "sGravAnchor.png",
+       "io_level": 50,
+       "piece_name": "Immobilize/Recharge/Accuracy",
+       "piece_uid": "Crafted_Gravitational_Anchor_C",
+       "set_name": "Gravitational Anchor",
+       "set_uid": "Gravitational_Anchor"
+      },
+      {
+       "category_id": 12,
+       "image": "sGravAnchor.png",
+       "io_level": 50,
+       "piece_name": "Recharge/Accuracy",
+       "piece_uid": "Crafted_Gravitational_Anchor_D",
+       "set_name": "Gravitational Anchor",
+       "set_uid": "Gravitational_Anchor"
+      },
+      {
+       "category_id": 12,
+       "image": "sGravAnchor.png",
+       "io_level": 50,
+       "piece_name": "Immobilize/Endurance",
+       "piece_uid": "Crafted_Gravitational_Anchor_E",
+       "set_name": "Gravitational Anchor",
+       "set_uid": "Gravitational_Anchor"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Leadership.Tactics",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 25,
+       "image": "sRectifiedReticle.png",
+       "io_level": 20,
+       "piece_name": "To Hit Buff",
+       "piece_uid": "Crafted_Rectified_Reticle_A",
+       "set_name": "Rectified Reticle",
+       "set_uid": "Rectified_Reticle"
+      },
+      {
+       "category_id": 25,
+       "image": "sRectifiedReticle.png",
+       "io_level": 20,
+       "piece_name": "To Hit Buff/Recharge",
+       "piece_uid": "Crafted_Rectified_Reticle_B",
+       "set_name": "Rectified Reticle",
+       "set_uid": "Rectified_Reticle"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Leadership.Assault",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": null,
+       "image": "EndRdx.png",
+       "io_level": 50,
+       "piece_name": "Endurance Reduction IO",
+       "piece_uid": "Crafted_Endurance_Discount",
+       "set_name": "Common IO",
+       "set_uid": null
+      }
+     ]
+    },
+    {
+     "full_name": "Epic.Controller_Mace_Mastery.Scorpion_Shield",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 7,
+       "image": "sLuckOfTheGambler.png",
+       "io_level": 50,
+       "piece_name": "Defense/Increased Global Recharge Speed",
+       "piece_uid": "Crafted_Luck_of_the_Gambler_F",
+       "set_name": "Luck of the Gambler",
+       "set_uid": "Luck_of_the_Gambler"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense/Endurance",
+       "piece_uid": "Crafted_Red_Fortune_A",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense/Recharge",
+       "piece_uid": "Crafted_Red_Fortune_B",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Endurance/Recharge",
+       "piece_uid": "Crafted_Red_Fortune_C",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense/Endurance/Recharge",
+       "piece_uid": "Crafted_Red_Fortune_D",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense",
+       "piece_uid": "Crafted_Red_Fortune_E",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      }
+     ]
+    },
+    {
+     "full_name": "Epic.Controller_Mace_Mastery.Poisonous_Ray",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "_ho": true,
+       "category_id": 30,
+       "image": "HONucleolus.png",
+       "piece_name": "Nucleolus Exposure",
+       "piece_uid": "Hamidon_Damage_Accuracy",
+       "set_name": "Hamidon Origin",
+       "set_uid": "Hamidon_Origin"
+      },
+      {
+       "_ho": true,
+       "category_id": 30,
+       "image": "HONucleolus.png",
+       "piece_name": "Nucleolus Exposure",
+       "piece_uid": "Hamidon_Damage_Accuracy",
+       "set_name": "Hamidon Origin",
+       "set_uid": "Hamidon_Origin"
+      },
+      {
+       "_proc": true,
+       "category_id": 30,
+       "image": "sAchillesHeel.png",
+       "io_level": 20,
+       "piece_name": "Chance for Res Debuff",
+       "piece_uid": "Crafted_Achilles_Heel_C",
+       "set_name": "Achilles' Heel",
+       "set_uid": "Achilles' Heel"
+      },
+      {
+       "_proc": true,
+       "category_id": 30,
+       "image": "sTouchofLadyGray.png",
+       "io_level": 50,
+       "piece_name": "Chance for Negative Damage",
+       "piece_uid": "Crafted_Touch_of_Lady_Grey_F",
+       "set_name": "Touch of Lady Grey",
+       "set_uid": "Touch of Lady Grey"
+      }
+     ]
+    },
+    {
+     "full_name": "Controller_Control.Mind_Control.Total_Domination",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 10,
+       "image": "SEO_Entomb.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Hold",
+       "piece_uid": "Superior_Attuned_Entomb_A",
+       "set_name": "Superior Entomb",
+       "set_uid": "Superior_Entomb"
+      },
+      {
+       "category_id": 10,
+       "image": "SEO_Entomb.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Hold/Endurance",
+       "piece_uid": "Superior_Attuned_Entomb_D",
+       "set_name": "Superior Entomb",
+       "set_uid": "Superior_Entomb"
+      },
+      {
+       "category_id": 10,
+       "image": "SEO_Entomb.png",
+       "io_level": 50,
+       "piece_name": "Hold/Recharge",
+       "piece_uid": "Superior_Attuned_Entomb_B",
+       "set_name": "Superior Entomb",
+       "set_uid": "Superior_Entomb"
+      },
+      {
+       "_proc": true,
+       "category_id": 10,
+       "image": "sNeuronicShutdown.png",
+       "io_level": 30,
+       "piece_name": "Chance of Damage(Psionic)",
+       "piece_uid": "Crafted_Neuronic_Shutdown_F",
+       "set_name": "Neuronic Shutdown",
+       "set_uid": "Neuronic Shutdown"
+      },
+      {
+       "_proc": true,
+       "category_id": 10,
+       "image": "sGhostWidowsEmbrace.png",
+       "io_level": 50,
+       "piece_name": "Chance of Damage(Psionic)",
+       "piece_uid": "Crafted_Ghost_Widows_Embrace_F",
+       "set_name": "Ghost Widow's Embrace",
+       "set_uid": "Ghost Widow's Embrace"
+      },
+      {
+       "_proc": true,
+       "category_id": 10,
+       "image": "sGladiatorsNet.png",
+       "io_level": 50,
+       "piece_name": "Chance of Damage(Lethal)",
+       "piece_uid": "Crafted_Gladiators_Net_F",
+       "set_name": "Gladiator's Net",
+       "set_uid": "Gladiator's Net"
+      }
+     ]
+    },
+    {
+     "full_name": "Controller_Control.Mind_Control.Terrify",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "_proc": true,
+       "category_id": 15,
+       "image": "Annihilation.png",
+       "io_level": 50,
+       "piece_name": "Chance for Res Debuff",
+       "piece_uid": "Crafted_Annihilation_F",
+       "set_name": "Annihilation",
+       "set_uid": "Annihilation"
+      },
+      {
+       "_proc": true,
+       "category_id": 15,
+       "image": "sPositronsBlast.png",
+       "io_level": 50,
+       "piece_name": "Chance of Damage(Energy)",
+       "piece_uid": "Crafted_Positrons_Blast_F",
+       "set_name": "Positron's Blast",
+       "set_uid": "Positron's Blast"
+      }
+     ]
+    },
+    {
+     "full_name": "Controller_Control.Mind_Control.Mass_Confusion",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 16,
+       "image": "sCoercivePersuasion.png",
+       "io_level": 50,
+       "piece_name": "Confused",
+       "piece_uid": "Crafted_Coercive_Persuasion_A",
+       "set_name": "Coercive Persuasion ",
+       "set_uid": "Coercive_Persuasion"
+      },
+      {
+       "category_id": 16,
+       "image": "sCoercivePersuasion.png",
+       "io_level": 50,
+       "piece_name": "Confused/Recharge",
+       "piece_uid": "Crafted_Coercive_Persuasion_B",
+       "set_name": "Coercive Persuasion ",
+       "set_uid": "Coercive_Persuasion"
+      },
+      {
+       "category_id": 16,
+       "image": "sCoercivePersuasion.png",
+       "io_level": 50,
+       "piece_name": "Confused/Recharge/Accuracy",
+       "piece_uid": "Crafted_Coercive_Persuasion_C",
+       "set_name": "Coercive Persuasion ",
+       "set_uid": "Coercive_Persuasion"
+      },
+      {
+       "category_id": 16,
+       "image": "sCoercivePersuasion.png",
+       "io_level": 50,
+       "piece_name": "Recharge/Accuracy",
+       "piece_uid": "Crafted_Coercive_Persuasion_D",
+       "set_name": "Coercive Persuasion ",
+       "set_uid": "Coercive_Persuasion"
+      },
+      {
+       "category_id": 16,
+       "image": "sCoercivePersuasion.png",
+       "io_level": 50,
+       "piece_name": "Confused/Endurance",
+       "piece_uid": "Crafted_Coercive_Persuasion_E",
+       "set_name": "Coercive Persuasion ",
+       "set_uid": "Coercive_Persuasion"
+      }
+     ]
+    },
+    {
+     "full_name": "Controller_Buff.Kinetics.Transference",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 22,
+       "image": "Synapse_Shock.png",
+       "io_level": 50,
+       "piece_name": "EndMod",
+       "piece_uid": "Crafted_Synapses_Shock_A",
+       "set_name": "Synapse's Shock",
+       "set_uid": "Synapses_Shock"
+      },
+      {
+       "category_id": 22,
+       "image": "Synapse_Shock.png",
+       "io_level": 50,
+       "piece_name": "Damage/Rechage",
+       "piece_uid": "Crafted_Synapses_Shock_B",
+       "set_name": "Synapse's Shock",
+       "set_uid": "Synapses_Shock"
+      },
+      {
+       "category_id": 22,
+       "image": "Synapse_Shock.png",
+       "io_level": 50,
+       "piece_name": "EndMod/Recharge",
+       "piece_uid": "Crafted_Synapses_Shock_C",
+       "set_name": "Synapse's Shock",
+       "set_uid": "Synapses_Shock"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "archetype": "Class_Brute",
+   "expected": {
+    "av": {
+     "amplified": 2.3,
+     "availability": 0.969,
+     "contribution": 19.4,
+     "my_dps": 17.1,
+     "prevented": 0.5,
+     "ttl": 1738.5
+    },
+    "farm_active": {
+     "amplified": 5.2,
+     "availability": 0.571,
+     "contribution": 103.6,
+     "my_dps": 63.7,
+     "prevented": 34.6,
+     "ttl": 17.5
+    },
+    "farm_afk": {
+     "amplified": 0.5,
+     "availability": 0.01,
+     "contribution": 0.5,
+     "my_dps": 5.8,
+     "prevented": 48.2,
+     "ttl": 5.9
+    },
+    "fire_farm": {
+     "amplified": 5.2,
+     "availability": 0.571,
+     "contribution": 59.1,
+     "my_dps": 63.7,
+     "prevented": 34.6,
+     "ttl": 17.5
+    },
+    "general": {
+     "amplified": 11.0,
+     "availability": 0.96,
+     "contribution": 97.0,
+     "my_dps": 71.6,
+     "prevented": 18.4,
+     "ttl": 1738.5
+    },
+    "itrial": {
+     "amplified": 122.2,
+     "availability": 0.867,
+     "contribution": 210.5,
+     "my_dps": 76.6,
+     "prevented": 43.9,
+     "ttl": 76.8
+    },
+    "team": {
+     "amplified": 127.0,
+     "availability": 0.95,
+     "contribution": 252.3,
+     "my_dps": 104.9,
+     "prevented": 33.7,
+     "ttl": 858.7
+    }
+   },
+   "powers": [
+    {
+     "full_name": "Brute_Melee.Super_Strength.Jab",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 24,
+       "image": "sTriumphantInsult.png",
+       "io_level": 20,
+       "piece_name": "Threat/Placate",
+       "piece_uid": "Crafted_Triumphant_Insult_A",
+       "set_name": "Triumphant Insult",
+       "set_uid": "Triumphant_Insult"
+      },
+      {
+       "category_id": 24,
+       "image": "sTriumphantInsult.png",
+       "io_level": 20,
+       "piece_name": "Threat/Placate/Recharge",
+       "piece_uid": "Crafted_Triumphant_Insult_B",
+       "set_name": "Triumphant Insult",
+       "set_uid": "Triumphant_Insult"
+      },
+      {
+       "category_id": 24,
+       "image": "sTriumphantInsult.png",
+       "io_level": 20,
+       "piece_name": "Chance to Disorient",
+       "piece_uid": "Crafted_Triumphant_Insult_C",
+       "set_name": "Triumphant Insult",
+       "set_uid": "Triumphant_Insult"
+      }
+     ]
+    },
+    {
+     "full_name": "Brute_Defense.Invulnerability.Resist_Physical_Damage",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 8,
+       "image": "sSteadfastProtection.png",
+       "io_level": 30,
+       "piece_name": "Resistance/+Def 3%",
+       "piece_uid": "Crafted_Steadfast_Protection_B",
+       "set_name": "Steadfast Protection",
+       "set_uid": "Steadfast_Protection"
+      },
+      {
+       "category_id": 8,
+       "image": "sGladiatorsArmor.png",
+       "io_level": 50,
+       "piece_name": "TP Protection +3% Def (All)",
+       "piece_uid": "Crafted_Gladiators_Armor_F",
+       "set_name": "Gladiator's Armor",
+       "set_uid": "Gladiators_Armor"
+      },
+      {
+       "category_id": 8,
+       "image": "sImperviumArmor.png",
+       "io_level": 40,
+       "piece_name": "Psionic Resistance",
+       "piece_uid": "Crafted_Impervium_Armor_F",
+       "set_name": "Impervium Armor",
+       "set_uid": "Impervium_Armor"
+      },
+      {
+       "category_id": 8,
+       "image": "sAegis.png",
+       "io_level": 50,
+       "piece_name": "Psionic/Status Resistance",
+       "piece_uid": "Crafted_Aegis_F",
+       "set_name": "Aegis",
+       "set_uid": "Aegis"
+      },
+      {
+       "category_id": 8,
+       "image": "UnbreakableGuard.png",
+       "io_level": 50,
+       "piece_name": "+Max HP",
+       "piece_uid": "Crafted_Unbreakable_Guard_F",
+       "set_name": "Unbreakable Guard",
+       "set_uid": "Unbreakable_Guard"
+      }
+     ]
+    },
+    {
+     "full_name": "Brute_Defense.Invulnerability.Temp_Invulnerability",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 8,
+       "image": "sImperviumArmor.png",
+       "io_level": 40,
+       "piece_name": "Psionic Resistance",
+       "piece_uid": "Crafted_Impervium_Armor_F",
+       "set_name": "Impervium Armor",
+       "set_uid": "Impervium_Armor"
+      },
+      {
+       "category_id": 8,
+       "image": "UnbreakableGuard.png",
+       "io_level": 50,
+       "piece_name": "Resistance",
+       "piece_uid": "Crafted_Unbreakable_Guard_A",
+       "set_name": "Unbreakable Guard",
+       "set_uid": "Unbreakable_Guard"
+      },
+      {
+       "category_id": 8,
+       "image": "UnbreakableGuard.png",
+       "io_level": 50,
+       "piece_name": "Resistance/Endurance",
+       "piece_uid": "Crafted_Unbreakable_Guard_B",
+       "set_name": "Unbreakable Guard",
+       "set_uid": "Unbreakable_Guard"
+      },
+      {
+       "category_id": 8,
+       "image": "UnbreakableGuard.png",
+       "io_level": 50,
+       "piece_name": "Endurance/RechargeTime",
+       "piece_uid": "Crafted_Unbreakable_Guard_C",
+       "set_name": "Unbreakable Guard",
+       "set_uid": "Unbreakable_Guard"
+      },
+      {
+       "category_id": 8,
+       "image": "UnbreakableGuard.png",
+       "io_level": 50,
+       "piece_name": "RechargeTime/Resistance",
+       "piece_uid": "Crafted_Unbreakable_Guard_D",
+       "set_name": "Unbreakable Guard",
+       "set_uid": "Unbreakable_Guard"
+      }
+     ]
+    },
+    {
+     "full_name": "Inherent.Fitness.Health",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 9,
+       "image": "sNuminasConvalesence.png",
+       "io_level": 50,
+       "piece_name": "+Regeneration/+Recovery",
+       "piece_uid": "Crafted_Numinas_Convalesence_F",
+       "set_name": "Numina's Convalesence",
+       "set_uid": "Numinas_Convalesence"
+      },
+      {
+       "category_id": 9,
+       "image": "sMiracle.png",
+       "io_level": 40,
+       "piece_name": "+Recovery",
+       "piece_uid": "Crafted_Miracle_F",
+       "set_name": "Miracle",
+       "set_uid": "Miracle"
+      },
+      {
+       "category_id": 9,
+       "image": "sRegenerativeTissue.png",
+       "io_level": 30,
+       "piece_name": "+Regeneration",
+       "piece_uid": "Crafted_Regenerative_Tissue_E",
+       "set_name": "Regenerative Tissue",
+       "set_uid": "Regenerative_Tissue"
+      },
+      {
+       "category_id": 9,
+       "image": "sPanacea.png",
+       "io_level": 50,
+       "piece_name": "+Hit Points/Endurance",
+       "piece_uid": "Crafted_Panacea_F",
+       "set_name": "Panacea",
+       "set_uid": "Panacea"
+      }
+     ]
+    },
+    {
+     "full_name": "Inherent.Fitness.Stamina",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 22,
+       "image": "sPerformanceSHift.png",
+       "io_level": 50,
+       "piece_name": "Chance for +End",
+       "piece_uid": "Crafted_Performance_Shifter_F",
+       "set_name": "Performance Shifter",
+       "set_uid": "Performance_Shifter"
+      },
+      {
+       "category_id": 22,
+       "image": "Power_Transfer.png",
+       "io_level": 50,
+       "piece_name": "Chance to Heal Self",
+       "piece_uid": "Crafted_Power_Transfer_F",
+       "set_name": "Power Transfer",
+       "set_uid": "Power_Transfer"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Speed.Super_Speed",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": null,
+       "image": "EndRdx.png",
+       "io_level": 50,
+       "piece_name": "Endurance Reduction IO",
+       "piece_uid": "Crafted_Endurance_Discount",
+       "set_name": "Common IO",
+       "set_uid": null
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Fighting.Boxing",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 11,
+       "image": "sStupefy.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Recharge",
+       "piece_uid": "Crafted_Stupefy_A",
+       "set_name": "Stupefy",
+       "set_uid": "Stupefy"
+      },
+      {
+       "category_id": 11,
+       "image": "sStupefy.png",
+       "io_level": 50,
+       "piece_name": "Endurance/Stun",
+       "piece_uid": "Crafted_Stupefy_B",
+       "set_name": "Stupefy",
+       "set_uid": "Stupefy"
+      }
+     ]
+    },
+    {
+     "full_name": "Brute_Melee.Super_Strength.Punch",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 24,
+       "image": "sMockingBeratement.png",
+       "io_level": 50,
+       "piece_name": "Threat/Placate",
+       "piece_uid": "Crafted_Mocking_Beratement_A",
+       "set_name": "Mocking Beratement",
+       "set_uid": "Mocking_Beratement"
+      },
+      {
+       "category_id": 24,
+       "image": "sMockingBeratement.png",
+       "io_level": 50,
+       "piece_name": "Threat/Placate/Recharge",
+       "piece_uid": "Crafted_Mocking_Beratement_B",
+       "set_name": "Mocking Beratement",
+       "set_uid": "Mocking_Beratement"
+      },
+      {
+       "category_id": 24,
+       "image": "sMockingBeratement.png",
+       "io_level": 50,
+       "piece_name": "Threat/Placate/Recharge/Range",
+       "piece_uid": "Crafted_Mocking_Beratement_C",
+       "set_name": "Mocking Beratement",
+       "set_uid": "Mocking_Beratement"
+      },
+      {
+       "category_id": 24,
+       "image": "sMockingBeratement.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Recharge",
+       "piece_uid": "Crafted_Mocking_Beratement_D",
+       "set_name": "Mocking Beratement",
+       "set_uid": "Mocking_Beratement"
+      },
+      {
+       "category_id": 24,
+       "image": "sMockingBeratement.png",
+       "io_level": 50,
+       "piece_name": "Threat/Placate/Range",
+       "piece_uid": "Crafted_Mocking_Beratement_E",
+       "set_name": "Mocking Beratement",
+       "set_uid": "Mocking_Beratement"
+      },
+      {
+       "_proc": true,
+       "category_id": 24,
+       "image": "sForceFeedback.png",
+       "io_level": 50,
+       "piece_name": "Chance for +Recharge",
+       "piece_uid": "Crafted_Force_Feedback_F",
+       "set_name": "Force Feedback",
+       "set_uid": "Force Feedback"
+      }
+     ]
+    },
+    {
+     "full_name": "Brute_Defense.Invulnerability.Resist_Elements",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 8,
+       "image": "sImperviumArmor.png",
+       "io_level": 40,
+       "piece_name": "Psionic Resistance",
+       "piece_uid": "Crafted_Impervium_Armor_F",
+       "set_name": "Impervium Armor",
+       "set_uid": "Impervium_Armor"
+      }
+     ]
+    },
+    {
+     "full_name": "Brute_Melee.Super_Strength.Haymaker",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "_ho": true,
+       "category_id": 24,
+       "image": "HONucleolus.png",
+       "piece_name": "Nucleolus Exposure",
+       "piece_uid": "Hamidon_Damage_Accuracy",
+       "set_name": "Hamidon Origin",
+       "set_uid": "Hamidon_Origin"
+      },
+      {
+       "_ho": true,
+       "category_id": 24,
+       "image": "HONucleolus.png",
+       "piece_name": "Nucleolus Exposure",
+       "piece_uid": "Hamidon_Damage_Accuracy",
+       "set_name": "Hamidon Origin",
+       "set_uid": "Hamidon_Origin"
+      },
+      {
+       "_proc": true,
+       "category_id": 24,
+       "image": "sTouchOfDeath.png",
+       "io_level": 40,
+       "piece_name": "Chance of Damage(Negative)",
+       "piece_uid": "Crafted_Touch_of_Death_F",
+       "set_name": "Touch of Death",
+       "set_uid": "Touch of Death"
+      },
+      {
+       "_proc": true,
+       "category_id": 24,
+       "image": "sMakosBite.png",
+       "io_level": 50,
+       "piece_name": "Chance of Damage(Lethal)",
+       "piece_uid": "Crafted_Makos_Bite_F",
+       "set_name": "Mako's Bite",
+       "set_uid": "Mako's Bite"
+      },
+      {
+       "_proc": true,
+       "category_id": 24,
+       "image": "sGladiatorsStrike.png",
+       "io_level": 50,
+       "piece_name": "Chance for Smashing Damage",
+       "piece_uid": "Crafted_Gladiators_Strike_F",
+       "set_name": "Gladiator's Strike",
+       "set_uid": "Gladiator's Strike"
+      },
+      {
+       "_ho": true,
+       "category_id": 24,
+       "image": "HONucleolus.png",
+       "piece_name": "Nucleolus Exposure",
+       "piece_uid": "Hamidon_Damage_Accuracy",
+       "set_name": "Hamidon Origin",
+       "set_uid": "Hamidon_Origin"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Fighting.Tough",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 8,
+       "image": "sImperviumArmor.png",
+       "io_level": 40,
+       "piece_name": "Psionic Resistance",
+       "piece_uid": "Crafted_Impervium_Armor_F",
+       "set_name": "Impervium Armor",
+       "set_uid": "Impervium_Armor"
+      },
+      {
+       "category_id": 8,
+       "image": "sAegis.png",
+       "io_level": 50,
+       "piece_name": "Resistance/Endurance",
+       "piece_uid": "Crafted_Aegis_A",
+       "set_name": "Aegis",
+       "set_uid": "Aegis"
+      },
+      {
+       "category_id": 8,
+       "image": "sAegis.png",
+       "io_level": 50,
+       "piece_name": "Resistance/Recharge",
+       "piece_uid": "Crafted_Aegis_B",
+       "set_name": "Aegis",
+       "set_uid": "Aegis"
+      },
+      {
+       "category_id": 8,
+       "image": "sAegis.png",
+       "io_level": 50,
+       "piece_name": "Endurance/Recharge",
+       "piece_uid": "Crafted_Aegis_C",
+       "set_name": "Aegis",
+       "set_uid": "Aegis"
+      },
+      {
+       "category_id": 8,
+       "image": "sAegis.png",
+       "io_level": 50,
+       "piece_name": "Resistance/Endurance/Recharge",
+       "piece_uid": "Crafted_Aegis_D",
+       "set_name": "Aegis",
+       "set_uid": "Aegis"
+      },
+      {
+       "category_id": 8,
+       "image": "sAegis.png",
+       "io_level": 50,
+       "piece_name": "Resistance",
+       "piece_uid": "Crafted_Aegis_E",
+       "set_name": "Aegis",
+       "set_uid": "Aegis"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Fighting.Weave",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 7,
+       "image": "sLuckOfTheGambler.png",
+       "io_level": 50,
+       "piece_name": "Defense/Increased Global Recharge Speed",
+       "piece_uid": "Crafted_Luck_of_the_Gambler_F",
+       "set_name": "Luck of the Gambler",
+       "set_uid": "Luck_of_the_Gambler"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense/Endurance",
+       "piece_uid": "Crafted_Red_Fortune_A",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense/Recharge",
+       "piece_uid": "Crafted_Red_Fortune_B",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Endurance/Recharge",
+       "piece_uid": "Crafted_Red_Fortune_C",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense/Endurance/Recharge",
+       "piece_uid": "Crafted_Red_Fortune_D",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      },
+      {
+       "category_id": 7,
+       "image": "sRedFortune.png",
+       "io_level": 50,
+       "piece_name": "Defense",
+       "piece_uid": "Crafted_Red_Fortune_E",
+       "set_name": "Red Fortune",
+       "set_uid": "Red_Fortune"
+      }
+     ]
+    },
+    {
+     "full_name": "Brute_Defense.Invulnerability.Unyielding",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 8,
+       "image": "sImperviumArmor.png",
+       "io_level": 40,
+       "piece_name": "Resistance/Endurance",
+       "piece_uid": "Crafted_Impervium_Armor_A",
+       "set_name": "Impervium Armor",
+       "set_uid": "Impervium_Armor"
+      },
+      {
+       "category_id": 8,
+       "image": "sImperviumArmor.png",
+       "io_level": 40,
+       "piece_name": "Resistance/Recharge",
+       "piece_uid": "Crafted_Impervium_Armor_B",
+       "set_name": "Impervium Armor",
+       "set_uid": "Impervium_Armor"
+      },
+      {
+       "category_id": 8,
+       "image": "UnbreakableGuard.png",
+       "io_level": 50,
+       "piece_name": "Resistance",
+       "piece_uid": "Crafted_Unbreakable_Guard_A",
+       "set_name": "Unbreakable Guard",
+       "set_uid": "Unbreakable_Guard"
+      },
+      {
+       "category_id": 8,
+       "image": "UnbreakableGuard.png",
+       "io_level": 50,
+       "piece_name": "Resistance/Endurance",
+       "piece_uid": "Crafted_Unbreakable_Guard_B",
+       "set_name": "Unbreakable Guard",
+       "set_uid": "Unbreakable_Guard"
+      },
+      {
+       "category_id": 8,
+       "image": "UnbreakableGuard.png",
+       "io_level": 50,
+       "piece_name": "Endurance/RechargeTime",
+       "piece_uid": "Crafted_Unbreakable_Guard_C",
+       "set_name": "Unbreakable Guard",
+       "set_uid": "Unbreakable_Guard"
+      },
+      {
+       "category_id": 8,
+       "image": "UnbreakableGuard.png",
+       "io_level": 50,
+       "piece_name": "RechargeTime/Resistance",
+       "piece_uid": "Crafted_Unbreakable_Guard_D",
+       "set_name": "Unbreakable Guard",
+       "set_uid": "Unbreakable_Guard"
+      }
+     ]
+    },
+    {
+     "full_name": "Brute_Defense.Invulnerability.Resist_Energies",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 8,
+       "image": "sImperviumArmor.png",
+       "io_level": 40,
+       "piece_name": "Psionic Resistance",
+       "piece_uid": "Crafted_Impervium_Armor_F",
+       "set_name": "Impervium Armor",
+       "set_uid": "Impervium_Armor"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Speed.Hasten",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": null,
+       "image": "Recharge.png",
+       "io_level": 50,
+       "piece_name": "Recharge Reduction IO",
+       "piece_uid": "Crafted_Recharge",
+       "set_name": "Common IO",
+       "set_uid": null
+      },
+      {
+       "category_id": null,
+       "image": "Recharge.png",
+       "io_level": 50,
+       "piece_name": "Recharge Reduction IO",
+       "piece_uid": "Crafted_Recharge",
+       "set_name": "Common IO",
+       "set_uid": null
+      }
+     ]
+    },
+    {
+     "full_name": "Brute_Defense.Invulnerability.Invincibility",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 7,
+       "image": "sLuckOfTheGambler.png",
+       "io_level": 50,
+       "piece_name": "Defense/Increased Global Recharge Speed",
+       "piece_uid": "Crafted_Luck_of_the_Gambler_F",
+       "set_name": "Luck of the Gambler",
+       "set_uid": "Luck_of_the_Gambler"
+      },
+      {
+       "category_id": 24,
+       "image": "sMockingBeratement.png",
+       "io_level": 50,
+       "piece_name": "Threat/Placate",
+       "piece_uid": "Crafted_Mocking_Beratement_A",
+       "set_name": "Mocking Beratement",
+       "set_uid": "Mocking_Beratement"
+      },
+      {
+       "category_id": 24,
+       "image": "sMockingBeratement.png",
+       "io_level": 50,
+       "piece_name": "Threat/Placate/Recharge",
+       "piece_uid": "Crafted_Mocking_Beratement_B",
+       "set_name": "Mocking Beratement",
+       "set_uid": "Mocking_Beratement"
+      },
+      {
+       "category_id": 24,
+       "image": "sMockingBeratement.png",
+       "io_level": 50,
+       "piece_name": "Threat/Placate/Recharge/Range",
+       "piece_uid": "Crafted_Mocking_Beratement_C",
+       "set_name": "Mocking Beratement",
+       "set_uid": "Mocking_Beratement"
+      },
+      {
+       "category_id": 24,
+       "image": "sMockingBeratement.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Recharge",
+       "piece_uid": "Crafted_Mocking_Beratement_D",
+       "set_name": "Mocking Beratement",
+       "set_uid": "Mocking_Beratement"
+      },
+      {
+       "category_id": 24,
+       "image": "sMockingBeratement.png",
+       "io_level": 50,
+       "piece_name": "Threat/Placate/Range",
+       "piece_uid": "Crafted_Mocking_Beratement_E",
+       "set_name": "Mocking Beratement",
+       "set_uid": "Mocking_Beratement"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Leaping.Combat_Jumping",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 7,
+       "image": "sLuckOfTheGambler.png",
+       "io_level": 50,
+       "piece_name": "Defense/Increased Global Recharge Speed",
+       "piece_uid": "Crafted_Luck_of_the_Gambler_F",
+       "set_name": "Luck of the Gambler",
+       "set_uid": "Luck_of_the_Gambler"
+      },
+      {
+       "category_id": 7,
+       "image": "sSerendipity.png",
+       "io_level": 40,
+       "piece_name": "Defense/Endurance",
+       "piece_uid": "Crafted_Serendipity_A",
+       "set_name": "Serendipity",
+       "set_uid": "Serendipity"
+      },
+      {
+       "category_id": 7,
+       "image": "sSerendipity.png",
+       "io_level": 40,
+       "piece_name": "Defense/Recharge",
+       "piece_uid": "Crafted_Serendipity_B",
+       "set_name": "Serendipity",
+       "set_uid": "Serendipity"
+      },
+      {
+       "category_id": 7,
+       "image": "sSerendipity.png",
+       "io_level": 40,
+       "piece_name": "Endurance/Recharge",
+       "piece_uid": "Crafted_Serendipity_C",
+       "set_name": "Serendipity",
+       "set_uid": "Serendipity"
+      },
+      {
+       "category_id": 7,
+       "image": "sSerendipity.png",
+       "io_level": 40,
+       "piece_name": "Defense/Endurance/Recharge",
+       "piece_uid": "Crafted_Serendipity_D",
+       "set_name": "Serendipity",
+       "set_uid": "Serendipity"
+      }
+     ]
+    },
+    {
+     "full_name": "Brute_Defense.Invulnerability.Tough_Hide",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 7,
+       "image": "sLuckOfTheGambler.png",
+       "io_level": 50,
+       "piece_name": "Defense/Increased Global Recharge Speed",
+       "piece_uid": "Crafted_Luck_of_the_Gambler_F",
+       "set_name": "Luck of the Gambler",
+       "set_uid": "Luck_of_the_Gambler"
+      },
+      {
+       "category_id": 7,
+       "image": "sShieldWall.png",
+       "io_level": 50,
+       "piece_name": "+Res (Teleportation), +5% Res (All)",
+       "piece_uid": "Crafted_Shield_Wall_F",
+       "set_name": "Shield Wall",
+       "set_uid": "Shield_Wall"
+      },
+      {
+       "category_id": 7,
+       "image": "ReactiveDefenses.png",
+       "io_level": 50,
+       "piece_name": "Scaling Resist Damage",
+       "piece_uid": "Crafted_Reactive_Defenses_F",
+       "set_name": "Reactive Defenses",
+       "set_uid": "Reactive_Defenses"
+      },
+      {
+       "category_id": 7,
+       "image": "sKismet.png",
+       "io_level": 30,
+       "piece_name": "Accuracy +6%",
+       "piece_uid": "Crafted_Kismet_E",
+       "set_name": "Kismet",
+       "set_uid": "Kismet"
+      }
+     ]
+    },
+    {
+     "full_name": "Brute_Melee.Super_Strength.Rage",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 25,
+       "image": "sRectifiedReticle.png",
+       "io_level": 20,
+       "piece_name": "To Hit Buff",
+       "piece_uid": "Crafted_Rectified_Reticle_A",
+       "set_name": "Rectified Reticle",
+       "set_uid": "Rectified_Reticle"
+      },
+      {
+       "category_id": 25,
+       "image": "sRectifiedReticle.png",
+       "io_level": 20,
+       "piece_name": "To Hit Buff/Recharge",
+       "piece_uid": "Crafted_Rectified_Reticle_B",
+       "set_name": "Rectified Reticle",
+       "set_uid": "Rectified_Reticle"
+      }
+     ]
+    },
+    {
+     "full_name": "Brute_Melee.Super_Strength.Hand_Clap",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "_proc": true,
+       "category_id": 11,
+       "image": "sFuryoftheGladiator.png",
+       "io_level": 50,
+       "piece_name": "Chance for Res Debuff",
+       "piece_uid": "Crafted_Fury_of_the_Gladiator_F",
+       "set_name": "Fury of the Gladiator",
+       "set_uid": "Fury of the Gladiator"
+      },
+      {
+       "_proc": true,
+       "category_id": 11,
+       "image": "Eradication.png",
+       "io_level": 30,
+       "piece_name": "Chance for Energy Damage",
+       "piece_uid": "Crafted_Eradication_F",
+       "set_name": "Eradication",
+       "set_uid": "Eradication"
+      }
+     ]
+    },
+    {
+     "full_name": "Epic.Pyre_Mastery.Ring_of_Fire",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 2,
+       "image": "SEO_WintersBite.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Damage",
+       "piece_uid": "Superior_Attuned_Winters_Bite_A",
+       "set_name": "Superior Winter's Bite",
+       "set_uid": "Superior_Winters_Bite"
+      },
+      {
+       "category_id": 2,
+       "image": "SEO_WintersBite.png",
+       "io_level": 50,
+       "piece_name": "Damage/RechargeTime",
+       "piece_uid": "Superior_Attuned_Winters_Bite_B",
+       "set_name": "Superior Winter's Bite",
+       "set_uid": "Superior_Winters_Bite"
+      },
+      {
+       "category_id": 2,
+       "image": "SEO_WintersBite.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Damage/Endurance",
+       "piece_uid": "Superior_Attuned_Winters_Bite_C",
+       "set_name": "Superior Winter's Bite",
+       "set_uid": "Superior_Winters_Bite"
+      }
+     ]
+    },
+    {
+     "full_name": "Brute_Melee.Super_Strength.Knockout_Blow",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 10,
+       "image": "SEO_Entomb.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Hold",
+       "piece_uid": "Superior_Attuned_Entomb_A",
+       "set_name": "Superior Entomb",
+       "set_uid": "Superior_Entomb"
+      },
+      {
+       "category_id": 10,
+       "image": "SEO_Entomb.png",
+       "io_level": 50,
+       "piece_name": "Hold/Recharge",
+       "piece_uid": "Superior_Attuned_Entomb_B",
+       "set_name": "Superior Entomb",
+       "set_uid": "Superior_Entomb"
+      },
+      {
+       "category_id": 10,
+       "image": "SEO_Entomb.png",
+       "io_level": 50,
+       "piece_name": "Endurance/Recharge",
+       "piece_uid": "Superior_Attuned_Entomb_C",
+       "set_name": "Superior Entomb",
+       "set_uid": "Superior_Entomb"
+      }
+     ]
+    },
+    {
+     "full_name": "Epic.Pyre_Mastery.Melt_Armor",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 21,
+       "image": "sExploitVuln.png",
+       "io_level": 20,
+       "piece_name": "Defense Debuff",
+       "piece_uid": "Crafted_Exploited_Vulnerability_A",
+       "set_name": "Exploited Vulnerability",
+       "set_uid": "Exploited_Vulnerability"
+      },
+      {
+       "category_id": 21,
+       "image": "sExploitVuln.png",
+       "io_level": 20,
+       "piece_name": "Defense Debuff/Recharge",
+       "piece_uid": "Crafted_Exploited_Vulnerability_B",
+       "set_name": "Exploited Vulnerability",
+       "set_uid": "Exploited_Vulnerability"
+      }
+     ]
+    },
+    {
+     "full_name": "Epic.Pyre_Mastery.Fire_Ball",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 3,
+       "image": "suFrozen_Blast.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Damage",
+       "piece_uid": "Superior_Attuned_Frozen_Blast_A",
+       "set_name": "Superior Frozen Blast",
+       "set_uid": "Superior_Frozen_Blast"
+      },
+      {
+       "category_id": 3,
+       "image": "suFrozen_Blast.png",
+       "io_level": 50,
+       "piece_name": "Damage/Endurance",
+       "piece_uid": "Superior_Attuned_Frozen_Blast_B",
+       "set_name": "Superior Frozen Blast",
+       "set_uid": "Superior_Frozen_Blast"
+      }
+     ]
+    },
+    {
+     "full_name": "Brute_Melee.Super_Strength.Hurl",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "_ho": true,
+       "category_id": 24,
+       "image": "HONucleolus.png",
+       "piece_name": "Nucleolus Exposure",
+       "piece_uid": "Hamidon_Damage_Accuracy",
+       "set_name": "Hamidon Origin",
+       "set_uid": "Hamidon_Origin"
+      },
+      {
+       "_ho": true,
+       "category_id": 24,
+       "image": "HONucleolus.png",
+       "piece_name": "Nucleolus Exposure",
+       "piece_uid": "Hamidon_Damage_Accuracy",
+       "set_name": "Hamidon Origin",
+       "set_uid": "Hamidon_Origin"
+      },
+      {
+       "_proc": true,
+       "category_id": 24,
+       "image": "sExplosiveStrike.png",
+       "io_level": 20,
+       "piece_name": "Chance for Smashing Damage",
+       "piece_uid": "Crafted_Explosive_Strike_C",
+       "set_name": "Explosive Strike",
+       "set_uid": "Explosive Strike"
+      },
+      {
+       "_proc": true,
+       "category_id": 24,
+       "image": "sPerfectZinger.png",
+       "io_level": 50,
+       "piece_name": "Chance for Psi Damage",
+       "piece_uid": "Crafted_Perfect_Zinger_F",
+       "set_name": "Perfect Zinger",
+       "set_uid": "Perfect Zinger"
+      },
+      {
+       "_proc": true,
+       "category_id": 24,
+       "image": "UD_Overwhelming_Force.png",
+       "io_level": 50,
+       "piece_name": "Damage/Chance for Knockdown/Knockback to Knockdown",
+       "piece_uid": "Attuned_Overwhelming_Force_F",
+       "set_name": "Overwhelming Force",
+       "set_uid": "Overwhelming Force"
+      },
+      {
+       "_proc": true,
+       "category_id": 24,
+       "image": "cupids_crush.png",
+       "io_level": 50,
+       "piece_name": "Damage/Chance for Confuse",
+       "piece_uid": "Attuned_Cupids_Crush_F",
+       "set_name": "Cupid's Crush",
+       "set_uid": "Cupid's Crush"
+      }
+     ]
+    },
+    {
+     "full_name": "Brute_Melee.Super_Strength.Foot_Stomp",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 24,
+       "image": "sTriumphantInsult.png",
+       "io_level": 20,
+       "piece_name": "Threat/Placate",
+       "piece_uid": "Crafted_Triumphant_Insult_A",
+       "set_name": "Triumphant Insult",
+       "set_uid": "Triumphant_Insult"
+      },
+      {
+       "category_id": 24,
+       "image": "sTriumphantInsult.png",
+       "io_level": 20,
+       "piece_name": "Threat/Placate/Recharge",
+       "piece_uid": "Crafted_Triumphant_Insult_B",
+       "set_name": "Triumphant Insult",
+       "set_uid": "Triumphant_Insult"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "archetype": "Class_Dominator",
+   "expected": {
+    "av": {
+     "amplified": 3.7,
+     "availability": 0.091,
+     "contribution": 4.3,
+     "my_dps": 18.4,
+     "prevented": 25.0,
+     "ttl": 23.7
+    },
+    "farm_active": {
+     "amplified": 7.7,
+     "availability": 0.282,
+     "contribution": 1224.4,
+     "my_dps": 62.8,
+     "prevented": 1153.9,
+     "ttl": 6.8
+    },
+    "farm_afk": {
+     "amplified": 1.1,
+     "availability": 0.004,
+     "contribution": 7.7,
+     "my_dps": 9.4,
+     "prevented": 1926.8,
+     "ttl": 2.4
+    },
+    "fire_farm": {
+     "amplified": 7.7,
+     "availability": 0.282,
+     "contribution": 345.5,
+     "my_dps": 62.8,
+     "prevented": 1153.9,
+     "ttl": 6.8
+    },
+    "general": {
+     "amplified": 17.1,
+     "availability": 0.662,
+     "contribution": 342.0,
+     "my_dps": 74.9,
+     "prevented": 424.5,
+     "ttl": 35.1
+    },
+    "itrial": {
+     "amplified": 375.9,
+     "availability": 0.133,
+     "contribution": 257.1,
+     "my_dps": 74.9,
+     "prevented": 1478.8,
+     "ttl": 4.6
+    },
+    "team": {
+     "amplified": 227.4,
+     "availability": 0.368,
+     "contribution": 432.0,
+     "my_dps": 98.5,
+     "prevented": 848.6,
+     "ttl": 12.2
+    }
+   },
+   "powers": [
+    {
+     "full_name": "Dominator_Control.Plant_Control.Entangle",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 12,
+       "image": "sEnfeebledOperation.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Recharge",
+       "piece_uid": "Crafted_Enfeebled_Operation_A",
+       "set_name": "Enfeebled Operation",
+       "set_uid": "Enfeebled_Operation"
+      },
+      {
+       "category_id": 12,
+       "image": "sEnfeebledOperation.png",
+       "io_level": 50,
+       "piece_name": "Endurance/Immobilize",
+       "piece_uid": "Crafted_Enfeebled_Operation_B",
+       "set_name": "Enfeebled Operation",
+       "set_uid": "Enfeebled_Operation"
+      },
+      {
+       "category_id": 12,
+       "image": "sEnfeebledOperation.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Endurance",
+       "piece_uid": "Crafted_Enfeebled_Operation_C",
+       "set_name": "Enfeebled Operation",
+       "set_uid": "Enfeebled_Operation"
+      },
+      {
+       "category_id": 12,
+       "image": "sEnfeebledOperation.png",
+       "io_level": 50,
+       "piece_name": "Immobilize/Range",
+       "piece_uid": "Crafted_Enfeebled_Operation_D",
+       "set_name": "Enfeebled Operation",
+       "set_uid": "Enfeebled_Operation"
+      }
+     ]
+    },
+    {
+     "full_name": "Dominator_Assault.Fiery_Assault.Flares",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 2,
+       "image": "SEO_WintersBite.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Damage",
+       "piece_uid": "Superior_Attuned_Winters_Bite_A",
+       "set_name": "Superior Winter's Bite",
+       "set_uid": "Superior_Winters_Bite"
+      },
+      {
+       "category_id": 2,
+       "image": "SEO_WintersBite.png",
+       "io_level": 50,
+       "piece_name": "Damage/RechargeTime",
+       "piece_uid": "Superior_Attuned_Winters_Bite_B",
+       "set_name": "Superior Winter's Bite",
+       "set_uid": "Superior_Winters_Bite"
+      },
+      {
+       "category_id": 2,
+       "image": "SEO_WintersBite.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Damage/Endurance",
+       "piece_uid": "Superior_Attuned_Winters_Bite_C",
+       "set_name": "Superior Winter's Bite",
+       "set_uid": "Superior_Winters_Bite"
+      },
+      {
+       "category_id": 2,
+       "image": "SEO_WintersBite.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Damage/Recharge",
+       "piece_uid": "Superior_Attuned_Winters_Bite_D",
+       "set_name": "Superior Winter's Bite",
+       "set_uid": "Superior_Winters_Bite"
+      },
+      {
+       "category_id": 2,
+       "image": "SEO_WintersBite.png",
+       "io_level": 50,
+       "piece_name": "Damage/Endurance/Accuracy/RechargeTime",
+       "piece_uid": "Superior_Attuned_Winters_Bite_E",
+       "set_name": "Superior Winter's Bite",
+       "set_uid": "Superior_Winters_Bite"
+      },
+      {
+       "category_id": 2,
+       "image": "SEO_WintersBite.png",
+       "io_level": 50,
+       "piece_name": "Recharge/Chance for -Speed & -Recharge",
+       "piece_uid": "Superior_Attuned_Winters_Bite_F",
+       "set_name": "Superior Winter's Bite",
+       "set_uid": "Superior_Winters_Bite"
+      }
+     ]
+    },
+    {
+     "full_name": "Dominator_Control.Plant_Control.Strangler",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 10,
+       "image": "SEO_Entomb.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Hold",
+       "piece_uid": "Superior_Attuned_Entomb_A",
+       "set_name": "Superior Entomb",
+       "set_uid": "Superior_Entomb"
+      },
+      {
+       "category_id": 10,
+       "image": "SEO_Entomb.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Hold/Endurance",
+       "piece_uid": "Superior_Attuned_Entomb_D",
+       "set_name": "Superior Entomb",
+       "set_uid": "Superior_Entomb"
+      },
+      {
+       "category_id": 10,
+       "image": "SEO_Entomb.png",
+       "io_level": 50,
+       "piece_name": "Hold/Recharge",
+       "piece_uid": "Superior_Attuned_Entomb_B",
+       "set_name": "Superior Entomb",
+       "set_uid": "Superior_Entomb"
+      },
+      {
+       "_proc": true,
+       "category_id": 10,
+       "image": "sNeuronicShutdown.png",
+       "io_level": 30,
+       "piece_name": "Chance of Damage(Psionic)",
+       "piece_uid": "Crafted_Neuronic_Shutdown_F",
+       "set_name": "Neuronic Shutdown",
+       "set_uid": "Neuronic Shutdown"
+      },
+      {
+       "_proc": true,
+       "category_id": 10,
+       "image": "sGhostWidowsEmbrace.png",
+       "io_level": 50,
+       "piece_name": "Chance of Damage(Psionic)",
+       "piece_uid": "Crafted_Ghost_Widows_Embrace_F",
+       "set_name": "Ghost Widow's Embrace",
+       "set_uid": "Ghost Widow's Embrace"
+      },
+      {
+       "_proc": true,
+       "category_id": 10,
+       "image": "sGladiatorsNet.png",
+       "io_level": 50,
+       "piece_name": "Chance of Damage(Lethal)",
+       "piece_uid": "Crafted_Gladiators_Net_F",
+       "set_name": "Gladiator's Net",
+       "set_uid": "Gladiator's Net"
+      }
+     ]
+    },
+    {
+     "full_name": "Inherent.Fitness.Health",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 9,
+       "image": "sNuminasConvalesence.png",
+       "io_level": 50,
+       "piece_name": "+Regeneration/+Recovery",
+       "piece_uid": "Crafted_Numinas_Convalesence_F",
+       "set_name": "Numina's Convalesence",
+       "set_uid": "Numinas_Convalesence"
+      },
+      {
+       "category_id": 9,
+       "image": "sMiracle.png",
+       "io_level": 40,
+       "piece_name": "+Recovery",
+       "piece_uid": "Crafted_Miracle_F",
+       "set_name": "Miracle",
+       "set_uid": "Miracle"
+      },
+      {
+       "category_id": 9,
+       "image": "sRegenerativeTissue.png",
+       "io_level": 30,
+       "piece_name": "+Regeneration",
+       "piece_uid": "Crafted_Regenerative_Tissue_E",
+       "set_name": "Regenerative Tissue",
+       "set_uid": "Regenerative_Tissue"
+      },
+      {
+       "category_id": 9,
+       "image": "sPanacea.png",
+       "io_level": 50,
+       "piece_name": "+Hit Points/Endurance",
+       "piece_uid": "Crafted_Panacea_F",
+       "set_name": "Panacea",
+       "set_uid": "Panacea"
+      }
+     ]
+    },
+    {
+     "full_name": "Inherent.Fitness.Stamina",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 22,
+       "image": "sPerformanceSHift.png",
+       "io_level": 50,
+       "piece_name": "Chance for +End",
+       "piece_uid": "Crafted_Performance_Shifter_F",
+       "set_name": "Performance Shifter",
+       "set_uid": "Performance_Shifter"
+      },
+      {
+       "category_id": 22,
+       "image": "Power_Transfer.png",
+       "io_level": 50,
+       "piece_name": "Chance to Heal Self",
+       "piece_uid": "Crafted_Power_Transfer_F",
+       "set_name": "Power Transfer",
+       "set_uid": "Power_Transfer"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Speed.Super_Speed",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 19,
+       "image": "sCelerity.png",
+       "io_level": 50,
+       "piece_name": "Endurance",
+       "piece_uid": "Crafted_Celerity_A",
+       "set_name": "Celerity",
+       "set_uid": "Celerity"
+      },
+      {
+       "category_id": 19,
+       "image": "sCelerity.png",
+       "io_level": 50,
+       "piece_name": "RunSpeed",
+       "piece_uid": "Crafted_Celerity_B",
+       "set_name": "Celerity",
+       "set_uid": "Celerity"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Fighting.Boxing",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": null,
+       "image": "Acc.png",
+       "io_level": 50,
+       "piece_name": "Accuracy IO",
+       "piece_uid": "Crafted_Accuracy",
+       "set_name": "Common IO",
+       "set_uid": null
+      }
+     ]
+    },
+    {
+     "full_name": "Dominator_Assault.Fiery_Assault.Incinerate",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 1,
+       "image": "suBlistering_Cold.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Damage",
+       "piece_uid": "Superior_Attuned_Blistering_Cold_A",
+       "set_name": "Superior Blistering Cold",
+       "set_uid": "Superior_Blistering_Cold"
+      },
+      {
+       "category_id": 1,
+       "image": "suBlistering_Cold.png",
+       "io_level": 50,
+       "piece_name": "Damage/Endurance",
+       "piece_uid": "Superior_Attuned_Blistering_Cold_B",
+       "set_name": "Superior Blistering Cold",
+       "set_uid": "Superior_Blistering_Cold"
+      },
+      {
+       "category_id": 1,
+       "image": "suBlistering_Cold.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Damage/Endurance",
+       "piece_uid": "Superior_Attuned_Blistering_Cold_C",
+       "set_name": "Superior Blistering Cold",
+       "set_uid": "Superior_Blistering_Cold"
+      },
+      {
+       "_proc": true,
+       "category_id": 1,
+       "image": "sTouchOfDeath.png",
+       "io_level": 40,
+       "piece_name": "Chance of Damage(Negative)",
+       "piece_uid": "Crafted_Touch_of_Death_F",
+       "set_name": "Touch of Death",
+       "set_uid": "Touch of Death"
+      },
+      {
+       "_proc": true,
+       "category_id": 1,
+       "image": "sMakosBite.png",
+       "io_level": 50,
+       "piece_name": "Chance of Damage(Lethal)",
+       "piece_uid": "Crafted_Makos_Bite_F",
+       "set_name": "Mako's Bite",
+       "set_uid": "Mako's Bite"
+      },
+      {
+       "_proc": true,
+       "category_id": 1,
+       "image": "sGladiatorsStrike.png",
+       "io_level": 50,
+       "piece_name": "Chance for Smashing Damage",
+       "piece_uid": "Crafted_Gladiators_Strike_F",
+       "set_name": "Gladiator's Strike",
+       "set_uid": "Gladiator's Strike"
+      }
+     ]
+    },
+    {
+     "full_name": "Dominator_Control.Plant_Control.Roots",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "_proc": true,
+       "category_id": 3,
+       "image": "Annihilation.png",
+       "io_level": 50,
+       "piece_name": "Chance for Res Debuff",
+       "piece_uid": "Crafted_Annihilation_F",
+       "set_name": "Annihilation",
+       "set_uid": "Annihilation"
+      },
+      {
+       "_proc": true,
+       "category_id": 3,
+       "image": "AO_Dominator1.png",
+       "io_level": 50,
+       "piece_name": "Recharge/Chance for +Damage",
+       "piece_uid": "Attuned_Ascendency_of_the_Dominator_F",
+       "set_name": "Ascendency of the Dominator",
+       "set_uid": "Ascendency of the Dominator"
+      }
+     ]
+    },
+    {
+     "full_name": "Dominator_Assault.Fiery_Assault.Fire_Breath",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 3,
+       "image": "suFrozen_Blast.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Damage",
+       "piece_uid": "Superior_Attuned_Frozen_Blast_A",
+       "set_name": "Superior Frozen Blast",
+       "set_uid": "Superior_Frozen_Blast"
+      },
+      {
+       "category_id": 3,
+       "image": "suFrozen_Blast.png",
+       "io_level": 50,
+       "piece_name": "Damage/Endurance",
+       "piece_uid": "Superior_Attuned_Frozen_Blast_B",
+       "set_name": "Superior Frozen Blast",
+       "set_uid": "Superior_Frozen_Blast"
+      },
+      {
+       "category_id": 3,
+       "image": "suFrozen_Blast.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Damage/Endurance",
+       "piece_uid": "Superior_Attuned_Frozen_Blast_C",
+       "set_name": "Superior Frozen Blast",
+       "set_uid": "Superior_Frozen_Blast"
+      },
+      {
+       "category_id": 3,
+       "image": "suFrozen_Blast.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Damage/Recharge",
+       "piece_uid": "Superior_Attuned_Frozen_Blast_D",
+       "set_name": "Superior Frozen Blast",
+       "set_uid": "Superior_Frozen_Blast"
+      },
+      {
+       "category_id": 3,
+       "image": "suFrozen_Blast.png",
+       "io_level": 50,
+       "piece_name": "Damage/Endurance/Accuracy/RechargeTime",
+       "piece_uid": "Superior_Attuned_Frozen_Blast_E",
+       "set_name": "Superior Frozen Blast",
+       "set_uid": "Superior_Frozen_Blast"
+      },
+      {
+       "category_id": 3,
+       "image": "suFrozen_Blast.png",
+       "io_level": 50,
+       "piece_name": "Recharge/Chance for Immobilize",
+       "piece_uid": "Superior_Attuned_Frozen_Blast_F",
+       "set_name": "Superior Frozen Blast",
+       "set_uid": "Superior_Frozen_Blast"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Fighting.Tough",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 8,
+       "image": "sSteadfastProtection.png",
+       "io_level": 30,
+       "piece_name": "Resistance/+Def 3%",
+       "piece_uid": "Crafted_Steadfast_Protection_B",
+       "set_name": "Steadfast Protection",
+       "set_uid": "Steadfast_Protection"
+      },
+      {
+       "category_id": 8,
+       "image": "sGladiatorsArmor.png",
+       "io_level": 50,
+       "piece_name": "TP Protection +3% Def (All)",
+       "piece_uid": "Crafted_Gladiators_Armor_F",
+       "set_name": "Gladiator's Armor",
+       "set_uid": "Gladiators_Armor"
+      },
+      {
+       "category_id": 8,
+       "image": "sImperviumArmor.png",
+       "io_level": 40,
+       "piece_name": "Psionic Resistance",
+       "piece_uid": "Crafted_Impervium_Armor_F",
+       "set_name": "Impervium Armor",
+       "set_uid": "Impervium_Armor"
+      },
+      {
+       "category_id": 8,
+       "image": "sAegis.png",
+       "io_level": 50,
+       "piece_name": "Psionic/Status Resistance",
+       "piece_uid": "Crafted_Aegis_F",
+       "set_name": "Aegis",
+       "set_uid": "Aegis"
+      },
+      {
+       "category_id": 8,
+       "image": "UnbreakableGuard.png",
+       "io_level": 50,
+       "piece_name": "+Max HP",
+       "piece_uid": "Crafted_Unbreakable_Guard_F",
+       "set_name": "Unbreakable Guard",
+       "set_uid": "Unbreakable_Guard"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Fighting.Weave",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 7,
+       "image": "sLuckOfTheGambler.png",
+       "io_level": 50,
+       "piece_name": "Defense/Increased Global Recharge Speed",
+       "piece_uid": "Crafted_Luck_of_the_Gambler_F",
+       "set_name": "Luck of the Gambler",
+       "set_uid": "Luck_of_the_Gambler"
+      },
+      {
+       "category_id": 7,
+       "image": "sKismet.png",
+       "io_level": 30,
+       "piece_name": "Defense/Endurance",
+       "piece_uid": "Crafted_Kismet_A",
+       "set_name": "Kismet",
+       "set_uid": "Kismet"
+      },
+      {
+       "category_id": 7,
+       "image": "sKismet.png",
+       "io_level": 30,
+       "piece_name": "Defense/Recharge",
+       "piece_uid": "Crafted_Kismet_B",
+       "set_name": "Kismet",
+       "set_uid": "Kismet"
+      },
+      {
+       "category_id": 7,
+       "image": "sKismet.png",
+       "io_level": 30,
+       "piece_name": "Endurance/Recharge",
+       "piece_uid": "Crafted_Kismet_C",
+       "set_name": "Kismet",
+       "set_uid": "Kismet"
+      },
+      {
+       "category_id": 7,
+       "image": "sKismet.png",
+       "io_level": 30,
+       "piece_name": "Defense/Endurance/Recharge",
+       "piece_uid": "Crafted_Kismet_D",
+       "set_name": "Kismet",
+       "set_uid": "Kismet"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Speed.Hasten",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": null,
+       "image": "Recharge.png",
+       "io_level": 50,
+       "piece_name": "Recharge Reduction IO",
+       "piece_uid": "Crafted_Recharge",
+       "set_name": "Common IO",
+       "set_uid": null
+      },
+      {
+       "category_id": null,
+       "image": "Recharge.png",
+       "io_level": 50,
+       "piece_name": "Recharge Reduction IO",
+       "piece_uid": "Crafted_Recharge",
+       "set_name": "Common IO",
+       "set_uid": null
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Leadership.Defense",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 7,
+       "image": "sLuckOfTheGambler.png",
+       "io_level": 50,
+       "piece_name": "Defense/Increased Global Recharge Speed",
+       "piece_uid": "Crafted_Luck_of_the_Gambler_F",
+       "set_name": "Luck of the Gambler",
+       "set_uid": "Luck_of_the_Gambler"
+      },
+      {
+       "category_id": 7,
+       "image": "sKismet.png",
+       "io_level": 30,
+       "piece_name": "Defense/Endurance",
+       "piece_uid": "Crafted_Kismet_A",
+       "set_name": "Kismet",
+       "set_uid": "Kismet"
+      },
+      {
+       "category_id": 7,
+       "image": "sKismet.png",
+       "io_level": 30,
+       "piece_name": "Defense/Recharge",
+       "piece_uid": "Crafted_Kismet_B",
+       "set_name": "Kismet",
+       "set_uid": "Kismet"
+      },
+      {
+       "category_id": 7,
+       "image": "sKismet.png",
+       "io_level": 30,
+       "piece_name": "Endurance/Recharge",
+       "piece_uid": "Crafted_Kismet_C",
+       "set_name": "Kismet",
+       "set_uid": "Kismet"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Leaping.Combat_Jumping",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 7,
+       "image": "sLuckOfTheGambler.png",
+       "io_level": 50,
+       "piece_name": "Defense/Increased Global Recharge Speed",
+       "piece_uid": "Crafted_Luck_of_the_Gambler_F",
+       "set_name": "Luck of the Gambler",
+       "set_uid": "Luck_of_the_Gambler"
+      },
+      {
+       "category_id": 7,
+       "image": "sShieldWall.png",
+       "io_level": 50,
+       "piece_name": "+Res (Teleportation), +5% Res (All)",
+       "piece_uid": "Crafted_Shield_Wall_F",
+       "set_name": "Shield Wall",
+       "set_uid": "Shield_Wall"
+      },
+      {
+       "category_id": 7,
+       "image": "ReactiveDefenses.png",
+       "io_level": 50,
+       "piece_name": "Scaling Resist Damage",
+       "piece_uid": "Crafted_Reactive_Defenses_F",
+       "set_name": "Reactive Defenses",
+       "set_uid": "Reactive_Defenses"
+      },
+      {
+       "category_id": 7,
+       "image": "sKismet.png",
+       "io_level": 30,
+       "piece_name": "Accuracy +6%",
+       "piece_uid": "Crafted_Kismet_E",
+       "set_name": "Kismet",
+       "set_uid": "Kismet"
+      }
+     ]
+    },
+    {
+     "full_name": "Dominator_Control.Plant_Control.Spore_Burst",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 38,
+       "image": "AO_Dominator2.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Control Duration",
+       "piece_uid": "Attuned_Dominating_Grasp_A",
+       "set_name": "Dominating Grasp",
+       "set_uid": "Dominating_Grasp"
+      },
+      {
+       "category_id": 38,
+       "image": "AO_Dominator2.png",
+       "io_level": 50,
+       "piece_name": "Control Duration/RechargeTime",
+       "piece_uid": "Attuned_Dominating_Grasp_B",
+       "set_name": "Dominating Grasp",
+       "set_uid": "Dominating_Grasp"
+      },
+      {
+       "category_id": 38,
+       "image": "AO_Dominator2.png",
+       "io_level": 50,
+       "piece_name": "Endurance/RechargeTime",
+       "piece_uid": "Attuned_Dominating_Grasp_C",
+       "set_name": "Dominating Grasp",
+       "set_uid": "Dominating_Grasp"
+      },
+      {
+       "category_id": 38,
+       "image": "AO_Dominator2.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Control Duration/Endurance",
+       "piece_uid": "Attuned_Dominating_Grasp_D",
+       "set_name": "Dominating Grasp",
+       "set_uid": "Dominating_Grasp"
+      },
+      {
+       "category_id": 38,
+       "image": "AO_Dominator2.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Control Duration/Endurance/RechargeTime",
+       "piece_uid": "Attuned_Dominating_Grasp_E",
+       "set_name": "Dominating Grasp",
+       "set_uid": "Dominating_Grasp"
+      },
+      {
+       "category_id": 38,
+       "image": "AO_Dominator2.png",
+       "io_level": 50,
+       "piece_name": "RechargeTime/Fiery Orb",
+       "piece_uid": "Attuned_Dominating_Grasp_F",
+       "set_name": "Dominating Grasp",
+       "set_uid": "Dominating_Grasp"
+      }
+     ]
+    },
+    {
+     "full_name": "Dominator_Control.Plant_Control.Seeds_of_Confusion",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 38,
+       "image": "AO_Dominator1.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Control Duration",
+       "piece_uid": "Attuned_Ascendency_of_the_Dominator_A",
+       "set_name": "Ascendency of the Dominator",
+       "set_uid": "Ascendency_of_the_Dominator"
+      },
+      {
+       "category_id": 38,
+       "image": "AO_Dominator1.png",
+       "io_level": 50,
+       "piece_name": "Control Duration/Recharge",
+       "piece_uid": "Attuned_Ascendency_of_the_Dominator_B",
+       "set_name": "Ascendency of the Dominator",
+       "set_uid": "Ascendency_of_the_Dominator"
+      }
+     ]
+    },
+    {
+     "full_name": "Dominator_Control.Plant_Control.Spirit_Tree",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 24,
+       "image": "sMockingBeratement.png",
+       "io_level": 50,
+       "piece_name": "Threat/Placate",
+       "piece_uid": "Crafted_Mocking_Beratement_A",
+       "set_name": "Mocking Beratement",
+       "set_uid": "Mocking_Beratement"
+      },
+      {
+       "category_id": 24,
+       "image": "sMockingBeratement.png",
+       "io_level": 50,
+       "piece_name": "Threat/Placate/Recharge",
+       "piece_uid": "Crafted_Mocking_Beratement_B",
+       "set_name": "Mocking Beratement",
+       "set_uid": "Mocking_Beratement"
+      },
+      {
+       "category_id": 24,
+       "image": "sMockingBeratement.png",
+       "io_level": 50,
+       "piece_name": "Threat/Placate/Recharge/Range",
+       "piece_uid": "Crafted_Mocking_Beratement_C",
+       "set_name": "Mocking Beratement",
+       "set_uid": "Mocking_Beratement"
+      },
+      {
+       "category_id": 24,
+       "image": "sMockingBeratement.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Recharge",
+       "piece_uid": "Crafted_Mocking_Beratement_D",
+       "set_name": "Mocking Beratement",
+       "set_uid": "Mocking_Beratement"
+      },
+      {
+       "category_id": 24,
+       "image": "sMockingBeratement.png",
+       "io_level": 50,
+       "piece_name": "Threat/Placate/Range",
+       "piece_uid": "Crafted_Mocking_Beratement_E",
+       "set_name": "Mocking Beratement",
+       "set_uid": "Mocking_Beratement"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Leadership.Tactics",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 25,
+       "image": "sRectifiedReticle.png",
+       "io_level": 20,
+       "piece_name": "To Hit Buff",
+       "piece_uid": "Crafted_Rectified_Reticle_A",
+       "set_name": "Rectified Reticle",
+       "set_uid": "Rectified_Reticle"
+      },
+      {
+       "category_id": 25,
+       "image": "sRectifiedReticle.png",
+       "io_level": 20,
+       "piece_name": "To Hit Buff/Recharge",
+       "piece_uid": "Crafted_Rectified_Reticle_B",
+       "set_name": "Rectified Reticle",
+       "set_uid": "Rectified_Reticle"
+      }
+     ]
+    },
+    {
+     "full_name": "Pool.Leadership.Assault",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": null,
+       "image": "EndRdx.png",
+       "io_level": 50,
+       "piece_name": "Endurance Reduction IO",
+       "piece_uid": "Crafted_Endurance_Discount",
+       "set_name": "Common IO",
+       "set_uid": null
+      }
+     ]
+    },
+    {
+     "full_name": "Epic.Ice_Mastery_Dominator.Ice_Blast",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 3,
+       "image": "sRagnarok.png",
+       "io_level": 50,
+       "piece_name": "Damage",
+       "piece_uid": "Crafted_Ragnarok_A",
+       "set_name": "Ragnarok",
+       "set_uid": "Ragnarok"
+      },
+      {
+       "category_id": 3,
+       "image": "sRagnarok.png",
+       "io_level": 50,
+       "piece_name": "Damage/Recharge",
+       "piece_uid": "Crafted_Ragnarok_B",
+       "set_name": "Ragnarok",
+       "set_uid": "Ragnarok"
+      },
+      {
+       "category_id": 3,
+       "image": "sRagnarok.png",
+       "io_level": 50,
+       "piece_name": "Damage/Recharge/Accuracy",
+       "piece_uid": "Crafted_Ragnarok_C",
+       "set_name": "Ragnarok",
+       "set_uid": "Ragnarok"
+      },
+      {
+       "category_id": 3,
+       "image": "sRagnarok.png",
+       "io_level": 50,
+       "piece_name": "Recharge/Accuracy",
+       "piece_uid": "Crafted_Ragnarok_D",
+       "set_name": "Ragnarok",
+       "set_uid": "Ragnarok"
+      },
+      {
+       "category_id": 3,
+       "image": "sRagnarok.png",
+       "io_level": 50,
+       "piece_name": "Damage/Endurance",
+       "piece_uid": "Crafted_Ragnarok_E",
+       "set_name": "Ragnarok",
+       "set_uid": "Ragnarok"
+      }
+     ]
+    },
+    {
+     "full_name": "Epic.Ice_Mastery_Dominator.Frozen_Armor",
+     "include_in_totals": true,
+     "slots": [
+      {
+       "category_id": 7,
+       "image": "sLuckOfTheGambler.png",
+       "io_level": 50,
+       "piece_name": "Defense/Increased Global Recharge Speed",
+       "piece_uid": "Crafted_Luck_of_the_Gambler_F",
+       "set_name": "Luck of the Gambler",
+       "set_uid": "Luck_of_the_Gambler"
+      },
+      {
+       "category_id": 8,
+       "image": "sImperviumArmor.png",
+       "io_level": 40,
+       "piece_name": "Psionic Resistance",
+       "piece_uid": "Crafted_Impervium_Armor_F",
+       "set_name": "Impervium Armor",
+       "set_uid": "Impervium_Armor"
+      }
+     ]
+    },
+    {
+     "full_name": "Dominator_Assault.Fiery_Assault.Fiery_Embrace",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": null,
+       "image": "Recharge.png",
+       "io_level": 50,
+       "piece_name": "Recharge Reduction IO",
+       "piece_uid": "Crafted_Recharge",
+       "set_name": "Common IO",
+       "set_uid": null
+      },
+      {
+       "category_id": null,
+       "image": "Recharge.png",
+       "io_level": 50,
+       "piece_name": "Recharge Reduction IO",
+       "piece_uid": "Crafted_Recharge",
+       "set_name": "Common IO",
+       "set_uid": null
+      }
+     ]
+    },
+    {
+     "full_name": "Dominator_Control.Plant_Control.Vines",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 3,
+       "image": "sDetonation.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Damage",
+       "piece_uid": "Crafted_Detonation_A",
+       "set_name": "Detonation",
+       "set_uid": "Detonation"
+      },
+      {
+       "category_id": 3,
+       "image": "sDetonation.png",
+       "io_level": 50,
+       "piece_name": "Damage/Endurance",
+       "piece_uid": "Crafted_Detonation_B",
+       "set_name": "Detonation",
+       "set_uid": "Detonation"
+      }
+     ]
+    },
+    {
+     "full_name": "Dominator_Control.Plant_Control.Carrion_Creepers",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 12,
+       "image": "sEnfeebledOperation.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Recharge",
+       "piece_uid": "Crafted_Enfeebled_Operation_A",
+       "set_name": "Enfeebled Operation",
+       "set_uid": "Enfeebled_Operation"
+      },
+      {
+       "category_id": 12,
+       "image": "sEnfeebledOperation.png",
+       "io_level": 50,
+       "piece_name": "Endurance/Immobilize",
+       "piece_uid": "Crafted_Enfeebled_Operation_B",
+       "set_name": "Enfeebled Operation",
+       "set_uid": "Enfeebled_Operation"
+      },
+      {
+       "category_id": 12,
+       "image": "sEnfeebledOperation.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Endurance",
+       "piece_uid": "Crafted_Enfeebled_Operation_C",
+       "set_name": "Enfeebled Operation",
+       "set_uid": "Enfeebled_Operation"
+      },
+      {
+       "category_id": 12,
+       "image": "sEnfeebledOperation.png",
+       "io_level": 50,
+       "piece_name": "Immobilize/Range",
+       "piece_uid": "Crafted_Enfeebled_Operation_D",
+       "set_name": "Enfeebled Operation",
+       "set_uid": "Enfeebled_Operation"
+      }
+     ]
+    },
+    {
+     "full_name": "Dominator_Control.Plant_Control.Fly_Trap",
+     "include_in_totals": false,
+     "slots": [
+      {
+       "category_id": 6,
+       "image": "sBloodMandate.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Damage",
+       "piece_uid": "Crafted_Blood_Mandate_A",
+       "set_name": "Blood Mandate",
+       "set_uid": "Blood_Mandate"
+      },
+      {
+       "category_id": 6,
+       "image": "sBloodMandate.png",
+       "io_level": 50,
+       "piece_name": "Damage/Endurance",
+       "piece_uid": "Crafted_Blood_Mandate_B",
+       "set_name": "Blood Mandate",
+       "set_uid": "Blood_Mandate"
+      },
+      {
+       "category_id": 6,
+       "image": "sBloodMandate.png",
+       "io_level": 50,
+       "piece_name": "Accuracy/Endurance",
+       "piece_uid": "Crafted_Blood_Mandate_C",
+       "set_name": "Blood Mandate",
+       "set_uid": "Blood_Mandate"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "model_version": 57
+}

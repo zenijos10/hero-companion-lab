@@ -61,8 +61,9 @@ class EvaluationContractTests(unittest.TestCase):
                                  db_name="Homecoming", db_version="test-123",
                                  app_version="dev")
             self.assertEqual(ep.call_args.kwargs["scenario"], scenario)
-            # in combat, plus out of combat only when a suppressible effect exists
-            self.assertEqual(calc.call_count, 2 if out_of_combat is not None else 1)
+            # in combat, plus one pass per emergency power and one out of combat
+            # when a suppressible effect exists (test_no_out_of_combat_pass pins 1)
+            self.assertGreaterEqual(calc.call_count, 2 if out_of_combat is not None else 1)
             self.encounter_kwargs = ep.call_args.kwargs
             self.debuff_recharge = debuffs.call_args.kwargs["global_recharge"]
             return result
@@ -199,18 +200,49 @@ class EvaluationContractTests(unittest.TestCase):
     def test_unsupported_detail_and_confidence(self):
         self.ctx["power_by_full"].update({
             "Test.One.Power": {"pet_powersets": ["Redirects.Test"]},
-            "Test.One.Mez": {"self_effects": [{"effect": "MezProtection", "scale": -50.0}]}})
+            "Test.One.Mez": {"self_effects": [{"effect": "MezProtection", "scale": -50.0}]},
+            "Test.One.Empty": {}})
         build = copy.deepcopy(self.build)
         build["powers"] += [{"full_name": "Test.One.Mez", "slots": []},
+                            {"full_name": "Test.One.Empty", "slots": []},
                             {"full_name": "No.Such.Power", "slots": []}]
         result = self.evaluate(build=build)
         reasons = {(u["power"], u["reason"]) for u in result["unsupported"]["powers"]}
-        self.assertEqual(reasons, {("Test.One.Power", "no_modeled_effects"),
+        self.assertEqual(reasons, {("Test.One.Power", "unread_redirect"),
                                    ("Test.One.Mez", "mez_protection_not_scored"),
+                                   ("Test.One.Empty", "no_effect_rows"),
                                    ("No.Such.Power", "unknown_record")})
         conf = result["confidence"]
-        self.assertEqual((conf["powers_modeled"]["value"], conf["powers_total"]), (1, 3))
+        self.assertEqual((conf["powers_read"]["value"], conf["powers_total"]), (1, 4))
+        self.assertIs(conf["offense_complete"], False)
         self.assertIn("provisional", conf["sections"]["scenario"])
+
+    def test_mastermind_upgrade_is_modeled_elsewhere_not_unread(self):
+        """Effect-less, yet encounter_value prices it by cast time (shared rule)."""
+        self.ctx["power_by_full"].update({
+            "Test.One.Power": {"powerset_full_name": "MM.Bots", "summons": ["Pet"],
+                               "self_effects": [{"effect": "Defense", "scale": 1.0}]},
+            "Test.One.Upgrade": {"full_name": "Test.One.Upgrade",
+                                 "powerset_full_name": "MM.Bots", "cast_time": 2.0}})
+        build = copy.deepcopy(self.build)
+        build["powers"].append({"full_name": "Test.One.Upgrade", "slots": []})
+        result = self.evaluate(build=build)
+        self.assertEqual([u["power"] for u in result["unsupported"]["powers"]], [])
+        self.assertEqual([m["power"] for m in result["unsupported"]["modeled_without_effect_rows"]],
+                         ["Test.One.Upgrade"])
+        self.assertEqual(result["confidence"]["powers_read"]["value"], 2)
+
+    def test_emergency_uptime_is_per_effect_when_durations_differ(self):
+        self.ctx["power_by_full"]["Test.One.Power"] = {
+            "power_type": 0, "base_recharge": 300.0,
+            "self_effects": [
+                {"effect": "Defense", "damage_type": "Melee", "scale": 5.0, "duration": 90.0},
+                {"effect": "Resistance", "damage_type": "Fire", "scale": 5.0, "duration": 30.0}]}
+        (row,) = self.evaluate()["measurements"]["survival"]["emergency_powers"]
+        self.assertIs(row["uniform_duration"], False)
+        rech = 300.0 / 1.5
+        self.assertEqual(row["uptime_by_effect"],
+                         {"Defense.Melee": round(90 / rech, 3), "Resistance.Fire": round(30 / rech, 3)})
 
     def test_scenario_st_aoe_and_pets_are_reported_separately(self):
         self.encounter.update(st_dps_scenario=30.0, aoe_dps_scenario_per_target=5.0,

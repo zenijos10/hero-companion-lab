@@ -55,10 +55,21 @@ class RealBuildEvaluationTests(unittest.TestCase):
     def setUpClass(cls):
         cls.client = srv.app.test_client()
         cls.builds = {name: cls._generate(*sets) for name, sets in CASES.items()}
+        # Validate the generated builds BEFORE the probes below append powers:
+        # those additions make the brute/archer/mastermind cases measurement probes, not
+        # guaranteed-legal characters (a 25th pick is not something we claim).
+        cls.validation = {name: cls.client.post("/build/validate", json=dict(
+            b, powers=[dict(p) for p in b["powers"]])).get_json()
+            for name, b in cls.builds.items()}
         brute = cls.builds["brute"]
         if UNSTOPPABLE not in {p["full_name"] for p in brute["powers"]}:
             brute["powers"].append({"full_name": UNSTOPPABLE, "slots": [None]})
         brute["include_incarnates"] = True
+        mastermind = cls.builds["mastermind"]       # autopick leaves the upgrades out
+        for upgrade in ("Mastermind_Summon.Mercenaries.Equip_Mercenary",
+                        "Mastermind_Summon.Mercenaries.Tactical_Upgrade"):
+            if upgrade not in {p["full_name"] for p in mastermind["powers"]}:
+                mastermind["powers"].append({"full_name": upgrade, "slots": []})
         archer = cls.builds["archer"]
         if RANGED_SHOT not in {p["full_name"] for p in archer["powers"]}:
             archer["powers"].append({"full_name": RANGED_SHOT, "slots": [None]})
@@ -75,6 +86,12 @@ class RealBuildEvaluationTests(unittest.TestCase):
         assert solved and solved.get("ok"), (archetype, solved)
         return {"archetype": archetype, "primary": primary, "secondary": secondary,
                 "powers": solved["powers"]}
+
+    def test_generated_builds_validate_before_the_probe_additions(self):
+        for name, result in self.validation.items():
+            with self.subTest(build=name):
+                self.assertIn("errors", result, str(result)[:200])
+                self.assertEqual(result["errors"], [], str(result)[:400])
 
     def evaluate(self, build, scenario=None):
         body = {"build": build} if scenario is None else {"build": build, "scenario": scenario}
@@ -151,9 +168,18 @@ class RealBuildEvaluationTests(unittest.TestCase):
     def test_unreadable_redirect_power_is_disclosed(self):
         data = self.evaluate(self.builds["archer"])
         reasons = {(u["power"], u["reason"]) for u in data["unsupported"]["powers"]}
-        self.assertIn((RANGED_SHOT, "no_modeled_effects"), reasons)
+        self.assertIn((RANGED_SHOT, "unread_redirect"), reasons)
         conf = data["confidence"]
-        self.assertLess(conf["powers_modeled"]["value"], conf["powers_total"])
+        self.assertLess(conf["powers_read"]["value"], conf["powers_total"])
+        self.assertIs(conf["offense_complete"], False)   # a damaging power is unread
+
+    def test_mastermind_upgrades_are_modeled_elsewhere(self):
+        data = self.evaluate(self.builds["mastermind"])
+        unread = {u["power"] for u in data["unsupported"]["powers"]
+                  if u["reason"] in ("unread_redirect", "no_effect_rows")}
+        elsewhere = {m["power"] for m in data["unsupported"]["modeled_without_effect_rows"]}
+        self.assertTrue(elsewhere, "a Mercenaries MM picks its upgrade powers")
+        self.assertFalse(unread & elsewhere)
 
     def test_invulnerability_mez_protection_is_disclosed(self):
         reasons = {u["reason"] for u in self.evaluate(self.builds["brute"])["unsupported"]["powers"]}

@@ -174,20 +174,36 @@ def _emergency_ledger(build_copy, sustained, power_records, ctx, set_bonuses, re
         trial = copy.deepcopy(build_copy)
         trial["powers"][i]["include_in_totals"] = True
         active = engine.calculate_build(trial, set_bonuses, res_cap=res_cap, ctx=dict(ctx))
-        duration = max(fx["duration"] for fx in rows)
+        durations = {}
+        for fx in rows:              # one duration per effect/type, longest row wins
+            key = f'{fx["effect"]}.{fx.get("damage_type") or "None"}'
+            durations[key] = max(durations.get(key, 0.0), fx["duration"])
+        duration = max(durations.values())
+        uniform = len(set(durations.values())) == 1
         base_rech = rec.get("base_recharge") or 0.0
         local = role_output._power_enh(dict(rec, slots=power.get("slots") or []), ctx,
                                        ("RechargeTime",))["RechargeTime"]
         enh_rech = base_rech / (1.0 + global_recharge + local) if base_rech > 0 else None
-        uptime = min(1.0, duration / enh_rech) if enh_rech else None
+
+        def _uptime(seconds):
+            return round(min(1.0, seconds / enh_rech), 3) if enh_rech else None
+        uptime = _uptime(duration)
         ledger.append({
             "power": power["full_name"], "display_name": rec.get("display_name"),
             "while_active_gain_percent_points": _typed_gain(active, sustained),
-            "duration_seconds": _measurement(duration, "seconds", "game data, unenhanced"),
+            "duration_seconds": _measurement(
+                duration, "seconds", "game data, unenhanced; the longest row when "
+                "durations differ (see uptime_by_effect)"),
+            "uniform_duration": uniform,
+            # exact per effect/type whenever the rows do not share one duration
+            "uptime_by_effect": ({} if uniform else
+                                 {k: _uptime(v) for k, v in sorted(durations.items())}),
             "recharge_seconds": _measurement(round(enh_rech, 1) if enh_rech else None, "seconds",
                                              "base recharge / (1 + global incl. Hasten + own slotting)"),
-            "uptime": _measurement(round(uptime, 3) if uptime is not None else None, "fraction",
+            "uptime": _measurement(uptime, "fraction",
                                    "duration / enhanced recharge, capped at 1"),
+            "penalty_basis": "raw game-data rows (scale in modifier-table units), "
+                             "not a normalized severity",
             "penalties": [{"effect": fx["effect"], "scale": fx.get("scale"),
                            "duration_seconds": fx.get("duration")}
                           for fx in rec.get("self_effects") or []
@@ -204,11 +220,17 @@ def _has_effects(rec):
 
 
 def _unsupported_powers(powers, power_records):
-    """Per power, what the model knowingly does not measure. Rules, each from
-    the data we ship: an unknown record; a record with no effect rows (a
-    redirect whose effects live on another record, or an empty record); self
-    mez protection, which is carried but not scored (the open mez_in ruling)."""
-    found = []
+    """Per power, what the model knowingly does not measure, and the powers that
+    carry no effect rows yet ARE priced elsewhere. Rules, each from the data we
+    ship: an unknown record; a redirect whose effects live on another record
+    (`unread_redirect`); a record with no effect rows that nothing else prices
+    (`no_effect_rows`: a mechanic toggle, or a gap; not classified yet); self
+    mez protection, carried but not scored (the open mez_in ruling). A
+    Mastermind upgrade button is effect-less but priced by encounter_value
+    through its re-cast time, so it is listed as modeled elsewhere instead."""
+    found, elsewhere = [], []
+    upgrades = {r["full_name"] for r in first_principles.mastermind_upgrade_records(
+        [power_records.get(p["full_name"]) for p in powers])}
     for p in powers:
         fn = p["full_name"]
         rec = power_records.get(fn)
@@ -218,25 +240,40 @@ def _unsupported_powers(powers, power_records):
             continue
         if not _has_effects(rec):
             redirects = [ps for ps in rec.get("pet_powersets") or [] if ps.startswith("Redirects.")]
-            found.append({"power": fn, "reason": "no_modeled_effects",
-                          "detail": (f"redirect to {', '.join(redirects)}; its effects are not read"
-                                     if redirects else "the record carries no effect rows")})
+            if fn in upgrades:
+                elsewhere.append({"power": fn, "how": "Mastermind upgrade: priced by its "
+                                  "re-cast time after a resummon (encounter_value)"})
+            elif redirects:
+                found.append({"power": fn, "reason": "unread_redirect",
+                              "detail": f"redirect to {', '.join(redirects)}; its effects are not read"})
+            else:
+                found.append({"power": fn, "reason": "no_effect_rows",
+                              "detail": "the record carries no effect rows and nothing else "
+                                        "prices it (a mechanic toggle or a data gap; unclassified)"})
         if any(fx.get("effect") in ("MezProtection", "MezResist")
                for fx in rec.get("self_effects") or []):
             found.append({"power": fn, "reason": "mez_protection_not_scored",
                           "detail": "self mez protection is carried but not scored "
                                     "(needs the incoming-mez scenario input)"})
-    return found
+    return found, elsewhere
+
+
+_UNREAD = ("unknown_record", "unread_redirect", "no_effect_rows")
 
 
 def _confidence(powers, unsupported):
-    """How much to trust each section, and how much of the build the model reads."""
-    blind = {u["power"] for u in unsupported if u["reason"] in ("unknown_record",
-                                                              "no_modeled_effects")}
+    """How much to trust each section, and how many picks the model reads at all.
+    The count is NOT model completeness: a read power can still be priced only
+    in part (see unsupported.powers and docs/KNOWN-GAPS.md)."""
+    blind = {u["power"] for u in unsupported if u["reason"] in _UNREAD}
     total = len({p["full_name"] for p in powers})
     return {
-        "powers_modeled": _measurement(total - len(blind), "count", "picked powers with modeled effects"),
+        "powers_read": _measurement(total - len(blind), "count",
+                                    "picked powers the model reads (effect rows, or priced "
+                                    "elsewhere); not a completeness score"),
         "powers_total": total,
+        "offense_complete": not any(u["reason"] in ("unread_redirect", "unknown_record")
+                                    for u in unsupported),
         "sections": {
             "offense_raw": "modeled: game data and the engine's chain",
             "scenario": "provisional: scenario constants (enemy damage, rank accuracy, "
@@ -310,7 +347,7 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
         build_copy["powers"], ctx, global_recharge=global_recharge)
     emergency = _emergency_ledger(build_copy, totals, power_records, ctx, set_bonuses,
                                   res_cap, global_recharge)
-    unsupported = _unsupported_powers(build_copy["powers"], power_records)
+    unsupported, modeled_elsewhere = _unsupported_powers(build_copy["powers"], power_records)
 
     # Raw offense is not an against-+4 damage figure; the encounter's my_dps
     # handles enemy level, hit chance, purple patch, pets and endurance instead.
@@ -415,6 +452,7 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
         "unsupported": {
             "unknown_power_records": unknown,
             "powers": unsupported,
+            "modeled_without_effect_rows": modeled_elsewhere,
             "effect_level_audit": "power_level",
             "known_gaps_reference": "docs/KNOWN-GAPS.md",
         },
