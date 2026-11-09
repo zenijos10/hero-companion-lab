@@ -115,6 +115,21 @@ def build():
         "TW/Bio champion certified on Fire Ball/Char clicks and skipped Bio's "
         "damage aura. An AFK damage rule (damage auras + the one auto-fire + "
         "procs only) is a model change and a farm re-cert; Joel's ruling.",
+        "**31 damaging powers credited ZERO damage** (owner review of PR "
+        "#25, 2026-11-09; classified in docs/EFFECTLESS-POWERS.md by "
+        "server/effectless.py, pinned by tools/test_effectless.py). 2 have "
+        "their damage in twin records we already ship and nothing reads "
+        "(Archery Ranged Shot -> Redirects.Blaster_Archery.Ranged_Shot_*, "
+        "Fire Manipulation Burn -> Pets.Burn.Burn); 29 have no record of ours "
+        "carrying it (Savage Leap x4 ATs, Rain of Arrows, Suppressive Fire, "
+        "Psionic Lance, Storm Blast Direct Strike, Aura of Insanity, Sniper "
+        "Rifle, LRM Rocket...). Owner: FIX LATER, tracked. The fix is a model "
+        "change (moves scores; harden-before-certify): read the twins, source "
+        "the 29 from the client at the next PATCH-WATCH export. Until then "
+        "/build/evaluate flags each (damaging: true) and NO M4 offense grade "
+        "ships for a build whose confidence.offense_complete is false. "
+        "Related, unverified: encounter_value's upgrade rule picks Ninjas' "
+        "Smoke Flash as an upgrade (two cheapest effect-less casts).",
         "**Domination's magnitude half** - adds or replaces is ambiguous in "
         "the client (3 of 41 pairs fit neither reading). Duration half is "
         "shipped; magnitude deliberately not guessed.",

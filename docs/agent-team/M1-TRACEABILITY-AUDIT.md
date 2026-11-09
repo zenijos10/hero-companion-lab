@@ -111,6 +111,7 @@ smallest first; tick the box in the PR that closes it):
 
 - [x] 1. **Evaluation contract** — one pure `evaluate(build, scenario)` returning measurements + units + scenario + model/data versions + unsupported list, exposed as `/build/evaluate` (M2 foundation; no grades).
 - [x] 2. **Expose the scenario-aware numbers** — `encounter_value`'s ttl/availability/hit chances and `role_output` control/debuff/heal on that contract (M2/M3).
+- [ ] 2b. **Fix the 31 damaging powers credited zero damage** (owner: later, tracked; see docs/EFFECTLESS-POWERS.md and KNOWN-GAPS.md). Read the 2 twin-backed redirects; source the 29 from the client. Blocks M4 offense grades for affected builds.
 - [ ] 3. **Rating tiers** — S–F per category from thresholds, with N/A / None / Unknown labels (M4; blocked on owner thresholds).
 - [ ] 4. **Peer comparison** — design representative versioned peer cohorts for three scopes; show champion standings as a **separate optimized-reference** comparison if useful. Do not present champion-only percentiles as population percentiles (M4).
 - [ ] 5. **Scorecard + side-by-side compare UI** (M5).
