@@ -199,31 +199,53 @@ class EvaluationContractTests(unittest.TestCase):
 
     def test_unsupported_detail_and_confidence(self):
         self.ctx["power_by_full"].update({
-            "Test.One.Power": {"pet_powersets": ["Redirects.Test"]},
-            "Test.One.Mez": {"self_effects": [{"effect": "MezProtection", "scale": -50.0}]},
-            "Test.One.Empty": {}})
+            "Test.One.Power": {"full_name": "Test.One.Power", "powerset_full_name": "Test.One",
+                               "level_available": 1, "pet_powersets": ["Redirects.Test"]},
+            "Redirects.Test.Power_Normal": {"full_name": "Redirects.Test.Power_Normal",
+                                            "powerset_full_name": "Redirects.Test",
+                                            "damage_effects": [{"scale": 1.0}]},
+            "Test.One.Mez": {"full_name": "Test.One.Mez", "level_available": 1,
+                             "self_effects": [{"effect": "MezProtection", "scale": -50.0}]},
+            "Test.One.Shot": {"full_name": "Test.One.Shot", "level_available": 1,
+                              "accepted_enhancement_types": ["Damage Increase"]},
+            "Test.One.Taunt": {"full_name": "Test.One.Taunt", "level_available": 1,
+                               "accepted_enhancement_types": ["Taunt Duration"]},
+            "Test.One.Stance": {"full_name": "Test.One.Stance", "level_available": 1}})
         build = copy.deepcopy(self.build)
-        build["powers"] += [{"full_name": "Test.One.Mez", "slots": []},
-                            {"full_name": "Test.One.Empty", "slots": []},
-                            {"full_name": "No.Such.Power", "slots": []}]
+        build["powers"] += [{"full_name": n, "slots": []} for n in (
+            "Test.One.Mez", "Test.One.Shot", "Test.One.Taunt", "Test.One.Stance", "No.Such.Power")]
         result = self.evaluate(build=build)
-        reasons = {(u["power"], u["reason"]) for u in result["unsupported"]["powers"]}
-        self.assertEqual(reasons, {("Test.One.Power", "unread_redirect"),
-                                   ("Test.One.Mez", "mez_protection_not_scored"),
-                                   ("Test.One.Empty", "no_effect_rows"),
-                                   ("No.Such.Power", "unknown_record")})
+        rows = {(u["power"], u["reason"]): u for u in result["unsupported"]["powers"]}
+        self.assertEqual(set(rows), {("Test.One.Power", "unread_redirect"),
+                                     ("Test.One.Mez", "mez_protection_not_scored"),
+                                     ("Test.One.Shot", "damaging_unread"),
+                                     ("Test.One.Taunt", "effect_unread"),
+                                     ("Test.One.Stance", "unpriced_mechanic"),
+                                     ("No.Such.Power", "unknown_record")})
+        self.assertEqual(rows[("Test.One.Power", "unread_redirect")]["twins"],
+                         ["Redirects.Test.Power_Normal"])
+        self.assertIs(rows[("Test.One.Power", "unread_redirect")]["damaging"], True)
         conf = result["confidence"]
-        self.assertEqual((conf["powers_read"]["value"], conf["powers_total"]), (1, 4))
+        # read: Mez (has effects) and Stance (a mechanic: nothing to read)
+        self.assertEqual((conf["powers_read"]["value"], conf["powers_total"]), (2, 6))
         self.assertIs(conf["offense_complete"], False)
         self.assertIn("provisional", conf["sections"]["scenario"])
+
+    def test_non_damaging_gaps_leave_offense_complete(self):
+        self.ctx["power_by_full"]["Test.One.Power"] = {
+            "full_name": "Test.One.Power", "level_available": 1,
+            "accepted_enhancement_types": ["Taunt Duration"]}
+        conf = self.evaluate()["confidence"]
+        self.assertIs(conf["offense_complete"], True)
+        self.assertEqual(conf["powers_read"]["value"], 0)
 
     def test_mastermind_upgrade_is_modeled_elsewhere_not_unread(self):
         """Effect-less, yet encounter_value prices it by cast time (shared rule)."""
         self.ctx["power_by_full"].update({
-            "Test.One.Power": {"powerset_full_name": "MM.Bots", "summons": ["Pet"],
-                               "self_effects": [{"effect": "Defense", "scale": 1.0}]},
-            "Test.One.Upgrade": {"full_name": "Test.One.Upgrade",
-                                 "powerset_full_name": "MM.Bots", "cast_time": 2.0}})
+            "Test.One.Power": {"full_name": "Test.One.Power", "level_available": 1,
+                               "powerset_full_name": "Mastermind_Summon.Bots", "summons": ["Pet"]},
+            "Test.One.Upgrade": {"full_name": "Test.One.Upgrade", "level_available": 1,
+                                 "powerset_full_name": "Mastermind_Summon.Bots", "cast_time": 2.0}})
         build = copy.deepcopy(self.build)
         build["powers"].append({"full_name": "Test.One.Upgrade", "slots": []})
         result = self.evaluate(build=build)
@@ -231,6 +253,21 @@ class EvaluationContractTests(unittest.TestCase):
         self.assertEqual([m["power"] for m in result["unsupported"]["modeled_without_effect_rows"]],
                          ["Test.One.Upgrade"])
         self.assertEqual(result["confidence"]["powers_read"]["value"], 2)
+
+    def test_a_summon_outside_mastermind_sets_makes_no_upgrades(self):
+        """Storm Blast has a summon; its effect-less Direct Strike is an attack."""
+        self.ctx["power_by_full"].update({
+            "Test.One.Power": {"full_name": "Test.One.Power", "level_available": 1,
+                               "powerset_full_name": "Blaster_Ranged.Storm", "summons": ["Pet"]},
+            "Test.One.Strike": {"full_name": "Test.One.Strike", "level_available": 1,
+                                "powerset_full_name": "Blaster_Ranged.Storm", "cast_time": 1.0,
+                                "accepted_enhancement_types": ["Damage Increase"]}})
+        build = copy.deepcopy(self.build)
+        build["powers"].append({"full_name": "Test.One.Strike", "slots": []})
+        result = self.evaluate(build=build)
+        self.assertEqual(result["unsupported"]["modeled_without_effect_rows"], [])
+        self.assertIn(("Test.One.Strike", "damaging_unread"),
+                      {(u["power"], u["reason"]) for u in result["unsupported"]["powers"]})
 
     def test_emergency_uptime_is_per_effect_when_durations_differ(self):
         self.ctx["power_by_full"]["Test.One.Power"] = {

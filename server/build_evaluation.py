@@ -10,6 +10,7 @@ import hashlib
 import json
 import math
 
+import effectless
 import engine
 import first_principles
 import role_output
@@ -213,24 +214,31 @@ def _emergency_ledger(build_copy, sustained, power_records, ctx, set_bonuses, re
     return ledger
 
 
-def _has_effects(rec):
-    return any(rec.get(k) for k in ("self_effects", "damage_effects", "strength_effects",
-                                    "debuff_effects", "control_effects", "buff_effects",
-                                    "heal_effects", "summons"))
+# effectless.classify class -> the reason reported per build
+_REASON = {
+    "unread_twins_damage": "unread_redirect", "unread_twins": "unread_redirect",
+    "damaging_unread": "damaging_unread", "effect_unread": "effect_unread",
+    "mechanic": "unpriced_mechanic", "auto_granted": "unpriced_mechanic",
+}
+_UNREAD = ("unknown_record", "unread_redirect", "damaging_unread", "effect_unread")
 
 
-def _unsupported_powers(powers, power_records):
-    """Per power, what the model knowingly does not measure, and the powers that
-    carry no effect rows yet ARE priced elsewhere. Rules, each from the data we
-    ship: an unknown record; a redirect whose effects live on another record
-    (`unread_redirect`); a record with no effect rows that nothing else prices
-    (`no_effect_rows`: a mechanic toggle, or a gap; not classified yet); self
-    mez protection, carried but not scored (the open mez_in ruling). A
-    Mastermind upgrade button is effect-less but priced by encounter_value
-    through its re-cast time, so it is listed as modeled elsewhere instead."""
+def _records_by_set(power_records):
+    by_set = {}
+    for rec in power_records.values():
+        by_set.setdefault(rec.get("powerset_full_name"), []).append(rec)
+    return by_set
+
+
+def _unsupported_powers(powers, power_records, powers_by_set, power_help):
+    """Per power, what the model knowingly does not measure, and the effect-less
+    powers that ARE priced elsewhere. Effect-less records are sorted by
+    effectless.classify (one copy, shared with the report tool): an unread
+    redirect (its twins are in our data), damage the game's help names but our
+    record lacks, an effect we do not carry, or a mechanic that carries nothing.
+    Plus unknown records, and self mez protection (carried, not scored: the
+    open mez_in ruling)."""
     found, elsewhere = [], []
-    upgrades = {r["full_name"] for r in first_principles.mastermind_upgrade_records(
-        [power_records.get(p["full_name"]) for p in powers])}
     for p in powers:
         fn = p["full_name"]
         rec = power_records.get(fn)
@@ -238,27 +246,23 @@ def _unsupported_powers(powers, power_records):
             found.append({"power": fn, "reason": "unknown_record",
                           "detail": "not in the shipped power data"})
             continue
-        if not _has_effects(rec):
-            redirects = [ps for ps in rec.get("pet_powersets") or [] if ps.startswith("Redirects.")]
-            if fn in upgrades:
-                elsewhere.append({"power": fn, "how": "Mastermind upgrade: priced by its "
-                                  "re-cast time after a resummon (encounter_value)"})
-            elif redirects:
-                found.append({"power": fn, "reason": "unread_redirect",
-                              "detail": f"redirect to {', '.join(redirects)}; its effects are not read"})
-            else:
-                found.append({"power": fn, "reason": "no_effect_rows",
-                              "detail": "the record carries no effect rows and nothing else "
-                                        "prices it (a mechanic toggle or a data gap; unclassified)"})
+        verdict = effectless.classify(rec, powers_by_set, (power_help or {}).get(fn),
+                                      full_name=fn)
+        if verdict and verdict["class"] == "modeled_elsewhere":
+            elsewhere.append({"power": fn, "how": verdict["evidence"]})
+        elif verdict:
+            row = {"power": fn, "reason": _REASON[verdict["class"]],
+                   "detail": verdict["evidence"],
+                   "damaging": verdict["class"] in effectless.DAMAGING}
+            if verdict.get("twins"):
+                row["twins"] = verdict["twins"]
+            found.append(row)
         if any(fx.get("effect") in ("MezProtection", "MezResist")
                for fx in rec.get("self_effects") or []):
             found.append({"power": fn, "reason": "mez_protection_not_scored",
                           "detail": "self mez protection is carried but not scored "
                                     "(needs the incoming-mez scenario input)"})
     return found, elsewhere
-
-
-_UNREAD = ("unknown_record", "unread_redirect", "no_effect_rows")
 
 
 def _confidence(powers, unsupported):
@@ -272,7 +276,8 @@ def _confidence(powers, unsupported):
                                     "picked powers the model reads (effect rows, or priced "
                                     "elsewhere); not a completeness score"),
         "powers_total": total,
-        "offense_complete": not any(u["reason"] in ("unread_redirect", "unknown_record")
+        # false whenever a picked power deals damage the model does not read
+        "offense_complete": not any(u["reason"] == "unknown_record" or u.get("damaging")
                                     for u in unsupported),
         "sections": {
             "offense_raw": "modeled: game data and the engine's chain",
@@ -286,7 +291,8 @@ def _confidence(powers, unsupported):
 
 
 def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
-             db_name, db_version, app_version, prepare=None):
+             db_name, db_version, app_version, prepare=None,
+             powers_by_set=None, power_help=None):
     """Evaluate a build without optimization, rating or modifying player state.
 
     scenario must be a rating or registered scenario name. Context and game
@@ -347,7 +353,10 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
         build_copy["powers"], ctx, global_recharge=global_recharge)
     emergency = _emergency_ledger(build_copy, totals, power_records, ctx, set_bonuses,
                                   res_cap, global_recharge)
-    unsupported, modeled_elsewhere = _unsupported_powers(build_copy["powers"], power_records)
+    unsupported, modeled_elsewhere = _unsupported_powers(
+        build_copy["powers"], power_records,
+        powers_by_set if powers_by_set is not None else _records_by_set(power_records),
+        power_help)
 
     # Raw offense is not an against-+4 damage figure; the encounter's my_dps
     # handles enemy level, hit chance, purple patch, pets and endurance instead.
