@@ -10,6 +10,7 @@ import hashlib
 import json
 import math
 
+import effectless
 import engine
 import first_principles
 import role_output
@@ -131,8 +132,167 @@ def _typed_stat(rows, basis):
             for name, row in sorted((rows or {}).items())}
 
 
+_MITIGATION = ("Defense", "Resistance")
+_PENALTY_EFFECTS = ("Endurance", "Recovery", "Regeneration", "HitPoints")
+
+
+def _emergency_rows(rec):
+    """A click power's timed self defense/resistance rows (PvE), the shape of
+    Unstoppable, Elude, Strength of Will: emergency mitigation, not sustained."""
+    if not rec or rec.get("power_type") != 0:
+        return []
+    return [fx for fx in rec.get("self_effects") or []
+            if fx.get("effect") in _MITIGATION and (fx.get("scale") or 0) > 0
+            and (fx.get("duration") or 0) > 0 and fx.get("pv_mode") != 2]
+
+
+def _typed_gain(after, before):
+    """Per-type percentage points one power adds (measured: totals with it on
+    minus totals with it off), only the types it moves."""
+    gain = {}
+    for kind in ("defense", "resistance"):
+        rows = {}
+        for name, row in (after.get(kind) or {}).items():
+            was = ((before.get(kind) or {}).get(name) or {}).get("value") or 0.0
+            delta = (row.get("value") or 0.0) - was
+            if abs(delta) > 0.05:
+                rows[name] = round(delta, 2)
+        gain[kind] = dict(sorted(rows.items()))
+    return gain
+
+
+def _emergency_ledger(build_copy, sustained, power_records, ctx, set_bonuses, res_cap,
+                      global_recharge):
+    """Each emergency power: what it adds while up (measured by recalculating with
+    it switched on), how long it lasts, its enhanced recharge, the resulting
+    uptime, and the penalties the game data attaches (crashes)."""
+    ledger = []
+    for i, power in enumerate(build_copy["powers"]):
+        rec = power_records.get(power["full_name"])
+        rows = _emergency_rows(rec)
+        if not rows:
+            continue
+        trial = copy.deepcopy(build_copy)
+        trial["powers"][i]["include_in_totals"] = True
+        active = engine.calculate_build(trial, set_bonuses, res_cap=res_cap, ctx=dict(ctx))
+        durations = {}
+        for fx in rows:              # one duration per effect/type, longest row wins
+            key = f'{fx["effect"]}.{fx.get("damage_type") or "None"}'
+            durations[key] = max(durations.get(key, 0.0), fx["duration"])
+        duration = max(durations.values())
+        uniform = len(set(durations.values())) == 1
+        base_rech = rec.get("base_recharge") or 0.0
+        local = role_output._power_enh(dict(rec, slots=power.get("slots") or []), ctx,
+                                       ("RechargeTime",))["RechargeTime"]
+        enh_rech = base_rech / (1.0 + global_recharge + local) if base_rech > 0 else None
+
+        def _uptime(seconds):
+            return round(min(1.0, seconds / enh_rech), 3) if enh_rech else None
+        uptime = _uptime(duration)
+        ledger.append({
+            "power": power["full_name"], "display_name": rec.get("display_name"),
+            "while_active_gain_percent_points": _typed_gain(active, sustained),
+            "duration_seconds": _measurement(
+                duration, "seconds", "game data, unenhanced; the longest row when "
+                "durations differ (see uptime_by_effect)"),
+            "uniform_duration": uniform,
+            # exact per effect/type whenever the rows do not share one duration
+            "uptime_by_effect": ({} if uniform else
+                                 {k: _uptime(v) for k, v in sorted(durations.items())}),
+            "recharge_seconds": _measurement(round(enh_rech, 1) if enh_rech else None, "seconds",
+                                             "base recharge / (1 + global incl. Hasten + own slotting)"),
+            "uptime": _measurement(uptime, "fraction",
+                                   "duration / enhanced recharge, capped at 1"),
+            "penalty_basis": "raw game-data rows (scale in modifier-table units), "
+                             "not a normalized severity",
+            "penalties": [{"effect": fx["effect"], "scale": fx.get("scale"),
+                           "duration_seconds": fx.get("duration")}
+                          for fx in rec.get("self_effects") or []
+                          if fx.get("effect") in _PENALTY_EFFECTS and (fx.get("scale") or 0) < 0
+                          and fx.get("pv_mode") != 2],
+        })
+    return ledger
+
+
+# effectless.classify class -> the reason reported per build
+_REASON = {
+    "unread_twins_damage": "unread_redirect", "unread_twins": "unread_redirect",
+    "damaging_unread": "damaging_unread", "effect_unread": "effect_unread",
+    "mechanic": "unpriced_mechanic", "auto_granted": "unpriced_mechanic",
+}
+_UNREAD = ("unknown_record", "unread_redirect", "damaging_unread", "effect_unread")
+
+
+def _records_by_set(power_records):
+    by_set = {}
+    for rec in power_records.values():
+        by_set.setdefault(rec.get("powerset_full_name"), []).append(rec)
+    return by_set
+
+
+def _unsupported_powers(powers, power_records, powers_by_set, power_help):
+    """Per power, what the model knowingly does not measure, and the effect-less
+    powers that ARE priced elsewhere. Effect-less records are sorted by
+    effectless.classify (one copy, shared with the report tool): an unread
+    redirect (its twins are in our data), damage the game's help names but our
+    record lacks, an effect we do not carry, or a mechanic that carries nothing.
+    Plus unknown records, and self mez protection (carried, not scored: the
+    open mez_in ruling)."""
+    found, elsewhere = [], []
+    for p in powers:
+        fn = p["full_name"]
+        rec = power_records.get(fn)
+        if rec is None:
+            found.append({"power": fn, "reason": "unknown_record",
+                          "detail": "not in the shipped power data"})
+            continue
+        verdict = effectless.classify(rec, powers_by_set, (power_help or {}).get(fn),
+                                      full_name=fn)
+        if verdict and verdict["class"] == "modeled_elsewhere":
+            elsewhere.append({"power": fn, "how": verdict["evidence"]})
+        elif verdict:
+            row = {"power": fn, "reason": _REASON[verdict["class"]],
+                   "detail": verdict["evidence"],
+                   "damaging": verdict["class"] in effectless.DAMAGING}
+            if verdict.get("twins"):
+                row["twins"] = verdict["twins"]
+            found.append(row)
+        if any(fx.get("effect") in ("MezProtection", "MezResist")
+               for fx in rec.get("self_effects") or []):
+            found.append({"power": fn, "reason": "mez_protection_not_scored",
+                          "detail": "self mez protection is carried but not scored "
+                                    "(needs the incoming-mez scenario input)"})
+    return found, elsewhere
+
+
+def _confidence(powers, unsupported):
+    """How much to trust each section, and how many picks the model reads at all.
+    The count is NOT model completeness: a read power can still be priced only
+    in part (see unsupported.powers and docs/KNOWN-GAPS.md)."""
+    blind = {u["power"] for u in unsupported if u["reason"] in _UNREAD}
+    total = len({p["full_name"] for p in powers})
+    return {
+        "powers_read": _measurement(total - len(blind), "count",
+                                    "picked powers the model reads (effect rows, or priced "
+                                    "elsewhere); not a completeness score"),
+        "powers_total": total,
+        # false whenever a picked power deals damage the model does not read
+        "offense_complete": not any(u["reason"] == "unknown_record" or u.get("damaging")
+                                    for u in unsupported),
+        "sections": {
+            "offense_raw": "modeled: game data and the engine's chain",
+            "scenario": "provisional: scenario constants (enemy damage, rank accuracy, "
+                        "control landing) are stated assumptions, not measured",
+            "survival_totals": "modeled: game data, caps applied",
+            "emergency": "modeled uptime; gains measured by recalculation",
+            "support": "proxy: control and healing units are model scores",
+        },
+    }
+
+
 def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
-             db_name, db_version, app_version, prepare=None):
+             db_name, db_version, app_version, prepare=None,
+             powers_by_set=None, power_help=None):
     """Evaluate a build without optimization, rating or modifying player state.
 
     scenario must be a rating or registered scenario name. Context and game
@@ -155,6 +315,14 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
     power_records = (ctx or {}).get("power_by_full") or {}
     unknown = sorted({p["full_name"] for p in build_copy["powers"]
                       if p["full_name"] not in power_records})
+    # Sustained totals never count an emergency click, even one the player ticked.
+    excluded = []
+    for p in build_copy["powers"]:
+        if _emergency_rows(power_records.get(p["full_name"])):
+            if p.get("include_in_totals"):
+                excluded.append(p["full_name"])
+            p["include_in_totals"] = False
+    normalized["emergency_excluded_from_sustained"] = excluded
 
     totals = engine.calculate_build(build_copy, set_bonuses,
                                     res_cap=res_cap, ctx=dict(ctx))
@@ -183,6 +351,12 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
         build_copy["powers"], ctx, global_recharge=global_recharge)
     buffs = role_output.enhanced_team_buffs(
         build_copy["powers"], ctx, global_recharge=global_recharge)
+    emergency = _emergency_ledger(build_copy, totals, power_records, ctx, set_bonuses,
+                                  res_cap, global_recharge)
+    unsupported, modeled_elsewhere = _unsupported_powers(
+        build_copy["powers"], power_records,
+        powers_by_set if powers_by_set is not None else _records_by_set(power_records),
+        power_help)
 
     # Raw offense is not an against-+4 damage figure; the encounter's my_dps
     # handles enemy level, hit chance, purple patch, pets and endurance instead.
@@ -215,6 +389,16 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
                 "aoe_burst_raw_per_target": _measurement(
                     offense.get("aoe_burst"), "damage_per_target",
                     "sum of AoE power damage; not a timed burst rotation"),
+                "scenario_single_target_dps": _measurement(
+                    encounter.get("st_dps_scenario"), "damage_per_second",
+                    "single-target chain after hit chance, level, slows, Hasten, meter, endurance"),
+                "scenario_aoe_dps_per_target": _measurement(
+                    encounter.get("aoe_dps_scenario_per_target"), "damage_per_second_per_target",
+                    "AoE cycles after the same scenario factors"),
+                "scenario_aoe_targets": encounter.get("aoe_targets"),
+                "scenario_pet_dps": _measurement(
+                    encounter.get("pet_dps_scenario"), "damage_per_second",
+                    "pets at their own level, hit chance and uptime, after endurance"),
                 "scenario_personal_dps": _measurement(
                     encounter.get("my_dps"), "damage_per_second_equivalent",
                     "scenario-weighted ST/AoE plus pets, hit chance, level, endurance and uptime"),
@@ -223,6 +407,8 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
                     "scenario contribution created by buffs and resistance debuffs"),
             },
             "survival": {
+                "basis": "sustained: toggles and autos; emergency clicks are reported separately",
+                "emergency_powers": emergency,
                 "defense": _typed_stat(totals.get("defense"),
                                        "in combat (suppressible defense excluded); before scenario hit modeling"),
                 "defense_out_of_combat": _out_of_combat_rows(totals.get("defense"),
@@ -274,14 +460,17 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
         },
         "unsupported": {
             "unknown_power_records": unknown,
-            "effect_level_audit": "not_implemented",
+            "powers": unsupported,
+            "modeled_without_effect_rows": modeled_elsewhere,
+            "effect_level_audit": "power_level",
             "known_gaps_reference": "docs/KNOWN-GAPS.md",
         },
+        "confidence": _confidence(build_copy["powers"], unsupported),
         "limitations": [
             "Measured values are model estimates, not a live combat simulation.",
             "The offense raw DPS values do NOT include enemy-level hit chance; use scenario_personal_dps for scenario output.",
             "Control and healing proxy units are not literal seconds locked or HP restored.",
-            "Click emergency defenses are not separately measured in this version.",
+            "Emergency clicks are reported with gain and uptime, never folded into the sustained totals.",
             "PPM/proc and some scenario constants remain provisional; consult docs/KNOWN-GAPS.md and CLAUDE.md.",
             "This endpoint assigns no S-F ratings, percentile standings or Pareto rankings.",
         ],
