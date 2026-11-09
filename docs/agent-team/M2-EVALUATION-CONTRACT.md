@@ -23,19 +23,22 @@ POST /build/evaluate accepts JSON with a build object and optional scenario:
 
 The build object uses the planner's existing format including power picks and slotting. For meaningful results, submit a real imported character rather than the empty example.
 
-The default rating_plus4 scenario copies the general solo encounter, changing enemy level to +4. All other assumptions remain (4 enemies, 30-second duration, no teammates). **Existing general solver/optimization preset remains +1.** Explicitly selecting general evaluates the original +1 scenario.
+The default rating_plus4 scenario copies the general solo encounter, changing enemy level to +4. All other assumptions remain (4 enemies, 30-second duration, no teammates). **Existing general solver/optimization preset remains +1.** Explicitly selecting general evaluates the original +1 scenario. rating_plus4 lives in `build_evaluation.RATING_SCENARIOS` (base scenario + overrides), NOT in `first_principles.SCENARIOS`, so it is never a valid solver `content`.
 
-Exemplar evaluation is not supported in this first version; unsupported exemplar requests and malformed build structures return HTTP 400, not silent level-50 results.
+Refused with HTTP 400 (never silently rated): malformed build structures, PvP builds (rating scenarios are PvE), and an exemplar level of 1-49 (the same values /build/calculate exemplars on; 50, 0, empty or non-numeric evaluate normally).
+
+What is rated: the player's own build, in combat. Suppressible (Hide-class) defense is excluded; other people's buffs and inspiration amplifiers (`include_external`, `include_amplifiers`) are removed. Owned boosters (`slot.boost`, including HOs at +3) ARE rated: they are what the player has in game. A booster preview is the client's to leave out of the payload; the response counts the boosted pieces it rated.
 
 ## Versioned response (schema_version = 1)
 
 - ok, stage=measurements_only, schema_version: machine-readable status.
-- versions: app, model, database name and database version.
+- versions: app, model, database name and database version, plus `scenario_fingerprint` (a hash of the scenario constants; it changes whenever any constant is tuned, MODEL_VERSION or not). Compare stored results only when every version field matches.
+- inputs_normalized: `boosted_pieces_rated`, `external_buffs_removed`, `defense_basis` ("in_combat").
 - build: archetype, primary, secondary, picked-power count.
-- scenario: ID, enemy level shift/count, teammate count, duration, enemy damage type and provenance.
+- scenario: ID, enemy level shift/count, teammate count, duration, enemy damage type, the full parameter set and provenance.
 - measurements.offense: original raw ST chain DPS/AoE metrics separately from scenario-adjusted personal damage contribution. Raw DPS does **not** include scenario hit chance.
-- measurements.survival: defense/resistance vectors, estimated time to live, availability and incoming/outgoing hit probabilities.
-- measurements.resources: recharge bonus, endurance recovery, chain and toggle drain, net/sustainability.
+- measurements.survival: in-combat defense and resistance vectors, `defense_out_of_combat` rows only where suppressible defense makes them differ, estimated time to live, availability and incoming/outgoing hit probabilities.
+- measurements.resources: recharge bonus, Hasten's time-averaged bonus (support uptime uses passive + Hasten, the same recharge the scenario figures use), endurance recovery, chain and toggle drain, net/sustainability.
 - measurements.support: control proxy and per-power breakdown, control uptime, buffs/debuffs in percent by effect, self/team healing proxy and resurrections.
 - unsupported: unrecognized power identifiers, explicit note that per-effect unknown auditing is not implemented, reference to known-gaps ledger.
 - limitations: approximations and deliberately unsupported capabilities.
