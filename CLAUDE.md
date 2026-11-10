@@ -142,6 +142,13 @@ out. Rules going forward:
   change to `encounter_value` must reproduce every pinned score; a model bump re-pins with `--write`.
 - Rating scenarios live in `build_evaluation.RATING_SCENARIOS` (rating_plus4 = general at +4),
   NEVER in `first_principles.SCENARIOS` (that would make them solver contents).
+- **M4 rulings (owner, 2026-11-10): +4 is the default rating scenario; S-F thresholds start as
+  FIXED numbers (`data/rating_thresholds.json`, written by `tools/calibrate_rating_thresholds.py`,
+  hand-editable, bump `version`) using the shipped champions as a GUIDELINE, and move as more
+  builds come in. The champion roster is NOT the comparison population ("no idea what's in
+  them"); peer cohorts are worked out as we go.** Ratings say `not_rated` when the scenario or its
+  fingerprint differs from the calibration; `tools/test_build_ratings.py` fails on a model bump or
+  scenario change until the thresholds are recalibrated.
 
 ## Communication protocol (token discipline — strict)
 

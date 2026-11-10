@@ -73,8 +73,9 @@ class EvaluationContractTests(unittest.TestCase):
         self.assertEqual(result["schema_version"], 1)
         self.assertEqual(result["scenario"]["enemy_level_shift"], 4)
         self.assertEqual(result["versions"]["database_version"], "test-123")
-        self.assertEqual(result["stage"], "measurements_only")
-        self.assertNotIn("ratings", result)
+        self.assertEqual(result["stage"], "measurements_and_ratings")
+        # no thresholds passed: the contract says why instead of grading
+        self.assertEqual(result["ratings"]["status"], "not_rated")
         off = result["measurements"]["offense"]
         self.assertEqual(off["single_target_dps_raw"]["value"], 100)
         self.assertEqual(off["scenario_personal_dps"]["value"], 43)

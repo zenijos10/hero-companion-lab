@@ -31,7 +31,7 @@ What is rated: the player's own build, in combat. Suppressible (Hide-class) defe
 
 ## Versioned response (schema_version = 1)
 
-- ok, stage=measurements_only, schema_version: machine-readable status.
+- ok, stage=measurements_and_ratings, schema_version: machine-readable status.
 - versions: app, model, database name and database version, plus `scenario_fingerprint` (a hash of the scenario constants; it changes whenever any constant is tuned, MODEL_VERSION or not). Compare stored results only when every version field matches.
 - inputs_normalized: `boosted_pieces_rated`, `external_buffs_removed`, `defense_basis` ("in_combat").
 - build: archetype, primary, secondary, picked-power count.
@@ -97,6 +97,17 @@ Per picked power with support output:
 Acceptance (real builds, `tools/test_build_evaluation_builds.py`): a Cold Domination build's single-target -Regeneration against an AV reads high while its area -Damage does not; a Force Field build reads > 20% sustained Defense with zero healing; -Resistance ignores AV debuff resistance while -Regeneration does not; Elixir of Life is conditional and out of the averages. Negative-controlled.
 
 **Found, not fixed (moves scores; KNOWN-GAPS.md):** the score's support totals count resurrect buffs and instant click effects as permanent.
+
+### M4: S-F ratings (`ratings`)
+
+`server/build_ratings.py` grades 18 categories (single-target, area and pet damage; survival; defense; resistance; endurance; recharge; control; ally healing; team defense/damage/recharge buffs; -Resistance and -Regeneration vs an AV; -Defense, -ToHit and -Damage vs a spawn). Each row keeps its exact `value`, `unit` and the `cuts` it was graded against.
+
+**Owner's rulings (2026-11-10):** +4 is the default; thresholds start as FIXED numbers using the shipped champions as a guideline and move as more builds come in; the champions are NOT the comparison population (peer cohorts are worked out as we go, so the three comparison scopes wait).
+
+- The numbers: `data/rating_thresholds.json`, written by `tools/calibrate_rating_thresholds.py` (an archetype-stratified sample of itrial champions, rebuilt as served, evaluated at rating_plus4; cut points S>=p90, A>=p70, B>=p50, C>=p30, D>=p10, else F; capability categories cut only from champions that have the capability). Hand edits are expected; bump `version`.
+- Labels besides S-F: **Unknown** (not measured, or offense incomplete: no offense grade while a picked power deals damage the model does not read), **None** (capability absent), **N/A** (pet damage on a build with no pets).
+- **not_rated** (with the reason) when the evaluation's scenario or scenario fingerprint differs from the calibration's, or no thresholds are installed. `tools/test_build_ratings.py` fails after a model bump or a rating-scenario change until the thresholds are recalibrated.
+- Every rating is `provisional: true`. Grades are against optimized itrial champions, so a typical build lands lower than a percentile against all players would put it.
 
 ### ⚠ Rating-release blocker (owner review of #25)
 

@@ -12,6 +12,7 @@ import math
 
 import effectless
 import engine
+import build_ratings
 import first_principles
 import role_output
 import support_ledger
@@ -293,7 +294,7 @@ def _confidence(powers, unsupported):
 
 def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
              db_name, db_version, app_version, prepare=None,
-             powers_by_set=None, power_help=None):
+             powers_by_set=None, power_help=None, thresholds=None):
     """Evaluate a build without optimization, rating or modifying player state.
 
     scenario must be a rating or registered scenario name. Context and game
@@ -362,10 +363,10 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
 
     # Raw offense is not an against-+4 damage figure; the encounter's my_dps
     # handles enemy level, hit chance, purple patch, pets and endurance instead.
-    return {
+    result = {
         "ok": True,
         "schema_version": EVALUATION_SCHEMA_VERSION,
-        "stage": "measurements_only",
+        "stage": "measurements_and_ratings",
         "versions": {"app": app_version, "model": first_principles.MODEL_VERSION,
                      "database": db_name, "database_version": db_version,
                      "scenario_fingerprint": _fingerprint(sc)},
@@ -477,6 +478,10 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
             "Control and healing proxy units are not literal seconds locked or HP restored.",
             "Emergency clicks are reported with gain and uptime, never folded into the sustained totals.",
             "PPM/proc and some scenario constants remain provisional; consult docs/KNOWN-GAPS.md and CLAUDE.md.",
-            "This endpoint assigns no S-F ratings, percentile standings or Pareto rankings.",
+            "S-F ratings are PROVISIONAL fixed thresholds (champions as a guideline, not "
+            "a comparison population); no percentile standings or Pareto rankings yet.",
         ],
     }
+    # M4: grades sit beside the measurements they read; not_rated says why
+    result["ratings"] = build_ratings.rate(result, thresholds)
+    return result

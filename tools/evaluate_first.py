@@ -67,7 +67,8 @@ from converge_parallel import certified_union  # noqa: E402
 EPS = 0.05
 
 
-def evaluate_picks(at, prim, sec, content, picks, role, form=None, slotting=None, ev_out=None):
+def evaluate_picks(at, prim, sec, content, picks, role, form=None, slotting=None, ev_out=None,
+                   solved_out=None):
     """deep_optimize's evaluate() chain, verbatim, on the stored pick list.
     Certified scores were computed on SEARCH-CONSTRUCTED candidate dicts
     (bare full_name/pick_level — _assess_solve reads only full_name), so bare
@@ -115,6 +116,8 @@ def evaluate_picks(at, prim, sec, content, picks, role, form=None, slotting=None
     tm = (fp.SCENARIOS.get(content) or fp.SCENARIOS["general"]).get("teammates", 0)
     if ev_out is not None:
         ev_out.append(ev)        # tools/build_teammate_endurance.py reads end_profile
+    if solved_out is not None:
+        solved_out.append(solved)  # tools/calibrate_rating_thresholds.py rates the served build
     return fp.role_contribution(ev, role, teammates=tm), dt
 
 
