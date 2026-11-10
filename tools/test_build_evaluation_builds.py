@@ -195,6 +195,48 @@ class RealBuildEvaluationTests(unittest.TestCase):
     def support(self, name):
         return self.evaluate(self.builds[name])["measurements"]["support"]["team_support"]
 
+    def test_ledger_averages_equal_the_scores_own_support_totals(self):
+        """Owner review of #26: same-effect rows within one power must SUM per
+        (effect, damage type) like role_output, not collapse to the largest
+        row. Per power, the ledger's average must equal what the score's
+        enhanced_debuff_totals / enhanced_team_buffs credit for that power
+        alone (powers with instant rows or -res procs are excluded: the
+        ledger keeps instants out of averages, procs are a separate channel)."""
+        import role_output
+        import support_ledger
+        sc = __import__("build_evaluation").scenario_params("rating_plus4")
+        procs = role_output._res_proc_uids()
+        compared = multi_row = 0
+        for name in ("cold", "forcefield", "poison", "controller"):
+            build = self.builds[name]
+            ctx = srv._stat_ctx(build["archetype"])
+            ctx["power_by_full"] = srv.POWER_BY_FULL
+            for p in build["powers"]:
+                rec = srv.POWER_BY_FULL.get(p["full_name"])
+                if not rec or any((s or {}).get("piece_uid") in procs for s in p.get("slots") or []):
+                    continue
+                share = role_output.attack_share([p], ctx, 0.8)
+                entry = support_ledger.power_ledger(p, ctx, 0.8, sc, share) or {}
+                for kind, total in (("debuffs", role_output.enhanced_debuff_totals),
+                                    ("buffs", role_output.enhanced_team_buffs)):
+                    rows = entry.get(kind) or []
+                    if any(r["instant"] for r in rows):
+                        continue
+                    want = total([p], ctx, global_recharge=0.8)
+                    for r in rows:
+                        with self.subTest(power=p["full_name"], effect=r["effect"]):
+                            self.assertAlmostEqual(r["average_percent"], round(want[r["effect"]], 2),
+                                                   delta=0.011)
+                        compared += 1
+                    field = "debuff_effects" if kind == "debuffs" else "buff_effects"
+                    keys = [(d.get("effect"), d.get("damage_type")) for d in rec.get(field) or []
+                            if d.get("pv_mode") != 2 and d.get("target") != "Self"]
+                    multi_row += len(keys) != len(set(keys))
+        print(f"{compared} ledger rows matched the score's support totals "
+              f"({multi_row} powers carry repeated same-type rows)")
+        self.assertGreater(compared, 40)
+        self.assertGreater(multi_row, 0, "the regression must cover a summed multi-row power")
+
     def test_av_single_target_regen_debuffer_is_recognized(self):
         """M3 acceptance: strong ST -regen vs an AV, without AoE -damage, is visible."""
         summary = self.support("cold")["summary"]["debuffs_landing_average_percent"]

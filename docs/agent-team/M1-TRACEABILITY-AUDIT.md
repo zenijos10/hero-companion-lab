@@ -113,7 +113,7 @@ smallest first; tick the box in the PR that closes it):
 - [x] 2. **Expose the scenario-aware numbers** — `encounter_value`'s ttl/availability/hit chances and `role_output` control/debuff/heal on that contract (M2/M3).
 - [ ] 2b. **Fix the 31 damaging powers credited zero damage** (owner: later, tracked; see docs/EFFECTLESS-POWERS.md and KNOWN-GAPS.md). Read the 2 twin-backed redirects; source the 29 from the client. Blocks M4 offense grades for affected builds.
 - [x] M3. **Team support measured per power** (support ledger on `/build/evaluate`; see M2-EVALUATION-CONTRACT.md, "M3").
-- [x] 3. **Rating tiers** (PROVISIONAL fixed thresholds, owner 2026-11-10; see M2-EVALUATION-CONTRACT.md, "M4") — — S–F per category from thresholds, with N/A / None / Unknown labels (M4; blocked on owner thresholds).
+- [x] 3. **Rating tiers** — S–F per category with N/A / None / Unknown labels, from PROVISIONAL fixed thresholds (owner, 2026-11-10: champions as a guideline, not a comparison population; see M2-EVALUATION-CONTRACT.md, "M4").
 - [ ] 4. **Peer comparison** — design representative versioned peer cohorts for three scopes; show champion standings as a **separate optimized-reference** comparison if useful. Do not present champion-only percentiles as population percentiles (M4).
 - [ ] 5. **Scorecard + side-by-side compare UI** (M5).
 - [ ] 6. **Pareto frontier** — pure dominance comparator + frontier, then a multi-objective search reusing `_assess_solve` (M6).

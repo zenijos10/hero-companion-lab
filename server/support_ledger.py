@@ -72,12 +72,18 @@ def _strengths(effect, peak, scenario):
 
 
 def _effect_rows(rec, kind, ctx, enh, enh_rech, share):
-    """Buff or debuff rows of one power, typed spreads collapsed (max per type,
-    the same collapse the score uses), keyed by effect."""
+    """Buff or debuff rows of one power keyed by effect, with the score's own
+    aggregation (role_output.enhanced_debuff_totals / enhanced_team_buffs):
+    rows SUM within (effect, damage type), then typed spreads collapse to the
+    largest type so a template written once per type is not counted eight
+    times. Peak and average are aggregated separately (each row carries its
+    own uptime), so the average equals what the score credits for this power.
+    Instant rows (a click effect with no duration) add to the peak only."""
     mod_tables = ctx.get("modifier_tables") or {}
     col = ctx.get("at_column")
     field = "debuff_effects" if kind == "debuff" else "buff_effects"
-    by_effect = {}
+    click = (rec.get("power_type") or 0) == 0
+    by_type = {}
     for d in rec.get(field) or []:
         if d.get("pv_mode") == 2 or d.get("target") == "Self":
             continue
@@ -89,20 +95,27 @@ def _effect_rows(rec, kind, ctx, enh, enh_rech, share):
         effect = d.get("effect")
         if kind == "debuff" and effect in ("Defense", "ToHit"):
             peak *= 1.0 + enh[effect]                  # the score's v10 enhancement
-        click = (rec.get("power_type") or 0) == 0
         duration = d.get("duration") or 0.0
+        cell = by_type.setdefault((effect, d.get("damage_type") or "None"),
+                                  {"peak": 0.0, "average": 0.0, "timed": False, "chance": 0.0})
+        cell["peak"] += peak
+        cell["chance"] = max(cell["chance"], min(max(d.get("probability") or 1.0, 0.0), 1.0))
         if click and duration <= 0:
-            uptime = None                              # instant: no lasting effect to average
-        else:
-            uptime = role_output.click_uptime(rec.get("power_type"), enh_rech, duration)
-            if kind == "debuff" and rec.get("is_attack") and click:
-                uptime *= share                        # one animation bar (v17)
-        row = by_effect.setdefault(effect, {"peak": 0.0, "uptime": 0.0, "types": set(),
-                                            "chance": 1.0})
-        if peak >= row["peak"]:
-            row.update(peak=peak, uptime=uptime,
-                       chance=min(max(d.get("probability") or 1.0, 0.0), 1.0))
-        row["types"].add(d.get("damage_type") or "None")
+            continue                                   # instant: no lasting effect to average
+        uptime = role_output.click_uptime(rec.get("power_type"), enh_rech, duration)
+        if kind == "debuff" and rec.get("is_attack") and click:
+            uptime *= share                            # one animation bar (v17)
+        cell["average"] += peak * uptime
+        cell["timed"] = True
+    by_effect = {}
+    for (effect, dtype), cell in by_type.items():
+        row = by_effect.setdefault(effect, {"peak": 0.0, "average": 0.0, "timed": False,
+                                            "types": set(), "chance": 0.0})
+        row["types"].add(dtype)
+        row["peak"] = max(row["peak"], cell["peak"])          # typed spread -> per-type value
+        row["average"] = max(row["average"], cell["average"])
+        row["timed"] = row["timed"] or cell["timed"]
+        row["chance"] = max(row["chance"], cell["chance"])
     return by_effect
 
 
@@ -166,12 +179,13 @@ def power_ledger(power, ctx, global_recharge, scenario, share):
     for kind in ("buff", "debuff"):
         rows = []
         for effect, r in sorted(_effect_rows(rec, kind, ctx, enh, enh_rech, share).items()):
-            instant = r["uptime"] is None
+            instant = not r["timed"]
+            uptime = (r["average"] / r["peak"]) if (not instant and r["peak"] > 0) else None
             row = {"effect": effect, "types": sorted(r["types"]),
                    "peak_percent": round(r["peak"], 2),
-                   "uptime": None if instant else round(r["uptime"], 3),
-                   "average_percent": None if instant else round(r["peak"] * r["uptime"], 2),
-                   "sustained": (not instant) and r["uptime"] >= SUSTAINED_UPTIME,
+                   "uptime": None if uptime is None else round(uptime, 3),
+                   "average_percent": None if instant else round(r["average"], 2),
+                   "sustained": uptime is not None and uptime >= SUSTAINED_UPTIME,
                    "instant": instant, "chance": r["chance"]}
             if kind == "debuff":
                 row["landing_peak_percent"] = _strengths(effect, r["peak"], scenario)

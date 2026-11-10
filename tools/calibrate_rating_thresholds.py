@@ -121,6 +121,7 @@ def main():
         "scenario": build_evaluation.DEFAULT_SCENARIO,
         "scenario_fingerprint": fingerprint,
         "model_version": first_principles.MODEL_VERSION,
+        "database_version": srv.DB_VERSION,
         "method": ("PROVISIONAL fixed numbers (owner, 2026-11-10). Cut points = quantiles of "
                    "an archetype-stratified sample of shipped itrial champions, rebuilt as "
                    "served and evaluated at the rating scenario: S>=p90 A>=p70 B>=p50 "

@@ -28,11 +28,15 @@ CUTS = {"S": 90.0, "A": 70.0, "B": 50.0, "C": 30.0, "D": 10.0}
 
 
 def stub_eval(st=60.0, offense_ok=True, pets=0.0, control=0.0, scenario="rating_plus4",
-              fingerprint="fp1"):
+              fingerprint="fp1", model=57, database="db1", summons=(), unread=(),
+              summary=True):
     m = lambda v: {"value": v}  # noqa: E731
     return {
         "scenario": {"id": scenario},
-        "versions": {"scenario_fingerprint": fingerprint},
+        "versions": {"scenario_fingerprint": fingerprint, "model": model,
+                     "database_version": database},
+        "build": {"summon_powers": list(summons)},
+        "unsupported": {"powers": [{"power": "X", "reason": r} for r in unread]},
         "confidence": {"offense_complete": offense_ok},
         "measurements": {
             "offense": {"scenario_single_target_dps": m(st), "scenario_aoe_dps_per_target": m(20.0),
@@ -42,14 +46,20 @@ def stub_eval(st=60.0, offense_ok=True, pets=0.0, control=0.0, scenario="rating_
                          "resistance": {}},
             "resources": {"net_per_second": m(0.5), "global_recharge": m(80.0)},
             "support": {"control_proxy": m(control),
-                        "team_support": {"summary": {}}},
+                        "team_support": ({"summary": {
+                            "buffs_average_percent": {"sustained": {}, "burst": {}},
+                            "debuffs_landing_average_percent": {"single_target_vs_av": {},
+                                                                "aoe_vs_scenario": {}},
+                            "ally_heals": {"sustained_per_second": 0.0}}}
+                            if summary else {})},
         },
     }
 
 
 def stub_thresholds():
     return {"version": 9, "scenario": "rating_plus4", "scenario_fingerprint": "fp1",
-            "method": "test", "categories": {k: {"cuts": dict(CUTS)} for k in br.CATEGORIES}}
+            "model_version": 57, "database_version": "db1", "method": "test",
+            "categories": {k: {"cuts": dict(CUTS), "sample_size": 100} for k in br.CATEGORIES}}
 
 
 class GradingRuleTests(unittest.TestCase):
@@ -70,16 +80,46 @@ class GradingRuleTests(unittest.TestCase):
         cats = self.rate(offense_ok=False)["categories"]
         self.assertEqual(cats["single_target_damage"]["grade"], "Unknown")   # unread damage
         self.assertEqual(cats["aoe_damage"]["grade"], "Unknown")
-        self.assertEqual(cats["pet_damage"]["grade"], "N/A")                # no pets
+        self.assertEqual(cats["pet_damage"]["grade"], "N/A")                # no summon power
         self.assertEqual(cats["control"]["grade"], "None")                  # absent capability
         self.assertEqual(cats["survival"]["grade"], "Unknown")              # not measured
         self.assertEqual(cats["resistance"]["grade"], "Unknown")            # incomplete vector
         self.assertEqual(cats["defense"]["grade"], "C")                     # 45 >= the C cut
 
     def test_pets_and_capabilities_grade_when_present(self):
-        cats = self.rate(pets=95.0, control=55.0)["categories"]
+        cats = self.rate(pets=95.0, control=55.0, summons=["MM.Pets.Soldiers"])["categories"]
         self.assertEqual(cats["pet_damage"]["grade"], "S")
         self.assertEqual(cats["control"]["grade"], "B")
+
+    def test_pets_come_from_summon_records_not_damage(self):
+        """A summon the model prices at zero is Unknown, never N/A."""
+        cats = self.rate(pets=0.0, summons=["Controller.Plant.Fly_Trap"])["categories"]
+        self.assertEqual(cats["pet_damage"]["grade"], "Unknown")
+        self.assertEqual(self.rate(pets=0.0)["categories"]["pet_damage"]["grade"], "N/A")
+
+    def test_absence_is_only_none_when_everything_is_read(self):
+        self.assertEqual(self.rate()["categories"]["buff_defense"]["grade"], "None")
+        unread = self.rate(unread=["effect_unread"])["categories"]
+        self.assertEqual(unread["buff_defense"]["grade"], "Unknown")
+        self.assertEqual(unread["control"]["grade"], "Unknown")
+        missing = self.rate(summary=False)["categories"]
+        self.assertEqual(missing["buff_defense"]["grade"], "Unknown")
+        self.assertEqual(missing["healing"]["grade"], "Unknown")
+
+    def test_small_samples_are_flagged(self):
+        t = stub_thresholds()
+        t["categories"]["buff_recharge"]["sample_size"] = 10
+        cats = br.rate(stub_eval(), t)["categories"]
+        self.assertIs(cats["buff_recharge"]["low_sample"], True)
+        self.assertIs(cats["defense"]["low_sample"], False)
+
+    def test_stale_model_or_data_is_not_rated(self):
+        stale = self.rate(model=58)
+        self.assertEqual(stale["status"], "not_rated")
+        self.assertIn("model", stale["reason"])
+        data = self.rate(database="db2")
+        self.assertEqual(data["status"], "not_rated")
+        self.assertIn("game data", data["reason"])
 
     def test_not_rated_against_the_wrong_fight(self):
         self.assertEqual(br.rate(stub_eval(), None)["status"], "not_rated")
@@ -106,6 +146,8 @@ class ShippedThresholdTests(unittest.TestCase):
                          "rating scenario changed: run tools/calibrate_rating_thresholds.py")
         self.assertEqual(t["model_version"], first_principles.MODEL_VERSION,
                          "model bumped: recalibrate the rating thresholds")
+        self.assertEqual(t["database_version"], self.srv.DB_VERSION,
+                         "game data changed: recalibrate the rating thresholds")
         self.assertEqual(set(t["categories"]), set(br.CATEGORIES))
         graded = 0
         for key, row in t["categories"].items():

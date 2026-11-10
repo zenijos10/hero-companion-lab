@@ -20,6 +20,7 @@ import json
 import os
 
 GRADES = ("S", "A", "B", "C", "D")      # F = below the D cut
+LOW_SAMPLE = 30     # cuts set from fewer champions than this are flagged low_sample
 THRESHOLDS_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "rating_thresholds.json")
 
 
@@ -44,23 +45,41 @@ def _mean_of(path, keys):
     return get
 
 
+def _summary(ev):
+    """The support ledger's summary, or None when the evaluation carries none
+    (then every support category is Unknown, never a measured zero)."""
+    return (((ev.get("measurements") or {}).get("support") or {})
+            .get("team_support") or {}).get("summary")
+
+
 def _support(section, bucket, effect):
     def get(ev):
-        summary = ((((ev.get("measurements") or {}).get("support") or {})
-                    .get("team_support") or {}).get("summary") or {})
+        summary = _summary(ev)
+        if summary is None or section not in summary:
+            return None
+        # a measured summary without the effect means the build has none of it
         return ((summary.get(section) or {}).get(bucket) or {}).get(effect, 0.0)
     return get
 
 
 def _ally_heal(ev):
-    summary = ((((ev.get("measurements") or {}).get("support") or {})
-                .get("team_support") or {}).get("summary") or {})
+    summary = _summary(ev)
+    if summary is None or "ally_heals" not in summary:
+        return None
     return (summary.get("ally_heals") or {}).get("sustained_per_second", 0.0)
 
 
-def _has_pets(ev):
-    return bool(((ev.get("measurements") or {}).get("offense") or {})
-                .get("scenario_pet_dps", {}).get("value"))
+def _summons(ev):
+    """Picked powers that summon something, from the records (not from pet DPS)."""
+    return (ev.get("build") or {}).get("summon_powers")
+
+
+_UNREAD = ("unknown_record", "unread_redirect", "damaging_unread", "effect_unread")
+
+
+def _has_unread_effects(ev):
+    return any(u.get("reason") in _UNREAD
+               for u in (ev.get("unsupported") or {}).get("powers") or [])
 
 
 _TYPES = ("Cold", "Energy", "Fire", "Lethal", "Negative", "Psionic", "Smashing", "Toxic")
@@ -137,24 +156,46 @@ def rate(evaluation, thresholds):
     if scenario.get("id") != thresholds.get("scenario"):
         return _not_rated(f"thresholds are calibrated for {thresholds.get('scenario')}, "
                           f"not {scenario.get('id')}", thresholds)
-    if (evaluation.get("versions") or {}).get("scenario_fingerprint") != \
-            thresholds.get("scenario_fingerprint"):
+    versions = evaluation.get("versions") or {}
+    if versions.get("scenario_fingerprint") != thresholds.get("scenario_fingerprint"):
         return _not_rated("the scenario constants changed since the thresholds were "
                           "calibrated; recalibrate", thresholds)
+    if versions.get("model") != thresholds.get("model_version"):
+        return _not_rated(f"the thresholds were calibrated on model "
+                          f"v{thresholds.get('model_version')}, this evaluation ran on "
+                          f"v{versions.get('model')}; recalibrate", thresholds)
+    if thresholds.get("database_version") and \
+            versions.get("database_version") != thresholds.get("database_version"):
+        return _not_rated(f"the thresholds were calibrated on game data "
+                          f"{thresholds.get('database_version')}, this evaluation ran on "
+                          f"{versions.get('database_version')}; recalibrate", thresholds)
     offense_ok = (evaluation.get("confidence") or {}).get("offense_complete", False)
+    unread = _has_unread_effects(evaluation)
+    summons = _summons(evaluation)
     values = measure(evaluation)
     out = {}
     for key, (label, _get, unit, kind) in CATEGORIES.items():
         value = values[key]
-        cuts = (thresholds.get("categories") or {}).get(key, {}).get("cuts")
-        row = {"label": label, "value": value, "unit": unit, "cuts": cuts}
-        if kind == "pets" and not _has_pets(evaluation):
-            row.update(grade="N/A", why="the build has no pets")
+        spec = (thresholds.get("categories") or {}).get(key, {})
+        cuts = spec.get("cuts")
+        row = {"label": label, "value": value, "unit": unit, "cuts": cuts,
+               "sample_size": spec.get("sample_size"),
+               "low_sample": (spec.get("sample_size") or 0) < LOW_SAMPLE}
+        if kind == "pets" and summons is None:
+            row.update(grade="Unknown", why="the evaluation does not list summon powers")
+        elif kind == "pets" and not summons:
+            row.update(grade="N/A", why="the build picks no power that summons a pet")
+        elif kind == "pets" and not value:
+            row.update(grade="Unknown", why="the build summons pets whose damage the model "
+                                            "does not price")
         elif kind == "offense" and not offense_ok:
             row.update(grade="Unknown", why="a picked power deals damage the model does not "
                                             "read (unsupported.powers, damaging: true)")
         elif value is None:
             row.update(grade="Unknown", why="not measured")
+        elif kind == "capability" and value <= 0 and unread:
+            row.update(grade="Unknown", why="none measured, but the build picks powers whose "
+                                            "effects the model does not read")
         elif kind == "capability" and value <= 0:
             row.update(grade="None", why="the build has none of this")
         elif not cuts:
@@ -164,4 +205,6 @@ def rate(evaluation, thresholds):
         out[key] = row
     return {"status": "rated", "thresholds_version": thresholds.get("version"),
             "scenario": thresholds.get("scenario"), "provisional": True,
+            "population_note": "cut points come from optimized itrial champions as a "
+                               "guideline; they are NOT player-population percentiles",
             "basis": thresholds.get("method"), "categories": out}

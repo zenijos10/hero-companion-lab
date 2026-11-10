@@ -373,7 +373,12 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
         "inputs_normalized": normalized,
         "build": {"archetype": archetype, "primary": build.get("primary"),
                   "secondary": build.get("secondary"),
-                  "power_count": len(build_copy["powers"])},
+                  "power_count": len(build_copy["powers"]),
+                  # picked powers that summon an entity (pets, pseudo-pets): from
+                  # the record's own summons list, never inferred from pet damage
+                  "summon_powers": sorted(p["full_name"] for p in build_copy["powers"]
+                                          if (power_records.get(p["full_name"]) or {})
+                                          .get("summons"))},
         "scenario": {"id": scenario, "enemy_level_shift": sc["shift"],
                      "enemies": sc["enemies"], "teammates": sc["teammates"],
                      "duration_seconds": sc["length"],
