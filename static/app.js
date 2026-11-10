@@ -9864,6 +9864,7 @@ async function saveTextFile(filename, text) {
 // build.powers, so a preview cannot leak into a grade).
 // ---------------------------------------------------------------------------
 let _LAST_RATING = null;
+let _RATING_SEQ = 0;      // only the newest request may paint the modal
 
 const _RATING_UNITS = {
   percent: "%", percent_bonus: "%", seconds: "s", damage_per_second: "DPS",
@@ -9896,7 +9897,7 @@ function renderRatingHtml(cmp) {
   const single = cmp.mode === "scorecard";
   const rows = (cmp.rows || []).map(r => {
     const best = new Set(r.best || []);
-    const cells = r.cells.map((cell, i) => {
+    const cells = (r.cells || []).map((cell, i) => {
       if (!cols[i] || !cols[i].ok) return `<td class="muted">-</td>`;
       const g = cell.grade || "-";
       const cls = /^[SABCDF]$/.test(g) ? `rt-g rt-g-${g}` : "rt-g rt-g-x";
@@ -9915,9 +9916,7 @@ function renderRatingHtml(cmp) {
     + c.unsupported.map(u => `<li>${escHtml(u.power)}: ${escHtml(String(u.reason).replace(/_/g, " "))}</li>`).join("")
     + `</ul></details>`).join("");
   const notes = (cmp.notes || []).map(n => `<li>${escHtml(n)}</li>`).join("");
-  const scenarioWarn = cmp.same_scenario === false
-    ? `<p class="rt-flag">These builds were evaluated in different scenarios and do not compare.</p>` : "";
-  return `${scenarioWarn}<table class="rating-table"><thead><tr><th></th>${head}`
+  return `<table class="rating-table"><thead><tr><th></th>${head}`
     + `${single ? "" : "<th>Gap</th>"}</tr></thead><tbody>${rows}</tbody></table>`
     + `${unsupported}<ul class="muted small keep-whole">${notes}</ul>`;
 }
@@ -9928,14 +9927,17 @@ function _ratingLabel() {
 
 async function _runRating(entries) {
   const body = $("rating-body");
+  const seq = ++_RATING_SEQ;
   body.innerHTML = `<p class="muted">Rating…</p>`;
   let res = null;
   try {
     res = await api("/build/compare", postJson({ builds: entries }));
   } catch (e) {
+    if (seq !== _RATING_SEQ) return;
     body.innerHTML = `<p class="muted">The rating could not be computed.</p>`;
     return;
   }
+  if (seq !== _RATING_SEQ) return;       // a newer rating was asked for meanwhile
   _LAST_RATING = res;
   body.innerHTML = renderRatingHtml(res);
 }
@@ -9955,9 +9957,16 @@ async function _populateRatingCompare() {
   } catch (e) { /* the scorecard still works without the list */ }
 }
 
+function _hasBuildToRate() {
+  return !!build.archetype && (build.powers || []).length > 0;
+}
+
 async function openRating() {
   $("rating-modal").classList.remove("hidden");
-  if (!build.archetype || !(build.powers || []).length) {
+  _LAST_RATING = null;
+  if (!_hasBuildToRate()) {
+    _RATING_SEQ++;                         // drop any rating still in flight
+    $("rating-compare-sel").innerHTML = "";
     $("rating-body").innerHTML = `<p class="muted">Pick an archetype and some powers first: there is nothing to rate yet.</p>`;
     return;
   }
@@ -9967,7 +9976,7 @@ async function openRating() {
 
 async function compareRating() {
   const id = $("rating-compare-sel").value;
-  if (!id) return;
+  if (!id || !_hasBuildToRate()) return;
   let saved = null;
   try {
     const res = await api(`/saves/${encodeURIComponent(id)}`);
@@ -9983,7 +9992,8 @@ async function compareRating() {
 
 async function saveRatingFile() {
   if (!_LAST_RATING) return;
-  const name = (_ratingLabel() || "build").replace(/[^A-Za-z0-9 _-]+/g, "").trim() || "build";
+  const labels = (_LAST_RATING.columns || []).map(c => c.label).join(" vs ");
+  const name = (labels || _ratingLabel()).replace(/[^A-Za-z0-9 _-]+/g, "").trim() || "build";
   await saveTextFile(`${name} rating.json`, JSON.stringify(_LAST_RATING, null, 1));
 }
 

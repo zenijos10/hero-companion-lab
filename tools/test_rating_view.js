@@ -43,7 +43,7 @@ let checks = 0;
 const ok = (cond, msg) => { assert.ok(cond, msg); checks++; };
 
 // 1. scorecard: why text shown inline, no Gap column, grade class
-let html = render({ ok: true, mode: "scorecard", columns: [col("Mine")], same_scenario: true,
+let html = render({ ok: true, mode: "scorecard", columns: [col("Mine")],
   rows: [row([{ grade: "B", value: 31.25, why: null, low_sample: false }]),
          row([{ grade: "None", value: 0, why: "the build has none of this" }], { category: "control", label: "Control", unit: "weighted_mez_seconds_proxy" })],
   notes: ["Read-only: nothing was solved or saved."] });
@@ -54,7 +54,7 @@ ok(!html.includes("<th>Gap</th>"), "no Gap column on a scorecard");
 ok(html.includes("Read-only: nothing was solved or saved."), "notes rendered");
 
 // 2. comparison: Gap column, best marker, meaningful row, low-sample marker
-html = render({ ok: true, mode: "comparison", same_scenario: true,
+html = render({ ok: true, mode: "comparison",
   columns: [col("A"), col("B")],
   rows: [row([{ grade: "B", value: 30 }, { grade: "S", value: 45, low_sample: true }],
              { best: [1], meaningful: true, difference: 15 })], notes: [] });
@@ -65,7 +65,7 @@ ok(html.includes("Δ 15.0 %"), "gap size shown");
 ok(html.includes("rt-low"), "low-sample cut flagged");
 
 // 3. escaping: a save name is user-typed text
-html = render({ ok: true, mode: "comparison", same_scenario: true,
+html = render({ ok: true, mode: "comparison",
   columns: [col('<img src=x onerror="alert(1)">'), { label: "PvP 'one'", ok: false, error: "PvP <b>not</b> supported" }],
   rows: [row([{ grade: "A", value: 40, why: '"><script>' }, { grade: null, value: null }])], notes: [] });
 ok(!html.includes("<img src=x"), "label is escaped");
@@ -73,16 +73,19 @@ ok(!html.includes("<script>"), "why text is escaped, including in the title attr
 ok(html.includes("PvP &lt;b&gt;not&lt;/b&gt; supported"), "a refused column states its reason, escaped");
 
 // 4. flags and unsupported list
-html = render({ ok: true, mode: "scorecard", same_scenario: false,
+html = render({ ok: true, mode: "scorecard",
   columns: [col("X", { rated: false, not_rated_reason: "recalibrate", offense_complete: false,
                        unsupported: [{ power: "Blaster_Ranged.Archery.Ranged_Shot", reason: "unread_redirect" }] })],
   rows: [], notes: [] });
 ok(html.includes("Not rated: recalibrate"), "not-rated reason shown");
 ok(html.includes("Offense incomplete"), "incomplete offense flagged");
 ok(html.includes("unread redirect"), "unsupported powers listed in plain words");
-ok(html.includes("different scenarios"), "cross-scenario comparison warned");
 
-// 5. garbage in: never throws
+// 5. a row without cells never throws
+html = render({ ok: true, mode: "scorecard", columns: [col("Y")], rows: [{ label: "Defense", unit: "percent" }], notes: [] });
+ok(html.includes("Defense"), "a row missing cells still renders");
+
+// 6. garbage in: never throws
 ok(render(null).includes("could not be read"), "a bad response reads as an error, not a crash");
 
 console.log(`test_rating_view: ${checks} checks passed`);

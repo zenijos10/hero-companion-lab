@@ -73,13 +73,11 @@ def compare(entries):
     per_column = _cells(entries)
     rows = [_row(key, spec[0], spec[2], per_column)
             for key, spec in build_ratings.CATEGORIES.items()]
-    scenarios = {c.get("scenario") for c in columns if c.get("ok")}
     return {
         "ok": any(c["ok"] for c in columns),
         "mode": "scorecard" if len(columns) == 1 else "comparison",
         "columns": columns,
         "rows": rows,
-        "same_scenario": len(scenarios) <= 1,
         "notes": [
             "Read-only: nothing was solved or saved.",
             "Grades are PROVISIONAL: fixed cut points set from optimized itrial champions "
