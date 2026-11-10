@@ -99,9 +99,20 @@ class GradingRuleTests(unittest.TestCase):
 
     def test_absence_is_only_none_when_everything_is_read(self):
         self.assertEqual(self.rate()["categories"]["buff_defense"]["grade"], "None")
-        unread = self.rate(unread=["effect_unread"])["categories"]
+        unread = self.rate(unread=["effect_unread"])["categories"]   # no help text
         self.assertEqual(unread["buff_defense"]["grade"], "Unknown")
         self.assertEqual(unread["control"]["grade"], "Unknown")
+        # the game's short help scopes the doubt: a Taunt cannot hide a team buff
+        ev = stub_eval()
+        ev["unsupported"]["powers"] = [{"power": "T", "reason": "effect_unread",
+                                        "short_help": "Ranged (Targeted AoE), Foe Taunt"}]
+        cats = br.rate(ev, stub_thresholds())["categories"]
+        self.assertEqual(cats["buff_defense"]["grade"], "None")
+        self.assertEqual(cats["control"]["grade"], "None")
+        ev["unsupported"]["powers"][0]["short_help"] = "Ranged, Ally +Def"
+        cats = br.rate(ev, stub_thresholds())["categories"]
+        self.assertEqual(cats["buff_defense"]["grade"], "Unknown")
+        self.assertEqual(cats["debuff_tohit_spawn"]["grade"], "None")
         missing = self.rate(summary=False)["categories"]
         self.assertEqual(missing["buff_defense"]["grade"], "Unknown")
         self.assertEqual(missing["healing"]["grade"], "Unknown")

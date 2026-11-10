@@ -46,6 +46,8 @@ What is rated: the player's own build, in combat. Suppressible (Hide-class) defe
 ### Emergency powers
 
 A click power with timed self Defense/Resistance (Unstoppable, Elude, Strength of Will) is emergency mitigation. It is never counted in the sustained totals, even when the player ticked it (the ticked ones are listed in `inputs_normalized.emergency_excluded_from_sustained`). Each one gets a row: the per-type gain while active (measured by recalculating with it switched on), duration, recharge after global recharge (incl. Hasten) and its own slotting, uptime, and the penalties the game data attaches (endurance, recovery, regeneration or HP crashes). When the rows do not share one duration, `uniform_duration` is false and `uptime_by_effect` gives the exact uptime per effect/type; the headline `duration_seconds`/`uptime` is then the longest row. Penalties are the raw game-data rows (`penalty_basis`), not a normalized severity.
+
+A toggle whose own help says the caster cannot attack while it runs (Personal Force Field: "while it is active, you can only use powers that affect yourself"; 6 pickable records) is a defensive MODE: kept out of the sustained totals the same way, listed with `kind: caster_locked_toggle`, its gain while on and the game's restriction sentence, and no uptime (it is the player's choice and costs every attack). Timed clicks carry `kind: timed_click`.
 - limitations: approximations and deliberately unsupported capabilities.
 
 Representative scalars have value, unit, basis, and status (modeled or unknown). Missing or nonfinite results are null, never silently zero.
@@ -109,6 +111,13 @@ Acceptance (real builds, `tools/test_build_evaluation_builds.py`): a Cold Domina
 - **not_rated** (with the reason) when the evaluation's scenario, scenario fingerprint, model version or game-data version differs from the calibration's, or no thresholds are installed.
 - Each row carries the cut's `sample_size` and `low_sample` (< 30 champions; team recharge buff is the known thin one). `tools/test_build_ratings.py` fails after a model bump or a rating-scenario change until the thresholds are recalibrated.
 - Every rating is `provisional: true`. Grades are against optimized itrial champions, so a typical build lands lower than a percentile against all players would put it.
+
+### M5: scorecard and side-by-side comparison (`POST /build/compare`, the app's 📊 Rate this build)
+
+- **Route:** `{builds: [{label, build}, ...]}`, 1 to 4 builds, optional `scenario`. One build = `mode: scorecard`; more = `mode: comparison`. Read-only: it evaluates through the same `_evaluate_build` helper `/build/evaluate` uses (never solves, never writes a save; pinned by `tools/test_build_compare.py`). A build the evaluation refuses (PvP, an exemplar level) comes back as a column with `ok: false` and its reason, so the app states it instead of raising an error banner.
+- **Table (`server/build_compare.py`, pure):** one row per rating category with each build's grade, value and why; `best` (the leading letter-graded cell(s); none on a tie or with fewer than two graded cells); `meaningful` when the grades differ or the gap is at least 10% of the larger value; `difference` = the gap. **No overall winner is ever declared** (M4's no-composite rule).
+- **App:** a 📊 Rate this build button on the Stats control row, mirrored as a Build menu item (the menu presses the real button). It sends the build as OWNED (`buildWithAccolades()`; booster previews live in `PREVIEW_BOOSTS`, never in `build.powers`), shows the scorecard, offers "Compare with" any other saved character, and saves the result as a JSON file through `saveTextFile` (no save is modified). The renderer `renderRatingHtml` is pure and tested under node (`tools/test_rating_view.js`: escaping of user-typed names, refused columns, gap column, best and low-sample markers; negative-controlled). Driven through the real page in Chromium: menu item → dialog on Stats → 18 graded rows → compare against a saved character → side-by-side with gaps, no page errors.
+- **Searchable help:** a "Build rating" topic (Stats tab).
 
 ### ⚠ Rating-release blocker (owner review of #25)
 

@@ -11,6 +11,9 @@ on:
       - "tools/test_encounter_parity.py"
       - "tools/test_effectless.py"
       - "tools/test_build_ratings.py"
+      - "tools/test_build_compare.py"
+      - "tools/test_rating_view.js"
+      - "static/app.js"
       - "tools/calibrate_rating_thresholds.py"
       - "tools/classify_effectless_powers.py"
       - "docs/EFFECTLESS-POWERS.md"
@@ -54,5 +57,9 @@ jobs:
         run: python tools/test_effectless.py
       - name: S-F ratings (rules + shipped thresholds current)
         run: python tools/test_build_ratings.py
+      - name: Build compare route + rules (M5)
+        run: python tools/test_build_compare.py
+      - name: Rating view renderer (M5, node)
+        run: node tools/test_rating_view.js
       - name: Route-coverage smoke battery
         run: python tools/test_user_paths.py

@@ -98,6 +98,16 @@ check("/build/evaluate rejects an unsupported exemplar level",
       C.post("/build/evaluate",
              json={"build": dict(BUILD, exemplar_level=35)}).status_code == 400)
 
+# M5: scorecard / side-by-side over /build/evaluate; read-only, refusals as columns.
+T("/build/compare")
+_cmp = j(C.post("/build/compare", json={"builds": [{"label": "A", "build": BUILD},
+                                                    {"label": "PvP", "build": dict(BUILD, pvp=True)}]}))
+check("/build/compare returns a comparison with a refused column",
+      _cmp.get("mode") == "comparison" and len(_cmp.get("rows") or []) == 18
+      and (_cmp.get("columns") or [{}, {}])[1].get("ok") is False, _cmp.get("mode"))
+check("/build/compare rejects an empty request",
+      C.post("/build/compare", json={"builds": []}).status_code == 400)
+
 
 # ── read-only catalogs ──────────────────────────────────────────────────────
 T("/"); check("/ serves the app shell", C.get("/").status_code == 200)

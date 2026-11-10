@@ -139,6 +139,14 @@ def build():
         "duration (instant effects: Poison Trap's -Recovery, endurance "
         "drains) take uptime 1.0 in click_uptime. Both move scores when "
         "fixed: owner's ruling, harden-before-certify applies.",
+        "**The score counts Personal Force Field as always-on defense** "
+        "(found by the M5 scorecard, 2026-11-10). It is a toggle, so totals "
+        "include it, yet its own help says the caster can only use self "
+        "powers while it runs (6 pickable records: Controller, Corruptor, "
+        "Defender and Mastermind Force Field, Force Mastery, Dominator Mace "
+        "Mastery). /build/evaluate keeps it out of sustained defense and lists "
+        "it as a caster_locked_toggle; the SCORE is unchanged (owner's ruling: "
+        "it moves scores).",
         "**Domination's magnitude half** - adds or replaces is ambiguous in "
         "the client (3 of 41 pairs fit neither reading). Duration half is "
         "shipped; magnitude deliberately not guessed.",
