@@ -1,0 +1,196 @@
+{
+ "categories": {
+  "aoe_damage": {
+   "cuts": {
+    "A": 57.22,
+    "B": 39.6,
+    "C": 17.06,
+    "D": 0.46,
+    "S": 82.78
+   },
+   "sample_size": 237
+  },
+  "buff_damage": {
+   "cuts": {
+    "A": 26.25,
+    "B": 15.0,
+    "C": 11.25,
+    "D": 10.5,
+    "S": 45.0
+   },
+   "sample_size": 134
+  },
+  "buff_defense": {
+   "cuts": {
+    "A": 9.528,
+    "B": 3.5,
+    "C": 2.62,
+    "D": 2.27,
+    "S": 28.87
+   },
+   "sample_size": 157
+  },
+  "buff_recharge": {
+   "cuts": {
+    "A": 30.0,
+    "B": 30.0,
+    "C": 24.0,
+    "D": 5.0,
+    "S": 50.0
+   },
+   "sample_size": 10
+  },
+  "control": {
+   "cuts": {
+    "A": 284.05,
+    "B": 129.25,
+    "C": 80.25,
+    "D": 36.65,
+    "S": 651.95
+   },
+   "sample_size": 246
+  },
+  "debuff_damage_spawn": {
+   "cuts": {
+    "A": 10.08,
+    "B": 8.1,
+    "C": 7.2,
+    "D": 3.23,
+    "S": 16.8
+   },
+   "sample_size": 81
+  },
+  "debuff_defense_spawn": {
+   "cuts": {
+    "A": 12.826,
+    "B": 7.79,
+    "C": 1.58,
+    "D": 0.6,
+    "S": 24.167
+   },
+   "sample_size": 132
+  },
+  "debuff_regeneration_av": {
+   "cuts": {
+    "A": 18.69,
+    "B": 8.115,
+    "C": 4.068,
+    "D": 0.552,
+    "S": 46.236
+   },
+   "sample_size": 40
+  },
+  "debuff_resistance_av": {
+   "cuts": {
+    "A": 7.658,
+    "B": 5.785,
+    "C": 5.2,
+    "D": 3.675,
+    "S": 20.7
+   },
+   "sample_size": 142
+  },
+  "debuff_tohit_spawn": {
+   "cuts": {
+    "A": 5.731,
+    "B": 2.23,
+    "C": 0.81,
+    "D": 0.433,
+    "S": 17.199
+   },
+   "sample_size": 184
+  },
+  "defense": {
+   "cuts": {
+    "A": 28.18,
+    "B": 25.652,
+    "C": 23.437,
+    "D": 20.728,
+    "S": 42.25
+   },
+   "sample_size": 246
+  },
+  "endurance": {
+   "cuts": {
+    "A": -2.92,
+    "B": -3.55,
+    "C": -4.13,
+    "D": -4.97,
+    "S": 0.165
+   },
+   "sample_size": 246
+  },
+  "healing": {
+   "cuts": {
+    "A": 448.303,
+    "B": 124.838,
+    "C": 78.612,
+    "D": 56.057,
+    "S": 590.113
+   },
+   "sample_size": 43
+  },
+  "pet_damage": {
+   "cuts": {
+    "A": 33.56,
+    "B": 24.6,
+    "C": 17.06,
+    "D": 8.3,
+    "S": 66.12
+   },
+   "sample_size": 93
+  },
+  "recharge": {
+   "cuts": {
+    "A": 74.905,
+    "B": 65.0,
+    "C": 55.0,
+    "D": 46.875,
+    "S": 89.86
+   },
+   "sample_size": 246
+  },
+  "resistance": {
+   "cuts": {
+    "A": 43.014,
+    "B": 35.196,
+    "C": 29.194,
+    "D": 25.475,
+    "S": 56.823
+   },
+   "sample_size": 246
+  },
+  "single_target_damage": {
+   "cuts": {
+    "A": 75.42,
+    "B": 60.6,
+    "C": 43.1,
+    "D": 15.78,
+    "S": 114.14
+   },
+   "sample_size": 237
+  },
+  "survival": {
+   "cuts": {
+    "A": 1353.55,
+    "B": 487.0,
+    "C": 116.7,
+    "D": 42.65,
+    "S": 1985.3
+   },
+   "sample_size": 246
+  }
+ },
+ "created": "2026-11-10",
+ "database_version": "2026.1.1242",
+ "method": "PROVISIONAL fixed numbers (owner, 2026-11-10). Cut points = quantiles of an archetype-stratified sample of shipped itrial champions, rebuilt as served and evaluated at the rating scenario: S>=p90 A>=p70 B>=p50 C>=p30 D>=p10, else F. Champions are a guideline, NOT the comparison population. Capability categories are cut from champions that have the capability. Edit by hand and bump version as builds come in.",
+ "model_version": 57,
+ "sample": {
+  "contexts": 246,
+  "per_archetype": 20,
+  "skipped": []
+ },
+ "scenario": "rating_plus4",
+ "scenario_fingerprint": "cb4ae387852f",
+ "version": 1
+}

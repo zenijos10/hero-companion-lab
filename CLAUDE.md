@@ -127,6 +127,29 @@ out. Rules going forward:
 - **The app keeps character level as `level_reached`, never `char_level`** (#13 lost it
   both ways). Import writes both; export reads either.
 
+## Build rating / Pareto plan (lab, 2026-11; docs/agent-team/)
+
+- **The plan is `docs/agent-team/BUILD-EVALUATION-RATING-OPTIMIZATION-PLAN.md`** (M1-M7); the
+  MVP is NOT import/export alone: rate an imported build per category, compare it, optimize to a
+  Pareto frontier. M1 audit = `M1-TRACEABILITY-AUDIT.md` (its backlog replaces GitHub Issues,
+  which are disabled). M2 = `/build/evaluate`, contract in `M2-EVALUATION-CONTRACT.md` (merged).
+- **⚠ 31 DAMAGING POWERS ARE CREDITED ZERO DAMAGE — owner: fix later, tracked** (KNOWN-GAPS.md,
+  docs/EFFECTLESS-POWERS.md, `server/effectless.py`, pinned by `tools/test_effectless.py`). 2 have
+  twin records we ship and nothing reads (Archery Ranged Shot, Fire Manipulation Burn); 29 need the
+  client (next PATCH-WATCH export). Model change, moves scores. Until fixed: **no M4 offense grade
+  ships for a build whose `confidence.offense_complete` is false.**
+- **Optimizer parity is pinned** (`tools/test_encounter_parity.py` + fixture): a display-only
+  change to `encounter_value` must reproduce every pinned score; a model bump re-pins with `--write`.
+- Rating scenarios live in `build_evaluation.RATING_SCENARIOS` (rating_plus4 = general at +4),
+  NEVER in `first_principles.SCENARIOS` (that would make them solver contents).
+- **M4 rulings (owner, 2026-11-10): +4 is the default rating scenario; S-F thresholds start as
+  FIXED numbers (`data/rating_thresholds.json`, written by `tools/calibrate_rating_thresholds.py`,
+  hand-editable, bump `version`) using the shipped champions as a GUIDELINE, and move as more
+  builds come in. The champion roster is NOT the comparison population ("no idea what's in
+  them"); peer cohorts are worked out as we go.** Ratings say `not_rated` when the scenario or its
+  fingerprint differs from the calibration; `tools/test_build_ratings.py` fails on a model bump or
+  scenario change until the thresholds are recalibrated.
+
 ## Communication protocol (token discipline — strict)
 
 Joel's session context is a limited resource. Do not spend it on prose.

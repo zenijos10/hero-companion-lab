@@ -963,6 +963,14 @@ def _domination_duration_bonus(powers, global_recharge):
     return _DOM_DURATION_BONUS * uptime
 
 
+def player_effect_strength(shift):
+    """Purple Patch: the share of the player's damage, debuff strength and mez
+    duration that lands on a foe `shift` levels higher (wiki-verified table;
+    x0.65 at +3, x0.48 at +4). The ONE lookup encounter_value and the
+    evaluation's support ledger share."""
+    return _PP_BELOW.get(shift, 0.30)
+
+
 def mastermind_upgrade_records(recs):
     """The (at most two) upgrade powers a Mastermind re-casts after resummoning:
     effect-less clicks in a summon powerset (grant-power redirects the parser
@@ -999,7 +1007,7 @@ def encounter_value(archetype, powers, ctx, totals, scenario="general", arch_row
     ro = role_output_mod
     # Purple Patch (wiki-verified): EVERYTHING the player does to higher foes scales down —
     # damage, debuff strength, mez duration. ×0.65 at +3, ×0.48 at +4.
-    pp = _PP_BELOW.get(sc.get("shift", 0), 0.30)
+    pp = player_effect_strength(sc.get("shift", 0))
     # AV innate debuff resistance (always-on, 0.85 @50) — hits every debuff EXCEPT −Resistance.
     dres = 1.0 - sc.get("debuff_res", 0.0)
     # CLICK-BUFF RECHARGE (Hasten) — computed up front because debuff UPTIME (v11) needs the

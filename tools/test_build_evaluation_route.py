@@ -41,7 +41,8 @@ class BuildEvaluateRouteTests(unittest.TestCase):
         self.assertEqual(data["versions"]["model"], fp.MODEL_VERSION)
         self.assertIn("single_target_dps_raw", data["measurements"]["offense"])
         self.assertIn("scenario_personal_dps", data["measurements"]["offense"])
-        self.assertNotIn("ratings", data)
+        self.assertEqual(data["ratings"]["status"], "rated")
+        self.assertEqual(data["ratings"]["scenario"], "rating_plus4")
         self.assertEqual(self.build, before)
 
     def test_original_general_solver_preset_is_unchanged(self):
@@ -52,6 +53,8 @@ class BuildEvaluateRouteTests(unittest.TestCase):
                                     json={"build": self.build, "scenario": "general"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json()["scenario"]["enemy_level_shift"], 1)
+        # thresholds are calibrated at +4: a +1 evaluation is not graded against them
+        self.assertEqual(response.get_json()["ratings"]["status"], "not_rated")
 
     def test_unknown_power_is_disclosed_instead_of_hidden(self):
         build = copy.deepcopy(self.build)

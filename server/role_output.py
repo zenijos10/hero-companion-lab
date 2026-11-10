@@ -283,6 +283,43 @@ def _res_proc_uids():
     return _RES_PROC_UIDS
 
 
+def row_peak_pct(d, mod_tables, col):
+    """One buff/debuff row's peak magnitude in percent, chance-weighted, unenhanced:
+    |scale x nMag x AttribMod[table][AT] x probability| x 100. None when the AT has
+    no value in that table. Probability is clamped to [0, 1] (raw Mids rows carry
+    values > 1). THE ONE COPY: the score's totals and the evaluation ledger read it."""
+    row = mod_tables.get(d.get("modifier_table"))
+    if not row or col is None or col >= len(row):
+        return None
+    prob = min(max(d.get("probability") or 1.0, 0.0), 1.0)
+    return abs((d.get("scale") or 0) * (d.get("nmag") or 1.0) * row[col] * prob) * 100.0
+
+
+def click_uptime(power_type, enh_rech, duration):
+    """Share of the time a timed effect is up: a click's duration / its enhanced
+    recharge (capped at 1); toggles, autos and effects without a duration are 1."""
+    if (power_type or 0) == 0 and enh_rech > 0 and duration > 0:
+        return min(1.0, duration / enh_rech)
+    return 1.0
+
+
+def attack_share(powers, ctx, global_recharge=0.0):
+    """v17 CAST-TIME BUDGET: attack-carried debuffs (Sonic's -res chain) apply only
+    while the attack is cast, and there is one animation bar. If the picked click
+    attacks demand more than 100% busy time, each one's share scales down."""
+    busy = 0.0
+    for p in powers:
+        rec = ctx["power_by_full"].get(p.get("full_name")) if ctx.get("power_by_full") else p
+        if not rec or not rec.get("is_attack") or (rec.get("power_type") or 0) != 0:
+            continue
+        ct = rec.get("cast_time") or 1.0
+        br = rec.get("base_recharge") or 0.0
+        enh = _power_enh(dict(rec, slots=p.get("slots") or []), ctx, ("RechargeTime",))
+        cyc = max(br / (1.0 + global_recharge + enh["RechargeTime"]), ct) if br > 0 else ct
+        busy += ct / max(cyc, 0.01)
+    return min(1.0, 1.0 / busy) if busy > 1.0 else 1.0
+
+
 def enhanced_debuff_totals(powers, ctx, global_recharge=0.0):
     """{effect: total pct} SUSTAINED enemy debuffs — ENHANCEMENT- and UPTIME-AWARE.
     v10 (Envenom fix): −Defense/−ToHit magnitudes scaled by (1 + the host power's own post-ED
@@ -301,17 +338,7 @@ def enhanced_debuff_totals(powers, ctx, global_recharge=0.0):
     # chain) only apply while the attack is actually CAST, and there is one animation bar —
     # if the picked attacks demand more than 100% busy time, every attack's debuff share
     # scales down. Ends the "every extra blast stacks its full −res forever" fiction.
-    busy = 0.0
-    for p in powers:
-        rec = ctx["power_by_full"].get(p.get("full_name")) if ctx.get("power_by_full") else p
-        if not rec or not rec.get("is_attack") or (rec.get("power_type") or 0) != 0:
-            continue
-        ct = rec.get("cast_time") or 1.0
-        br = rec.get("base_recharge") or 0.0
-        enh = _power_enh(dict(rec, slots=p.get("slots") or []), ctx, ("RechargeTime",))
-        cyc = max(br / (1.0 + global_recharge + enh["RechargeTime"]), ct) if br > 0 else ct
-        busy += ct / max(cyc, 0.01)
-    attack_share = min(1.0, 1.0 / busy) if busy > 1.0 else 1.0
+    share = attack_share(powers, ctx, global_recharge)
     for p in powers:
         rec = ctx["power_by_full"].get(p.get("full_name")) if ctx.get("power_by_full") else p
         if not rec:
@@ -329,22 +356,17 @@ def enhanced_debuff_totals(powers, ctx, global_recharge=0.0):
             if d.get("target") == "Self":
                 continue   # v37: a caster-only penalty is not a foe debuff
                            # (client-verified target back-fill, 2026-07-28)
-            row = mod_tables.get(d.get("modifier_table"))
-            if not row or col is None or col >= len(row):
+            mag = row_peak_pct(d, mod_tables, col)
+            if mag is None:
                 continue
-            prob = min(max(d.get("probability") or 1.0, 0.0), 1.0)
-            mag = abs((d.get("scale") or 0) * (d.get("nmag") or 1.0)
-                      * row[col] * prob) * 100.0
             et = d.get("effect")
             if et == "Defense":
                 mag *= (1.0 + enh["Defense"])
             elif et == "ToHit":
                 mag *= (1.0 + enh["ToHit"])
-            dur = d.get("duration") or 0.0
-            if is_click and enh_rech > 0 and dur > 0:
-                mag *= min(1.0, dur / enh_rech)
+            mag *= click_uptime(rec.get("power_type"), enh_rech, d.get("duration") or 0.0)
             if is_attack_click:
-                mag *= attack_share          # one animation bar (v17)
+                mag *= share                 # one animation bar (v17)
             key = (et, d.get("damage_type") or "None")
             by_type[key] = by_type.get(key, 0.0) + mag
         for s in (p.get("slots") or []):
@@ -379,7 +401,6 @@ def enhanced_team_buffs(powers, ctx, global_recharge=0.0):
         merged = dict(rec, slots=p.get("slots") or [])
         enh = _power_enh(merged, ctx, ("RechargeTime",))
         base_rech = rec.get("base_recharge") or 0.0
-        is_click = (rec.get("power_type") or 0) == 0
         enh_rech = base_rech / (1.0 + global_recharge + enh["RechargeTime"]) \
             if base_rech > 0 else 0.0
         for d in rec.get("buff_effects") or []:
@@ -388,15 +409,10 @@ def enhanced_team_buffs(powers, ctx, global_recharge=0.0):
             if d.get("target") == "Self":
                 continue   # v37: abs() was crediting Absorb-Pain-class caster
                            # PENALTIES as ally buffs; Self rows never score here
-            row = mod_tables.get(d.get("modifier_table"))
-            if not row or col is None or col >= len(row):
+            mag = row_peak_pct(d, mod_tables, col)
+            if mag is None:
                 continue
-            prob = min(max(d.get("probability") or 1.0, 0.0), 1.0)
-            mag = abs((d.get("scale") or 0) * (d.get("nmag") or 1.0)
-                      * row[col] * prob) * 100.0
-            dur = d.get("duration") or 0.0
-            if is_click and enh_rech > 0 and dur > 0:
-                mag *= min(1.0, dur / enh_rech)
+            mag *= click_uptime(rec.get("power_type"), enh_rech, d.get("duration") or 0.0)
             key = (d.get("effect"), d.get("damage_type") or "None")
             by_type[key] = by_type.get(key, 0.0) + mag
     out = {}

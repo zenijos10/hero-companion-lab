@@ -1693,6 +1693,12 @@ def get_powersets(archetype):
 # data/power_help.json = each builder-offered power's in-game description
 # (short tag + full text), extracted from the client bins by
 # tools/extract_power_help.py. Display-only; never read by scoring.
+# data/rating_thresholds.json = the PROVISIONAL fixed S-F cut points for
+# /build/evaluate (tools/calibrate_rating_thresholds.py; owner, 2026-11-10).
+try:
+    RATING_THRESHOLDS = _load("rating_thresholds.json")
+except Exception:  # noqa: BLE001 — without it evaluations say "not_rated"
+    RATING_THRESHOLDS = None
 try:
     POWER_HELP = _load("power_help.json")
 except Exception:  # noqa: BLE001 — the panel degrades to numbers-only without it
@@ -2954,7 +2960,7 @@ def build_evaluate():
             res_cap=res_cap, archetype_record=at,
             db_name=DB_NAME, db_version=DB_VERSION, app_version=APP_VERSION,
             prepare=lambda b: _prepare_incarnate_fields(b, ctx, res_cap),
-            powers_by_set=POWERS, power_help=POWER_HELP)
+            powers_by_set=POWERS, power_help=POWER_HELP, thresholds=RATING_THRESHOLDS)
     except ValueError as exc:
         return jsonify({"ok": False, "error": str(exc)}), 400
     return jsonify(result)

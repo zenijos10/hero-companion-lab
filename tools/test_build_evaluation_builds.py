@@ -35,7 +35,11 @@ CASES = {
                    "Controller_Buff.Kinetics"),
     "brute": ("Class_Brute", "Brute_Melee.Super_Strength", "Brute_Defense.Invulnerability"),
     "archer": ("Class_Blaster", "Blaster_Ranged.Archery", "Blaster_Support.Tactical_Arrow"),
+    "cold": ("Class_Defender", "Defender_Buff.Cold_Domination", "Defender_Ranged.Ice_Blast"),
+    "forcefield": ("Class_Defender", "Defender_Buff.Force_Field", "Defender_Ranged.Energy_Blast"),
+    "poison": ("Class_Corruptor", "Corruptor_Ranged.Fire_Blast", "Corruptor_Buff.Poison"),
 }
+BENUMB = "Defender_Buff.Cold_Domination.Benumb"
 
 
 def _scalars(node, path=""):
@@ -70,6 +74,9 @@ class RealBuildEvaluationTests(unittest.TestCase):
                         "Mastermind_Summon.Mercenaries.Tactical_Upgrade"):
             if upgrade not in {p["full_name"] for p in mastermind["powers"]}:
                 mastermind["powers"].append({"full_name": upgrade, "slots": []})
+        cold = cls.builds["cold"]
+        if BENUMB not in {p["full_name"] for p in cold["powers"]}:
+            cold["powers"].append({"full_name": BENUMB, "slots": [None]})
         archer = cls.builds["archer"]
         if RANGED_SHOT not in {p["full_name"] for p in archer["powers"]}:
             archer["powers"].append({"full_name": RANGED_SHOT, "slots": [None]})
@@ -184,6 +191,95 @@ class RealBuildEvaluationTests(unittest.TestCase):
     def test_invulnerability_mez_protection_is_disclosed(self):
         reasons = {u["reason"] for u in self.evaluate(self.builds["brute"])["unsupported"]["powers"]}
         self.assertIn("mez_protection_not_scored", reasons)
+
+    def support(self, name):
+        return self.evaluate(self.builds[name])["measurements"]["support"]["team_support"]
+
+    def test_ledger_averages_equal_the_scores_own_support_totals(self):
+        """Owner review of #26: same-effect rows within one power must SUM per
+        (effect, damage type) like role_output, not collapse to the largest
+        row. Per power, the ledger's average must equal what the score's
+        enhanced_debuff_totals / enhanced_team_buffs credit for that power
+        alone (powers with instant rows or -res procs are excluded: the
+        ledger keeps instants out of averages, procs are a separate channel)."""
+        import role_output
+        import support_ledger
+        sc = __import__("build_evaluation").scenario_params("rating_plus4")
+        procs = role_output._res_proc_uids()
+        compared = multi_row = 0
+        for name in ("cold", "forcefield", "poison", "controller"):
+            build = self.builds[name]
+            ctx = srv._stat_ctx(build["archetype"])
+            ctx["power_by_full"] = srv.POWER_BY_FULL
+            for p in build["powers"]:
+                rec = srv.POWER_BY_FULL.get(p["full_name"])
+                if not rec or any((s or {}).get("piece_uid") in procs for s in p.get("slots") or []):
+                    continue
+                share = role_output.attack_share([p], ctx, 0.8)
+                entry = support_ledger.power_ledger(p, ctx, 0.8, sc, share) or {}
+                for kind, total in (("debuffs", role_output.enhanced_debuff_totals),
+                                    ("buffs", role_output.enhanced_team_buffs)):
+                    rows = entry.get(kind) or []
+                    if any(r["instant"] for r in rows):
+                        continue
+                    want = total([p], ctx, global_recharge=0.8)
+                    for r in rows:
+                        with self.subTest(power=p["full_name"], effect=r["effect"]):
+                            self.assertAlmostEqual(r["average_percent"], round(want[r["effect"]], 2),
+                                                   delta=0.011)
+                        compared += 1
+                    field = "debuff_effects" if kind == "debuffs" else "buff_effects"
+                    keys = [(d.get("effect"), d.get("damage_type")) for d in rec.get(field) or []
+                            if d.get("pv_mode") != 2 and d.get("target") != "Self"]
+                    multi_row += len(keys) != len(set(keys))
+        print(f"{compared} ledger rows matched the score's support totals "
+              f"({multi_row} powers carry repeated same-type rows)")
+        self.assertGreater(compared, 40)
+        self.assertGreater(multi_row, 0, "the regression must cover a summed multi-row power")
+
+    def test_av_single_target_regen_debuffer_is_recognized(self):
+        """M3 acceptance: strong ST -regen vs an AV, without AoE -damage, is visible."""
+        summary = self.support("cold")["summary"]["debuffs_landing_average_percent"]
+        st_regen = summary["single_target_vs_av"].get("Regeneration", 0.0)
+        self.assertGreater(st_regen, 10.0, summary)
+        self.assertGreater(st_regen, summary["aoe_vs_scenario"].get("DamageBuff", 0.0))
+
+    def test_defensive_buffer_is_credited_without_healing(self):
+        """M3 acceptance: a high-uptime defense buffer reads high with low healing."""
+        summary = self.support("forcefield")["summary"]
+        self.assertGreater(summary["buffs_average_percent"]["sustained"].get("Defense", 0.0), 20.0)
+        self.assertEqual(summary["ally_heals"]["sustained_per_second"], 0.0)
+
+    def test_resistance_debuff_ignores_av_debuff_resistance(self):
+        """AVs resist every debuff except -Resistance (scenario av debuff_res)."""
+        rows = [d for e in self.support("cold")["powers"] for d in e.get("debuffs") or []]
+        res = [d for d in rows if d["effect"] == "Resistance"]
+        other = [d for d in rows if d["effect"] == "Regeneration"]
+        self.assertTrue(res and other)
+        for d in res:
+            self.assertAlmostEqual(d["landing_peak_percent"]["vs_av"], round(d["peak_percent"] * 0.8, 2),
+                                   delta=0.02)
+        for d in other:
+            self.assertLess(d["landing_peak_percent"]["vs_av"], d["peak_percent"] * 0.8 * 0.2)
+
+    def test_rez_buffs_and_instant_effects_stay_out_of_averages(self):
+        ledger = self.support("poison")
+        elixir = [e for e in ledger["powers"] if e["power"].endswith("Elixir_of_Life")]
+        self.assertTrue(elixir, "the Poison build picks Elixir of Life (a rez)")
+        self.assertIn("conditional", elixir[0])
+        self.assertNotIn("RechargeTime", ledger["summary"]["buffs_average_percent"]["sustained"])
+        for e in ledger["powers"]:
+            for d in (e.get("debuffs") or []) + (e.get("buffs") or []):
+                if d["instant"]:
+                    self.assertIsNone(d["average_percent"])
+
+    def test_support_entries_carry_coverage_and_cost(self):
+        for e in self.support("cold")["powers"]:
+            self.assertIn(e["area"], ("aoe", "single_target"))
+            self.assertGreaterEqual(e["cost"]["endurance_per_minute"], 0.0)
+            for c in e.get("controls") or []:
+                self.assertTrue(set(c["affects_in_one_application"]) <=
+                                {"minion", "lieutenant", "boss", "elite_boss", "archvillain"})
 
     @unittest.skipUnless((CONTRACT / "fixtures/skif/v5/rb5d_browser_pass.skif").is_file(),
                          "pinned Sidekick contract checkout not present (CI provides it)")

@@ -31,7 +31,7 @@ What is rated: the player's own build, in combat. Suppressible (Hide-class) defe
 
 ## Versioned response (schema_version = 1)
 
-- ok, stage=measurements_only, schema_version: machine-readable status.
+- ok, stage=measurements_and_ratings, schema_version: machine-readable status.
 - versions: app, model, database name and database version, plus `scenario_fingerprint` (a hash of the scenario constants; it changes whenever any constant is tuned, MODEL_VERSION or not). Compare stored results only when every version field matches.
 - inputs_normalized: `boosted_pieces_rated`, `external_buffs_removed`, `defense_basis` ("in_combat").
 - build: archetype, primary, secondary, picked-power count.
@@ -80,6 +80,35 @@ Representative scalars have value, unit, basis, and status (modeled or unknown).
 - [x] Split sustained and emergency defensive metrics, including click uptime and restrictions.
 - [x] Add per-build unsupported-effect detail and confidence metadata.
 - [ ] **Blocked on game knowledge / owner rulings:** verify provisional mechanics against the live game and calibrate encounter assumptions. Nothing here can be settled from code; each needs an in-game measurement or a ruling (see below).
+
+### M3: team support (`measurements.support.team_support`)
+
+`server/support_ledger.py`, display only. Every magnitude, uptime and share comes from the helpers the score uses (`role_output.row_peak_pct`, `click_uptime`, `attack_share`, `_power_enh`, `power_control_uptime`'s rules; `first_principles.player_effect_strength`), extracted from the score's own functions without moving it: 72 old-vs-new comparisons of the support totals on 12 support builds and the 28-score parity pin all match.
+
+Per picked power with support output:
+- coverage: `area` (aoe / single_target) and `max_targets`; `cost`: cast seconds and endurance per minute of keeping it running (clicks cast on cooldown, toggles per activate period).
+- `buffs` / `debuffs` per effect, aggregated by the score's own rule: rows SUM within (effect, damage type), then typed spreads collapse to the largest type (owner review of #26; pinned by a real-build regression that matches every ledger average to `role_output`'s own per-power totals): peak %, uptime, average % (peak x uptime), sustained (uptime >= 0.98) or burst, stated chance; `instant` effects (a click row with no duration) carry no uptime or average. Debuffs add `landing_peak_percent`: vs the rating scenario (purple patch at its shift) and vs an AV (purple patch at +2 and the AV's 85% debuff resistance, which never applies to -Resistance).
+- `heals`: ally or self, per cast per target, targets, per second over the enhanced cycle, sustained or emergency (cycle >= 60 s); in the score's heal units, not literal HP.
+- `controls` per mez: magnitude, enhanced duration, uptime, sustained, kind (hard/soft) and the ranks one application affects (mez lands when magnitude EXCEEDS protection: minion 1, lieutenant 2, boss 3, elite boss 6, AV 53).
+- resurrect powers carry `conditional`: their buffs land only on a revived ally.
+
+`summary`: buffs averaged sustained vs burst; debuffs single-target judged vs an AV and area judged vs the scenario's spawn; ally heals sustained vs emergency per second. Instant effects and resurrect buffs are excluded from it.
+
+Acceptance (real builds, `tools/test_build_evaluation_builds.py`): a Cold Domination build's single-target -Regeneration against an AV reads high while its area -Damage does not; a Force Field build reads > 20% sustained Defense with zero healing; -Resistance ignores AV debuff resistance while -Regeneration does not; Elixir of Life is conditional and out of the averages. Negative-controlled.
+
+**Found, not fixed (moves scores; KNOWN-GAPS.md):** the score's support totals count resurrect buffs and instant click effects as permanent.
+
+### M4: S-F ratings (`ratings`)
+
+`server/build_ratings.py` grades 18 categories (single-target, area and pet damage; survival; defense; resistance; endurance; recharge; control; ally healing; team defense/damage/recharge buffs; -Resistance and -Regeneration vs an AV; -Defense, -ToHit and -Damage vs a spawn). Each row keeps its exact `value`, `unit` and the `cuts` it was graded against.
+
+**Owner's rulings (2026-11-10):** +4 is the default; thresholds start as FIXED numbers using the shipped champions as a guideline and move as more builds come in; the champions are NOT the comparison population (peer cohorts are worked out as we go, so the three comparison scopes wait).
+
+- The numbers: `data/rating_thresholds.json`, written by `tools/calibrate_rating_thresholds.py` (an archetype-stratified sample of itrial champions, rebuilt as served, evaluated at rating_plus4; cut points S>=p90, A>=p70, B>=p50, C>=p30, D>=p10, else F; capability categories cut only from champions that have the capability). Hand edits are expected; bump `version`.
+- Labels besides S-F: **Unknown** (not measured; offense incomplete, so no offense grade while a picked power deals damage the model does not read; a support capability measured at zero while the build picks powers whose effects are unread; pets summoned but priced at zero), **None** (capability absent and everything read), **N/A** (pet damage when no picked power summons anything, read from the records' `summons`, never inferred from pet damage).
+- **not_rated** (with the reason) when the evaluation's scenario, scenario fingerprint, model version or game-data version differs from the calibration's, or no thresholds are installed.
+- Each row carries the cut's `sample_size` and `low_sample` (< 30 champions; team recharge buff is the known thin one). `tools/test_build_ratings.py` fails after a model bump or a rating-scenario change until the thresholds are recalibrated.
+- Every rating is `provisional: true`. Grades are against optimized itrial champions, so a typical build lands lower than a percentile against all players would put it.
 
 ### ⚠ Rating-release blocker (owner review of #25)
 
