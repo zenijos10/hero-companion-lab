@@ -3028,20 +3028,34 @@ def build_frontier():
         objectives, floors, budget, seconds, size = frontier_search.parse_request(body)
     except ValueError as exc:
         return jsonify({"ok": False, "error": str(exc)}), 400
-    _, refused = _evaluate_build(copy.deepcopy(build), build_evaluation.DEFAULT_SCENARIO)
+    start_eval, refused = _evaluate_build(copy.deepcopy(build), build_evaluation.DEFAULT_SCENARIO)
     if refused:
         return jsonify({"ok": False, "error": refused}), 400
+    start_fp = frontier_search.fingerprint(build.get("powers") or [])
+
+    def evaluate(candidate):
+        # the starting build was just evaluated to vet the request: reuse it
+        if frontier_search.fingerprint(candidate.get("powers") or []) == start_fp:
+            return copy.deepcopy(start_eval), None
+        return _evaluate_build(copy.deepcopy(candidate), build_evaluation.DEFAULT_SCENARIO)
+
     result = frontier_search.search(
         copy.deepcopy(build), objectives=objectives, floors=floors,
         solve=_frontier_solve,
         validate=lambda b: _complete_build_validation(copy.deepcopy(b)).get("errors") or [],
-        evaluate=lambda b: _evaluate_build(copy.deepcopy(b), build_evaluation.DEFAULT_SCENARIO),
+        evaluate=evaluate,
         max_evaluations=budget, max_seconds=seconds, max_size=size,
         keep_sets=bool(body.get("keep_sets")))
     result["scenario"] = build_evaluation.DEFAULT_SCENARIO
-    import first_principles as fp
-    result["model_version"] = fp.MODEL_VERSION
-    result["database_version"] = DB_VERSION
+    # M7: everything needed to reproduce the run travels with it, ONE copy each,
+    # taken from the evaluation that graded the builds (never a second source)
+    result["versions"] = dict(start_eval.get("versions") or {},
+                              rating_thresholds=(start_eval.get("ratings") or {})
+                              .get("thresholds_version"))
+    result["request"] = {"objectives": [{"key": o.key, "direction": o.direction}
+                                        for o in objectives],
+                         "floors": floors, "max_evaluations": budget, "max_seconds": seconds,
+                         "max_frontier_size": size, "keep_sets": bool(body.get("keep_sets"))}
     return jsonify(result)
 
 

@@ -100,9 +100,9 @@ peer-build population: it is almost entirely one content type (2,854 itrial).
 
 | Requirement | Status | Evidence | Gap |
 | --- | --- | --- | --- |
-| Import → validate → evaluate → rate → compare → Pareto → export | Partial | import, validate, evaluate, export done | rate, compare, Pareto missing |
+| Import → validate → evaluate → rate → compare → Pareto → export | Complete | `tools/test_m7_end_to_end.py` A (real Sidekick build); M7-INTEGRATION.md | — |
 | Offline, LLM-free | Complete | `AI_ENABLED` off in the client; engine/solver deterministic | — |
-| Raw vs rating vs champion score vs objective distinguished | Missing | — | — |
+| Raw vs rating vs champion score vs objective distinguished | Complete | M7-INTEGRATION.md "Four kinds of number"; battery F | — |
 
 ## Backlog for verified gaps
 

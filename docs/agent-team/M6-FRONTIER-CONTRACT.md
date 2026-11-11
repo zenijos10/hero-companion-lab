@@ -91,7 +91,11 @@ slotting, so it is never presented as the global Pareto frontier.
   `deterministic`, `locked`, `floors`, and `log` (every candidate's outcome:
   admitted with what it removed, dominated by whom, illegal with errors, below a
   floor, not evaluated, incomparable, or same slotting as an earlier one).
-- `scenario`, `model_version`, `database_version`.
+- `scenario`; `versions` (app, model, database, database version, scenario
+  fingerprint, rating thresholds), taken from the evaluation that graded the builds;
+  `request` (the normalized objectives, floors, budgets and `keep_sets`).
+- The starting build is evaluated once: the request check's evaluation is reused
+  when the search offers it.
 
 ## Cost
 

@@ -3607,4 +3607,7 @@ body.layout-mode .lay-target .lay-target .lay-target .lay-target::before { top: 
 .rt-g-D, .rt-g-F { background: var(--bad); color: var(--bg); }
 .rt-g-x { background: transparent; border: 1px solid var(--border); }
 .rt-flag, .rt-refused { font-size: 12px; font-weight: 400; color: var(--accent); }
+/* the comparison's scope line is an explanation, so it reads at the lede size */
+.rt-scope { font-size: 14px; line-height: 1.55; margin: 4px 0 8px; color: var(--muted); }
+.rt-scope-warn { color: var(--warn); font-weight: 600; }
 .rt-low { cursor: help; }

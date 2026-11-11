@@ -138,6 +138,22 @@ class SearchRuleTests(unittest.TestCase):
         self.assertTrue(any(e["outcome"].startswith("same slotting")
                             for e in r["search"]["log"]))
 
+    def test_fingerprint_reads_the_piece(self):
+        """Real slots name their piece as piece_uid: two slottings of the same sets
+        with different pieces are different candidates."""
+        a = [{"full_name": "A.B.C", "slots": [{"piece_uid": "Crafted_X_A", "set_uid": "X",
+                                               "io_level": 50}]}]
+        b = [{"full_name": "A.B.C", "slots": [{"piece_uid": "Crafted_X_F", "set_uid": "X",
+                                               "io_level": 50}]}]
+        self.assertNotEqual(fs.fingerprint(a), fs.fingerprint(b))
+        self.assertEqual(fs.fingerprint(a), fs.fingerprint(copy.deepcopy(a)))
+        legacy = [{"full_name": "A.B.C", "slots": [{"uid": "Crafted_X_A", "set_uid": "X",
+                                                    "io_level": 50}]}]
+        self.assertEqual(fs.fingerprint(a), fs.fingerprint(legacy))   # one piece, two spellings
+        img = copy.deepcopy(a)
+        img[0]["slots"][0]["image"] = "x.png"                  # display fields do not count
+        self.assertEqual(fs.fingerprint(a), fs.fingerprint(img))
+
     def test_request_parsing(self):
         objs, floors, budget, secs, size = fs.parse_request(
             {"objectives": ["defense", "recharge"], "directions": {"recharge": "min"},

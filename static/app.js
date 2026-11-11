@@ -9930,7 +9930,9 @@ function renderRatingHtml(cmp) {
     + c.unsupported.map(u => `<li>${escHtml(u.power)}: ${escHtml(String(u.reason).replace(/_/g, " "))}</li>`).join("")
     + `</ul></details>`).join("");
   const notes = (cmp.notes || []).map(n => `<li>${escHtml(n)}</li>`).join("");
-  return `<table class="rating-table"><thead><tr><th></th>${head}`
+  const scope = cmp.scope_note ? `<p class="rt-scope${cmp.scope === "cross_archetype" ? " rt-scope-warn" : ""} keep-whole">`
+    + `Comparing ${escHtml(cmp.scope_note)}.</p>` : "";
+  return `${scope}<table class="rating-table"><thead><tr><th></th>${head}`
     + `${single ? "" : "<th>Gap</th>"}</tr></thead><tbody>${rows}</tbody></table>`
     + `${unsupported}<ul class="muted small keep-whole">${notes}</ul>`;
 }
