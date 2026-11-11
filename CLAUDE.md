@@ -133,11 +133,30 @@ out. Rules going forward:
   MVP is NOT import/export alone: rate an imported build per category, compare it, optimize to a
   Pareto frontier. M1 audit = `M1-TRACEABILITY-AUDIT.md` (its backlog replaces GitHub Issues,
   which are disabled). M2 = `/build/evaluate`, contract in `M2-EVALUATION-CONTRACT.md` (merged).
-- **⚠ 31 DAMAGING POWERS ARE CREDITED ZERO DAMAGE — owner: fix later, tracked** (KNOWN-GAPS.md,
-  docs/EFFECTLESS-POWERS.md, `server/effectless.py`, pinned by `tools/test_effectless.py`). 2 have
-  twin records we ship and nothing reads (Archery Ranged Shot, Fire Manipulation Burn); 29 need the
-  client (next PATCH-WATCH export). Model change, moves scores. Until fixed: **no M4 offense grade
-  ships for a build whose `confidence.offense_complete` is false.**
+- **⚠ 29 DAMAGING POWERS ARE CREDITED ZERO DAMAGE — owner: fix later, tracked** (KNOWN-GAPS.md,
+  docs/EFFECTLESS-POWERS.md, `server/effectless.py`, pinned by `tools/test_effectless.py`). They
+  need the client (next PATCH-WATCH export). Model change, moves scores. Until fixed: **no M4
+  offense grade ships for a build whose `confidence.offense_complete` is false.** The two twin
+  cases are CLOSED (2026-11-11, owner's pick): Blaster Fire Manipulation Burn carries its patch
+  damage folded from its five Fiery Aura siblings (`tools/patch_sibling_damage_folds.py`: same
+  `Pets.Burn`, same caster stats, rows common to every sibling only; 0 champions hold it), and
+  Blaster Archery Ranged Shot was never zero — the pet channel prices its click twin
+  (reclassified `modeled_elsewhere`); since v58 that is the in-combat Quick twin. ⚠ **powers.json is ONE LINE whose separators have VARIED** —
+  default `json.dumps` separators since the 2026-10-17 ingest, compact before, and 23 older
+  patchers still write compact (their "COMPACT single-line" docstrings describe the old file). A
+  wrong-form re-dump rewrites the whole 19 MB line (1.6 MB size swing): reproduce the form ON DISK
+  (`patch_snipe_states.dumper`, shared by the new patchers; refuses if neither form matches).
+- **`Redirects.*` powers are PSEUDOPETS and the pet channel is right (owner, 2026-11-11):** "those
+  powers spawn pets ... third-party entities that create the damage, even if they are not
+  targetable — this is how the game works and not a problem." Do not re-raise it.
+- **v58 (2026-11-11, owner: "fix the Ranged Shot problem", scope = all snipers): a sniper credits
+  ONE state per shot.** 24 records summed the out-of-combat snipe (4.5) and the in-combat quick
+  snipe (2.28); `tools/patch_snipe_states.py` moves the out-of-combat rows to
+  `damage_effects_out_of_combat` (fights are engaged) and folds the in-combat state our data lacked
+  onto the Blaster Quick twins + Defender Proton Volley from split siblings (identical out-of-combat
+  state = the second signal). Generic rule, pinned at 24 + 4; Dominator (4.5 / 3.56x0.75) and
+  Stalker-epic shapes are stated exclusions. 128 champion contexts pick an affected power: their
+  canonical scores are stale until the recert Joel schedules.
 - **Optimizer parity is pinned** (`tools/test_encounter_parity.py` + fixture): a display-only
   change to `encounter_value` must reproduce every pinned score; a model bump re-pins with `--write`.
 - Rating scenarios live in `build_evaluation.RATING_SCENARIOS` (rating_plus4 = general at +4),
@@ -508,7 +527,8 @@ lives in the repo + graphify, not in the always-loaded file). Query it via
   is CRLF: read `'rb'` → transform bytes → write `'wb'`; **never
   `newline=''` on a text-mode write** (silently rewrites CRLF→LF; bit
   server.py and RESUME-HERE.md in one week). Match each file's existing
-  serialisation (powers.json is COMPACT single-line — never `indent=`).
+  serialisation (powers.json is ONE line, never `indent=`; its separators have
+  varied, so reproduce the form ON DISK — see `patch_snipe_states.dumper`).
   Before committing, compare `git diff --stat` to INTENDED size (cross-check
   `--ignore-all-space`); >2× intent or whitespace-blind much smaller → STOP.
   **Never PowerShell string rewrites on source files** (PS5.1 reads BOM-less
@@ -1008,8 +1028,8 @@ launch, autostart toggle in the app UI, one-time share prompt for the Pulse feed
   generator REFUSES rather than guesses.
 - **⚠⚠ `open(path,"wb").write(expr)` TRUNCATES BEFORE `expr` EVALUATES** — it
   emptied powers.json to zero bytes once. Build all bytes first, then open.
-  Match each file's own serialisation (powers/summons compact single-line,
-  powersets `indent=1` CRLF).
+  Match each file's own serialisation (powers/summons ONE line in whatever
+  separator form is on disk, powersets `indent=1` CRLF).
 - **🎯 CONTROL DRIFT synced game-first (25 of 29)**; four multi-row ENCODINGS
   left alone — collapsing one is a different question from correcting a number.
   The 269 unresolved `summons[]` refs are metadata, not a pricing gap.

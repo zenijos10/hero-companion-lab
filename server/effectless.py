@@ -13,11 +13,18 @@ Evidence, in the order the rules apply (first match wins):
                       (Bio's stances, Dual Pistols ammo swaps; CLAUDE.md
                       `_pickable`).
   modeled_elsewhere   a Mastermind upgrade, priced by its re-cast time
-                      (first_principles.mastermind_upgrade_records).
+                      (first_principles.mastermind_upgrade_records); or a
+                      power whose twins are CLICK attacks (cast time > 0) in
+                      its pet_powersets: the engine's pet channel prices those
+                      (engine._pet_damage_for_powerset; the v13 Redirects
+                      convention, e.g. Blaster Archery's Ranged Shot ->
+                      Redirects.Blaster_Archery.Ranged_Shot_Normal).
   unread_twins        the power's pet_powersets name records IN OUR DATA that
-                      carry the effects (Archery Ranged Shot ->
-                      Redirects.Blaster_Archery.Ranged_Shot_Quick/_Normal).
-                      Readable today; nothing reads them.
+                      carry the effects, but not as a click the pet channel
+                      can chain (a pulsing patch: no cast time, no recharge).
+                      Readable today; nothing reads them. (Fire Manipulation's
+                      Burn was the case until tools/patch_sibling_damage_folds.py
+                      folded its patch damage from its Fiery Aura siblings.)
   damaging_unread     the game's own short help says DMG/DoT, or the power
                       accepts Damage Increase, and no twin is found.
   mechanic            accepts no enhancement at all (Swap Ammo, Staff
@@ -83,6 +90,13 @@ def classify(rec, records_by_set, help_entry=None, full_name=None):
         return {"class": "modeled_elsewhere",
                 "evidence": "Mastermind upgrade: priced by its re-cast time"}
     twins = _twins(fn, rec, records_by_set)
+    priced = [t for t in twins if (t.get("cast_time") or 0) > 0
+              and any(d.get("pv_mode", 0) != 2 for d in t.get("damage_effects") or [])]
+    if priced:
+        return {"class": "modeled_elsewhere",
+                "evidence": "damage priced by the pet channel from its click twin(s) "
+                            + ", ".join(t["full_name"] for t in priced),
+                "twins": [t["full_name"] for t in twins]}
     if twins:
         damaging = any(t.get("damage_effects") for t in twins)
         return {"class": "unread_twins_damage" if damaging else "unread_twins",

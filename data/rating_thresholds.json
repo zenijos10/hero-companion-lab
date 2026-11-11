@@ -104,7 +104,7 @@
    "cuts": {
     "A": 27.985,
     "B": 25.6,
-    "C": 23.28,
+    "C": 23.283,
     "D": 20.448,
     "S": 40.453
    },
@@ -112,9 +112,9 @@
   },
   "endurance": {
    "cuts": {
-    "A": -2.92,
-    "B": -3.55,
-    "C": -4.125,
+    "A": -2.95,
+    "B": -3.585,
+    "C": -4.155,
     "D": -4.97,
     "S": 0.165
    },
@@ -145,7 +145,7 @@
     "A": 74.905,
     "B": 65.0,
     "C": 55.0,
-    "D": 46.875,
+    "D": 46.25,
     "S": 89.86
    },
    "sample_size": 246
@@ -153,7 +153,7 @@
   "resistance": {
    "cuts": {
     "A": 42.049,
-    "B": 34.666,
+    "B": 34.283,
     "C": 28.739,
     "D": 25.349,
     "S": 55.798
@@ -162,11 +162,11 @@
   },
   "single_target_damage": {
    "cuts": {
-    "A": 75.42,
-    "B": 60.6,
-    "C": 43.58,
+    "A": 74.12,
+    "B": 60.3,
+    "C": 43.08,
     "D": 15.78,
-    "S": 114.14
+    "S": 110.94
    },
    "sample_size": 237
   },
@@ -175,16 +175,16 @@
     "A": 1353.55,
     "B": 405.95,
     "C": 114.85,
-    "D": 41.15,
+    "D": 41.3,
     "S": 1985.3
    },
    "sample_size": 246
   }
  },
- "created": "2026-11-10",
+ "created": "2026-11-11",
  "database_version": "2026.1.1242",
  "method": "PROVISIONAL fixed numbers (owner, 2026-11-10). Cut points = quantiles of an archetype-stratified sample of shipped itrial champions, rebuilt as served and evaluated at the rating scenario: S>=p90 A>=p70 B>=p50 C>=p30 D>=p10, else F. Champions are a guideline, NOT the comparison population. Capability categories are cut from champions that have the capability. Edit by hand and bump version as builds come in.",
- "model_version": 57,
+ "model_version": 58,
  "sample": {
   "contexts": 246,
   "per_archetype": 20,
@@ -192,5 +192,5 @@
  },
  "scenario": "rating_plus4",
  "scenario_fingerprint": "cb4ae387852f",
- "version": 1
+ "version": 2
 }

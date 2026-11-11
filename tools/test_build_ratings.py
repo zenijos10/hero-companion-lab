@@ -175,6 +175,22 @@ class ShippedThresholdTests(unittest.TestCase):
         print(f"{graded} of {len(br.CATEGORIES)} categories carry cut points; "
               f"{t['sample']['contexts']} champion contexts sampled")
 
+    def test_recalibration_keeps_and_bumps_the_version(self):
+        """A recalibration never resets the version: unchanged content keeps it,
+        changed cut points move it one past the file it replaces."""
+        sys.path.insert(0, str(ROOT / "tools"))
+        import calibrate_rating_thresholds as cal
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "t.json")
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(self.thresholds, f)
+            v = self.thresholds["version"]
+            self.assertEqual(cal.next_version(path, copy.deepcopy(self.thresholds)), v)
+            moved = copy.deepcopy(self.thresholds)
+            moved["categories"]["defense"]["cuts"]["S"] += 1
+            self.assertEqual(cal.next_version(path, moved), v + 1)
+            self.assertEqual(cal.next_version(os.path.join(d, "none.json"), moved), 1)
+
     def test_server_loads_the_same_file(self):
         self.assertEqual(self.srv.RATING_THRESHOLDS, self.thresholds)
 
@@ -201,8 +217,9 @@ class ShippedThresholdTests(unittest.TestCase):
     def test_incomplete_offense_is_never_graded(self):
         build = self.build("Class_Blaster", "Blaster_Ranged.Archery", "Blaster_Support.Tactical_Arrow")
         names = {p["full_name"] for p in build["powers"]}
-        if "Blaster_Ranged.Archery.Ranged_Shot" not in names:
-            build["powers"].append({"full_name": "Blaster_Ranged.Archery.Ranged_Shot", "slots": [None]})
+        # Rain of Arrows: damage the model does not read (docs/EFFECTLESS-POWERS.md)
+        if "Blaster_Ranged.Archery.Rain_of_Arrows" not in names:
+            build["powers"].append({"full_name": "Blaster_Ranged.Archery.Rain_of_Arrows", "slots": [None]})
         cats = self.client.post("/build/evaluate", json={"build": build}).get_json()["ratings"]["categories"]
         self.assertEqual(cats["single_target_damage"]["grade"], "Unknown")
         self.assertEqual(cats["aoe_damage"]["grade"], "Unknown")
