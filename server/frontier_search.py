@@ -222,7 +222,7 @@ def search(start, *, objectives, floors, solve, validate, evaluate,
             return False
         return True
 
-    offer("starting build", None, copy.deepcopy(start))
+    offer("Your build (as it is)", None, copy.deepcopy(start))
     planned = plan_directions(keys)
     tried = []
     for d in planned:

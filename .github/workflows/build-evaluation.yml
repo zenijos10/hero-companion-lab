@@ -15,6 +15,7 @@ on:
       - "tools/test_rating_view.js"
       - "tools/test_pareto.py"
       - "tools/test_frontier_search.py"
+      - "tools/test_frontier_view.js"
       - "static/app.js"
       - "tools/calibrate_rating_thresholds.py"
       - "tools/classify_effectless_powers.py"
@@ -67,5 +68,7 @@ jobs:
         run: python tools/test_pareto.py
       - name: Frontier search rules, route, Sidekick round trip (M6)
         run: python tools/test_frontier_search.py
+      - name: Alternatives view renderer (M6, node)
+        run: node tools/test_frontier_view.js
       - name: Route-coverage smoke battery
         run: python tools/test_user_paths.py

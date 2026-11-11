@@ -3879,6 +3879,20 @@ async function init() {
     if (e.target === $("rating-modal")) $("rating-modal").classList.add("hidden"); });
   $("rating-compare-btn").addEventListener("click", compareRating);
   $("rating-save-btn").addEventListener("click", saveRatingFile);
+  $("frontier-open-btn").addEventListener("click", openFrontier);
+  // delegated: the frontier view is re-rendered, its controls are not stable nodes
+  $("rating-body").addEventListener("click", (e) => {
+    if (e.target.id === "frontier-run-btn") runFrontier();
+    const use = e.target.closest && e.target.closest("[data-frontier-use]");
+    if (use) useFrontierMember(use.getAttribute("data-frontier-use"));
+  });
+  $("rating-body").addEventListener("change", (e) => {
+    if (e.target.id === "frontier-sort") { _FRONTIER_VIEW.sortKey = e.target.value || null; _refreshFrontierTable(); }
+  });
+  $("rating-body").addEventListener("input", (e) => {
+    const k = e.target.getAttribute && e.target.getAttribute("data-frontier-min");
+    if (k) { _FRONTIER_VIEW.mins[k] = e.target.value; _refreshFrontierTable(); }
+  });
   $("about-modal").addEventListener("click", (e) => {
     if (e.target === $("about-modal")) $("about-modal").classList.add("hidden"); });
   $("modal-search").addEventListener("input", renderModalSets);
@@ -9939,6 +9953,9 @@ async function _runRating(entries) {
   }
   if (seq !== _RATING_SEQ) return;       // a newer rating was asked for meanwhile
   _LAST_RATING = res;
+  if (res && Array.isArray(res.rows) && res.rows.length) {
+    _RATING_CATEGORIES = res.rows.map(r => ({ key: r.category, label: r.label, unit: r.unit }));
+  }
   body.innerHTML = renderRatingHtml(res);
 }
 
@@ -9995,6 +10012,164 @@ async function saveRatingFile() {
   const labels = (_LAST_RATING.columns || []).map(c => c.label).join(" vs ");
   const name = (labels || _ratingLabel()).replace(/[^A-Za-z0-9 _-]+/g, "").trim() || "build";
   await saveTextFile(`${name} rating.json`, JSON.stringify(_LAST_RATING, null, 1));
+}
+
+// ---------------------------------------------------------------------------
+// M6: ALTERNATIVES (the discovered Pareto frontier). /build/frontier re-slots
+// this build's picks along the solver's disclosed directions and keeps every
+// legal result no other result beats on all the chosen objectives. Sorting and
+// minimums only change what is SHOWN: nothing is deleted from the frontier.
+// "Use this build" is an ordinary edit (recordEdit first), so Undo takes it back.
+// ---------------------------------------------------------------------------
+let _FRONTIER = null;
+let _FRONTIER_VIEW = { sortKey: null, mins: {} };
+let _RATING_CATEGORIES = [];          // [{key, label, unit}] from the last scorecard
+
+// Pure: the /build/frontier response + the view settings in, HTML out.
+function renderFrontierHtml(res, view, categories) {
+  if (!res || !res.ok || !Array.isArray(res.members)) {
+    return `<p class="muted">${escHtml((res && res.error) || "The alternatives could not be read.")}</p>`;
+  }
+  const v = view || { sortKey: null, mins: {} };
+  const keys = ((res.frontier || {}).objectives || []).map(o => o.key);
+  const meta = {};
+  for (const c of categories || []) meta[c.key] = c;
+  const label = k => (meta[k] && meta[k].label) || k.replace(/_/g, " ");
+  const unit = k => _RATING_UNITS[(meta[k] || {}).unit] || "";
+  const num = x => (typeof x === "number" && isFinite(x))
+    ? (Math.abs(x) >= 100 ? x.toFixed(0) : x.toFixed(1)) : "-";
+  const dirOf = {};
+  for (const o of (res.frontier || {}).objectives || []) dirOf[o.key] = o.direction;
+  const better = (k, a, b) => dirOf[k] === "min" ? a < b : a > b;
+  const members = res.members.slice();
+  // what each member is best at (unique leader on an objective)
+  const bestAt = {};
+  for (const k of keys) {
+    let lead = null;
+    for (const m of members) {
+      const x = m.objectives[k];
+      if (lead === null || better(k, x, lead.objectives[k])) lead = m;
+    }
+    const ties = members.filter(m => m.objectives[k] === lead.objectives[k]);
+    if (ties.length === 1) (bestAt[lead.fingerprint] = bestAt[lead.fingerprint] || []).push(k);
+  }
+  const passes = m => Object.entries(v.mins || {}).every(([k, min]) =>
+    min == null || min === "" || !isFinite(Number(min)) || (m.measurements[k] != null && m.measurements[k] >= Number(min)));
+  const shown = members.filter(passes);
+  if (v.sortKey && keys.includes(v.sortKey)) {
+    shown.sort((a, b) => better(v.sortKey, a.objectives[v.sortKey], b.objectives[v.sortKey]) ? -1
+      : better(v.sortKey, b.objectives[v.sortKey], a.objectives[v.sortKey]) ? 1 : 0);
+  }
+  const head = keys.map(k => `<th>${escHtml(label(k))}${dirOf[k] === "min" ? " (lower is better)" : ""}</th>`).join("");
+  const rows = shown.map(m => {
+    const cells = keys.map(k => {
+      const g = (m.grades || {})[k] || "-";
+      const cls = /^[SABCDF]$/.test(g) ? `rt-g rt-g-${g}` : "rt-g rt-g-x";
+      const d = (m.change_from_start || {})[k];
+      const delta = m.is_starting_build || typeof d !== "number" || Math.abs(d) < 1e-9 ? ""
+        : `<div class="muted small">${d > 0 ? "+" : ""}${num(d)} vs yours</div>`;
+      const lead = (bestAt[m.fingerprint] || []).includes(k) ? " rt-best" : "";
+      return `<td class="${lead.trim()}"><span class="fr-val"><span class="${cls}">${escHtml(g)}</span> `
+        + `${escHtml(num(m.objectives[k]))} ${escHtml(unit(k))}</span>${delta}</td>`;
+    }).join("");
+    const why = (bestAt[m.fingerprint] || []).length
+      ? `Best at ${bestAt[m.fingerprint].map(label).join(", ")}`
+      : "A trade-off: no other alternative is at least as good everywhere";
+    const flag = m.offense_complete === false
+      ? `<div class="rt-flag">Offense incomplete: a picked power deals damage the model does not read</div>` : "";
+    const action = m.is_starting_build
+      ? `<span class="muted small">This is your build</span>`
+      : `<button type="button" data-frontier-use="${escHtml(m.fingerprint)}">Use this build</button>`;
+    return `<tr><th scope="row">${escHtml(m.label)}<div class="muted small">${escHtml(why)}</div>${flag}`
+      + `<div class="fr-action">${action}</div></th>${cells}</tr>`;
+  }).join("");
+  const hidden = members.length - shown.length;
+  const s = res.search || {};
+  const f = res.frontier || {};
+  const stop = { exhausted: "every direction was tried",
+                 evaluation_budget: "the evaluation budget ran out",
+                 time_budget: "the time budget ran out" }[s.stop_reason] || s.stop_reason;
+  const start = res.starting_build || {};
+  const notes = [
+    `${members.length} alternative(s) that no other found build beats on every chosen category, `
+      + `from ${s.evaluations} build(s) evaluated against +4 enemies; the search stopped because ${stop}.`,
+    start.on_frontier ? "Your build is one of them." : "Your build is not listed: at least one alternative is at least as good in every chosen category and better in one.",
+    "These are the alternatives this search FOUND, not a proof that nothing better exists. Your powers stay as picked; only the slotting changes.",
+    f.exact === false ? `Approximate: ${f.approximation}.` : "",
+    hidden ? `${hidden} alternative(s) hidden by your minimums; they are still on the list.` : "",
+  ].filter(Boolean).map(n => `<li>${escHtml(n)}</li>`).join("");
+  return `<table class="rating-table frontier-table"><thead><tr><th>Alternative</th>${head}</tr></thead>`
+    + `<tbody>${rows || `<tr><td colspan="${keys.length + 1}" class="muted">No alternative meets your minimums.</td></tr>`}</tbody></table>`
+    + `<ul class="muted small keep-whole">${notes}</ul>`;
+}
+
+function _frontierControlsHtml() {
+  const defaults = new Set((META && META.frontier_default_objectives) || []);
+  const cats = _RATING_CATEGORIES;
+  if (!cats.length) return `<p class="muted">Rate the build first.</p>`;
+  const boxes = cats.map(c => `<label class="fr-obj"><input type="checkbox" value="${escHtml(c.key)}"`
+    + `${defaults.has(c.key) ? " checked" : ""}> ${escHtml(c.label)}</label>`).join("");
+  return `<p class="tool-lede keep-whole">Pick the categories to trade off. The search re-slots your
+    powers along the optimizer's own directions (damage, tank, defense, resistance, recharge,
+    support...) and keeps every legal result that no other result beats on all of them. It takes
+    about half a minute and changes nothing until you choose one.</p>
+    <div class="fr-objs">${boxes}</div>
+    <div class="rating-controls"><button id="frontier-run-btn" type="button">🧭 Find alternatives</button></div>
+    <div id="frontier-out"></div>`;
+}
+
+function _frontierViewHtml() {
+  const keys = ((_FRONTIER && _FRONTIER.frontier) || {}).objectives || [];
+  const label = k => ((_RATING_CATEGORIES.find(c => c.key === k) || {}).label) || k;
+  const opts = keys.map(o => `<option value="${escHtml(o.key)}"${_FRONTIER_VIEW.sortKey === o.key ? " selected" : ""}>`
+    + `${escHtml(label(o.key))}</option>`).join("");
+  const mins = keys.map(o => `<label class="fr-min">${escHtml(label(o.key))} at least `
+    + `<input type="number" step="any" data-frontier-min="${escHtml(o.key)}" value="${escHtml(_FRONTIER_VIEW.mins[o.key] ?? "")}"></label>`).join("");
+  return `<div class="rating-controls"><label>Sort by <select id="frontier-sort"><option value="">as found</option>${opts}</select></label></div>`
+    + `<details class="fr-mins"><summary>Minimum standards (hide, never delete)</summary>${mins}</details>`
+    + `<div id="frontier-table">${renderFrontierHtml(_FRONTIER, _FRONTIER_VIEW, _RATING_CATEGORIES)}</div>`;
+}
+
+function openFrontier() {
+  if (!_hasBuildToRate()) return;
+  _RATING_SEQ++;                          // a scorecard in flight must not repaint over this
+  $("rating-body").innerHTML = _frontierControlsHtml();
+}
+
+async function runFrontier() {
+  const objectives = [...document.querySelectorAll(".fr-obj input:checked")].map(x => x.value);
+  const out = $("frontier-out");
+  if (!objectives.length) { out.innerHTML = `<p class="muted">Pick at least one category.</p>`; return; }
+  const seq = ++_RATING_SEQ;
+  out.innerHTML = `<p class="muted">Searching… (about half a minute)</p>`;
+  let res = null;
+  try {
+    res = await api("/build/frontier", postJson({ build: buildWithAccolades(), objectives,
+                                                  max_evaluations: 12 }));
+  } catch (e) {
+    if (seq === _RATING_SEQ) out.innerHTML = `<p class="muted">The search could not run.</p>`;
+    return;
+  }
+  if (seq !== _RATING_SEQ) return;
+  _FRONTIER = res;
+  _FRONTIER_VIEW = { sortKey: null, mins: {} };
+  _LAST_RATING = res;                     // "Save as file" writes what is on screen
+  out.innerHTML = _frontierViewHtml();
+}
+
+function _refreshFrontierTable() {
+  const t = $("frontier-table");
+  if (t) t.innerHTML = renderFrontierHtml(_FRONTIER, _FRONTIER_VIEW, _RATING_CATEGORIES);
+}
+
+function useFrontierMember(fp) {
+  const m = ((_FRONTIER && _FRONTIER.members) || []).find(x => x.fingerprint === fp);
+  if (!m || !m.build || !Array.isArray(m.build.powers)) return;
+  recordEdit();                           // Undo takes the whole re-slot back
+  build.powers = JSON.parse(JSON.stringify(m.build.powers));
+  $("rating-modal").classList.add("hidden");
+  renderPowers();
+  recompute();
 }
 
 async function exportMids() {

@@ -1,7 +1,7 @@
 # M6 — Discovered Pareto frontier contract
 
-**Status:** backend implemented (`server/pareto.py`, `server/frontier_search.py`,
-`POST /build/frontier`). The player-facing view (plan 6.4) is the next PR.
+**Status:** implemented: `server/pareto.py`, `server/frontier_search.py`,
+`POST /build/frontier`, and the app's 🧭 Alternatives view in the rating dialog.
 **Reference:** [Project plan](BUILD-EVALUATION-RATING-OPTIMIZATION-PLAN.md) §M6,
 [M2 contract](M2-EVALUATION-CONTRACT.md) (the measurements this reads).
 
@@ -107,12 +107,24 @@ certification runs.
   floors, budgets, determinism, time budget, incomparable, duplicate slotting,
   request parsing) and the real route (legal, locked picks, repeatable, Sidekick
   import -> frontier -> export -> re-import with identical picks).
+- `tools/test_frontier_view.js` — the app view (16 checks, negative-controlled).
 - `tools/test_user_paths.py` — route coverage.
 
-## Open
+## App view (plan 6.4)
 
-- The player-facing view (6.4): list alternatives, filter by floors, sort by a
-  goal without deleting others, select and export one. Next PR.
+📊 Rate this build → 🧭 Alternatives. The player ticks categories (the checkboxes
+start from `/meta.frontier_default_objectives`) and presses Find alternatives
+(12 evaluations). The table lists every member with grade, value and change
+against their build in each chosen category; the row says what it is best at
+(the unique leader on a category) or that it is a trade-off. "Sort by" reorders
+and "Minimum standards" hides rows below a number and states how many are
+hidden; neither removes anything. **Use this build** applies the member's
+slotting as an ordinary edit (`recordEdit` first, so Undo takes it back) and
+closes the dialog; Sidekick or Mids export then runs from the Build menu as
+usual. Save as file writes the whole frontier response. The renderer is pure
+(`renderFrontierHtml`) with a node battery, `tools/test_frontier_view.js`.
+
+## Open
 - More directions widen the discovered frontier (for example per-type defense
   targets, or neighbourhood moves on a frontier member); each costs one solve.
 - Offense objectives on a build whose `offense_complete` is false compare the same

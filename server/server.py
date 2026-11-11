@@ -938,6 +938,9 @@ def meta():
                     # origin-themed pools are one-per-build.
                     "pool_rules": {"max": 4, "epic_counts": False,
                                    "exclusive": sorted(_EXCLUSIVE_POOLS)},
+                    # M6: the objectives /build/frontier trades off when none are
+                    # chosen, so the app's checkboxes start from the server's list.
+                    "frontier_default_objectives": list(frontier_search.DEFAULT_OBJECTIVES),
                     # ⚠ SAME REASONING AS pool_rules: the picker must refuse
                     # exactly what validate_build refuses, so the one enhancement
                     # the game lets you slot repeatedly despite its unique flag
