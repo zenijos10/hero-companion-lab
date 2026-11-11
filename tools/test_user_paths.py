@@ -108,6 +108,16 @@ check("/build/compare returns a comparison with a refused column",
 check("/build/compare rejects an empty request",
       C.post("/build/compare", json={"builds": []}).status_code == 400)
 
+# M6: discovered Pareto frontier of re-slottings; the start competes, picks stay locked.
+T("/build/frontier")
+_fr = j(C.post("/build/frontier", json={"build": BUILD, "objectives": ["defense", "recharge"],
+                                        "max_evaluations": 2}))
+check("/build/frontier returns a discovered frontier within its budget",
+      _fr.get("kind") == "discovered_frontier" and bool(_fr.get("members"))
+      and (_fr.get("search") or {}).get("evaluations") == 2, (_fr.get("search") or {}).get("stop_reason"))
+check("/build/frontier rejects an unknown objective",
+      C.post("/build/frontier", json={"build": BUILD, "objectives": ["x"]}).status_code == 400)
+
 
 # ── read-only catalogs ──────────────────────────────────────────────────────
 T("/"); check("/ serves the app shell", C.get("/").status_code == 200)

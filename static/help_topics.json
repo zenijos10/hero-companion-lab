@@ -891,6 +891,30 @@
      "Open Stats"
     ]
    ]
+  },
+  {
+   "term": "Alternatives (trade-offs)",
+   "aliases": [
+    "alternatives",
+    "pareto",
+    "frontier",
+    "trade-off",
+    "tradeoff",
+    "other slottings",
+    "find alternatives"
+   ],
+   "stage": "tweaking",
+   "what": "Several other slottings of the powers you picked, each one better than the rest somewhere, so you can see what a build could trade for what. Your powers never change; only the enhancements move.",
+   "how": "Tick the categories you care about and press Find alternatives. The optimizer re-slots your build along its own directions (damage, tank, defense, resistance, recharge, endurance, support roles), checks every result is legal, measures it against +4 enemies, and keeps every result that no other result beats in all the ticked categories. Your own build competes too. Sorting and minimum standards only change what is shown; nothing is removed from the list.",
+   "why": "There is rarely one best build: more defense usually costs damage or recharge. Seeing the trade-offs side by side, with the gain or loss against your build in every column, lets you pick the one that fits how you play instead of trusting one score.",
+   "where": "In the 📊 Rate this build dialog, the 🧭 Alternatives button. It takes about half a minute. Use this build applies that slotting as an ordinary edit, so Undo (Ctrl+Z) takes it back; export it from the Build menu as usual. These are the alternatives the search found, not a proof that nothing better exists.",
+   "example": "On a Super Strength / Invulnerability Brute, the 45% defense target reaches 29% defense but lives far shorter against +4 enemies, while the hard-target damage preset gains 15 single-target DPS: both stay on the list because neither beats the other everywhere.",
+   "go": [
+    [
+     "tab:stats",
+     "Open Stats"
+    ]
+   ]
   }
  ]
 }

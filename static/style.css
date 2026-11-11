@@ -3585,6 +3585,17 @@ body.layout-mode .lay-target .lay-target .lay-target .lay-target::before { top: 
 /* the sanctioned in-modal scroll (the .about-body pattern): the box is a flex
    column capped at 80vh, so the body scrolls instead of spilling past it */
 .rating-body { overflow-y: auto; min-height: 0; }
+/* M6 alternatives (discovered Pareto frontier) */
+.fr-objs { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 4px 0 8px; }
+.fr-obj, .fr-min { display: inline-flex; gap: 6px; align-items: center; white-space: nowrap; }
+.fr-obj input { width: auto; }
+.fr-mins { margin: 4px 0 8px; }
+.fr-mins .fr-min { margin: 4px 14px 4px 0; }
+.fr-min input { width: 90px; }
+.frontier-table button { width: auto; white-space: nowrap; }
+.frontier-table .fr-val { white-space: nowrap; }
+.frontier-table th[scope="row"] { min-width: 190px; }
+.fr-action { margin-top: 4px; }
 .rating-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .rating-table th, .rating-table td { padding: 4px 8px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
 .rating-table thead th { font-weight: 600; }

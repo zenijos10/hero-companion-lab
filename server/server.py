@@ -43,6 +43,7 @@ import sidekick_contract            # noqa: E402
 import role_output                 # noqa: E402
 import build_evaluation             # noqa: E402
 import build_compare                # noqa: E402
+import frontier_search              # noqa: E402
 
 # Packaged (PyInstaller) build: bundled read-only assets (data/, static/, VERSION,
 # client_config.json) live under the bundle root, not the source tree.
@@ -937,6 +938,9 @@ def meta():
                     # origin-themed pools are one-per-build.
                     "pool_rules": {"max": 4, "epic_counts": False,
                                    "exclusive": sorted(_EXCLUSIVE_POOLS)},
+                    # M6: the objectives /build/frontier trades off when none are
+                    # chosen, so the app's checkboxes start from the server's list.
+                    "frontier_default_objectives": list(frontier_search.DEFAULT_OBJECTIVES),
                     # ⚠ SAME REASONING AS pool_rules: the picker must refuse
                     # exactly what validate_build refuses, so the one enhancement
                     # the game lets you slot repeatedly despite its unique flag
@@ -2995,6 +2999,50 @@ def build_compare_route():
         columns.append({"label": str(entry.get("label") or f"Build {i + 1}")[:80],
                         "evaluation": result, "error": error})
     return jsonify(build_compare.compare(columns))
+
+
+def _frontier_solve(build, request_extras):
+    """One re-slot of the build's locked picks through the REAL /build/solve."""
+    body = {"archetype": build.get("archetype"), "primary": build.get("primary"),
+            "secondary": build.get("secondary"), "tier": "premium",
+            "powers": copy.deepcopy(build.get("powers") or []), **request_extras}
+    with app.test_request_context(json=body):
+        resp = build_solve()
+    data = (resp[0] if isinstance(resp, tuple) else resp).get_json()
+    if not (isinstance(data, dict) and data.get("ok") and data.get("powers")):
+        raise ValueError((data or {}).get("response") or "the solver returned no build")
+    return data["powers"]
+
+
+@app.route("/build/frontier", methods=["POST"])
+def build_frontier():
+    """M6: a discovered Pareto frontier of legal re-slottings of this build's
+    picks, over the objectives the player chose (numeric measurements, never
+    grades), with optional floors. Read-only: never saves; the starting build
+    competes as a candidate. Contract: docs/agent-team/M6-FRONTIER-CONTRACT.md."""
+    body = request.get_json(force=True)
+    if not isinstance(body, dict) or not isinstance(body.get("build"), dict):
+        return jsonify({"ok": False, "error": "Expected a build object."}), 400
+    build = body["build"]
+    try:
+        objectives, floors, budget, seconds, size = frontier_search.parse_request(body)
+    except ValueError as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 400
+    _, refused = _evaluate_build(copy.deepcopy(build), build_evaluation.DEFAULT_SCENARIO)
+    if refused:
+        return jsonify({"ok": False, "error": refused}), 400
+    result = frontier_search.search(
+        copy.deepcopy(build), objectives=objectives, floors=floors,
+        solve=_frontier_solve,
+        validate=lambda b: _complete_build_validation(copy.deepcopy(b)).get("errors") or [],
+        evaluate=lambda b: _evaluate_build(copy.deepcopy(b), build_evaluation.DEFAULT_SCENARIO),
+        max_evaluations=budget, max_seconds=seconds, max_size=size,
+        keep_sets=bool(body.get("keep_sets")))
+    result["scenario"] = build_evaluation.DEFAULT_SCENARIO
+    import first_principles as fp
+    result["model_version"] = fp.MODEL_VERSION
+    result["database_version"] = DB_VERSION
+    return jsonify(result)
 
 
 @app.route("/build/calculate", methods=["POST"])
