@@ -42,6 +42,7 @@ import skif_export                  # noqa: E402
 import sidekick_contract            # noqa: E402
 import role_output                 # noqa: E402
 import build_evaluation             # noqa: E402
+import build_compare                # noqa: E402
 
 # Packaged (PyInstaller) build: bundled read-only assets (data/, static/, VERSION,
 # client_config.json) live under the bundle root, not the source tree.
@@ -2947,23 +2948,53 @@ def build_evaluate():
     body = request.get_json(force=True)
     if not isinstance(body, dict) or not isinstance(body.get("build"), dict):
         return jsonify({"ok": False, "error": "Expected a build object."}), 400
-    build = body["build"]
-    scenario = body.get("scenario", build_evaluation.DEFAULT_SCENARIO)
+    result, error = _evaluate_build(body["build"],
+                                    body.get("scenario", build_evaluation.DEFAULT_SCENARIO))
+    if error:
+        return jsonify({"ok": False, "error": error}), 400
+    return jsonify(result)
+
+
+def _evaluate_build(build, scenario):
+    """(evaluation, None) or (None, the reason it was refused): the ONE copy of
+    the evaluation call that /build/evaluate and /build/compare share."""
     at = ARCH_BY_NAME.get(build.get("archetype")) if isinstance(build.get("archetype"), str) else None
     if not at or not at.get("playable"):
-        return jsonify({"ok": False, "error": "Unknown playable archetype."}), 400
+        return None, "Unknown playable archetype."
     res_cap = round(at["res_cap"] * 100, 1)
     ctx = _stat_ctx(build["archetype"])
     try:
-        result = build_evaluation.evaluate(
+        return build_evaluation.evaluate(
             build, scenario, ctx=ctx, set_bonuses=SET_BONUSES,
             res_cap=res_cap, archetype_record=at,
             db_name=DB_NAME, db_version=DB_VERSION, app_version=APP_VERSION,
             prepare=lambda b: _prepare_incarnate_fields(b, ctx, res_cap),
-            powers_by_set=POWERS, power_help=POWER_HELP, thresholds=RATING_THRESHOLDS)
+            powers_by_set=POWERS, power_help=POWER_HELP,
+            thresholds=RATING_THRESHOLDS), None
     except ValueError as exc:
-        return jsonify({"ok": False, "error": str(exc)}), 400
-    return jsonify(result)
+        return None, str(exc)
+
+
+@app.route("/build/compare", methods=["POST"])
+def build_compare_route():
+    """M5: a scorecard for one build, or 2-4 builds side by side. Read-only: it
+    evaluates (never solves) and never touches a save. A build the evaluation
+    refuses (PvP, an exemplar level) comes back as a column with its reason, so
+    the app can say so instead of showing an error banner."""
+    body = request.get_json(force=True)
+    entries = body.get("builds") if isinstance(body, dict) else None
+    if not isinstance(entries, list) or not 1 <= len(entries) <= build_compare.MAX_BUILDS \
+            or any(not isinstance(e, dict) or not isinstance(e.get("build"), dict)
+                   for e in entries):
+        return jsonify({"ok": False, "error": f"Expected 1 to {build_compare.MAX_BUILDS} "
+                                              "builds as {label, build}."}), 400
+    scenario = body.get("scenario", build_evaluation.DEFAULT_SCENARIO)
+    columns = []
+    for i, entry in enumerate(entries):
+        result, error = _evaluate_build(entry["build"], scenario)
+        columns.append({"label": str(entry.get("label") or f"Build {i + 1}")[:80],
+                        "evaluation": result, "error": error})
+    return jsonify(build_compare.compare(columns))
 
 
 @app.route("/build/calculate", methods=["POST"])

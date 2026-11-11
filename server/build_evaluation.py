@@ -9,6 +9,7 @@ import copy
 import hashlib
 import json
 import math
+import re
 
 import effectless
 import engine
@@ -163,8 +164,28 @@ def _typed_gain(after, before):
     return gain
 
 
+# The game's own help sentence for a toggle that locks its caster out of
+# attacking (Personal Force Field: "while it is active, you can only use powers
+# that affect yourself"). Matched on the help text, the client's words; the
+# record carries no restriction field. 6 pickable records today.
+_CASTER_LOCK = re.compile(
+    r"while (it is |this power is )?active,? you (can only use powers that affect yourself"
+    r"|cannot (attack|act|use (any )?other powers))"
+    r"|you (cannot|can't|can not) attack (or use (any )?powers )?while", re.I)
+
+
+def _locks_caster(rec, help_entry):
+    """A toggle whose own help says the caster cannot attack while it runs: a
+    defensive MODE, not sustained mitigation."""
+    if not rec or (rec.get("power_type") or 0) not in (2,):
+        return None
+    text = help_entry[1] if isinstance(help_entry, (list, tuple)) and len(help_entry) > 1 else ""
+    match = _CASTER_LOCK.search(text or "")
+    return match.group(0) if match else None
+
+
 def _emergency_ledger(build_copy, sustained, power_records, ctx, set_bonuses, res_cap,
-                      global_recharge):
+                      global_recharge, power_help=None):
     """Each emergency power: what it adds while up (measured by recalculating with
     it switched on), how long it lasts, its enhanced recharge, the resulting
     uptime, and the penalties the game data attaches (crashes)."""
@@ -172,11 +193,23 @@ def _emergency_ledger(build_copy, sustained, power_records, ctx, set_bonuses, re
     for i, power in enumerate(build_copy["powers"]):
         rec = power_records.get(power["full_name"])
         rows = _emergency_rows(rec)
-        if not rows:
+        lock = _locks_caster(rec, (power_help or {}).get(power["full_name"]))
+        if not rows and not lock:
             continue
         trial = copy.deepcopy(build_copy)
         trial["powers"][i]["include_in_totals"] = True
         active = engine.calculate_build(trial, set_bonuses, res_cap=res_cap, ctx=dict(ctx))
+        if lock:
+            ledger.append({
+                "power": power["full_name"], "display_name": rec.get("display_name"),
+                "kind": "caster_locked_toggle",
+                "restriction": f"the game's help: \"{lock}\"",
+                "while_active_gain_percent_points": _typed_gain(active, sustained),
+                "duration_seconds": _measurement(None, "seconds", "a toggle: up while you choose"),
+                "uptime": _measurement(None, "fraction",
+                                       "the player's choice; it costs every attack and team power"),
+            })
+            continue
         durations = {}
         for fx in rows:              # one duration per effect/type, longest row wins
             key = f'{fx["effect"]}.{fx.get("damage_type") or "None"}'
@@ -193,6 +226,7 @@ def _emergency_ledger(build_copy, sustained, power_records, ctx, set_bonuses, re
         uptime = _uptime(duration)
         ledger.append({
             "power": power["full_name"], "display_name": rec.get("display_name"),
+            "kind": "timed_click",
             "while_active_gain_percent_points": _typed_gain(active, sustained),
             "duration_seconds": _measurement(
                 duration, "seconds", "game data, unenhanced; the longest row when "
@@ -255,7 +289,9 @@ def _unsupported_powers(powers, power_records, powers_by_set, power_help):
         elif verdict:
             row = {"power": fn, "reason": _REASON[verdict["class"]],
                    "detail": verdict["evidence"],
-                   "damaging": verdict["class"] in effectless.DAMAGING}
+                   "damaging": verdict["class"] in effectless.DAMAGING,
+                   # the game's own one-line summary: what the unread power DOES
+                   "short_help": effectless._short_help((power_help or {}).get(fn)) or None}
             if verdict.get("twins"):
                 row["twins"] = verdict["twins"]
             found.append(row)
@@ -320,7 +356,8 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
     # Sustained totals never count an emergency click, even one the player ticked.
     excluded = []
     for p in build_copy["powers"]:
-        if _emergency_rows(power_records.get(p["full_name"])):
+        rec = power_records.get(p["full_name"])
+        if _emergency_rows(rec) or _locks_caster(rec, (power_help or {}).get(p["full_name"])):
             if p.get("include_in_totals"):
                 excluded.append(p["full_name"])
             p["include_in_totals"] = False
@@ -355,7 +392,7 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
         build_copy["powers"], ctx, global_recharge=global_recharge)
     team_support = support_ledger.build_ledger(build_copy["powers"], ctx, global_recharge, sc)
     emergency = _emergency_ledger(build_copy, totals, power_records, ctx, set_bonuses,
-                                  res_cap, global_recharge)
+                                  res_cap, global_recharge, power_help)
     unsupported, modeled_elsewhere = _unsupported_powers(
         build_copy["powers"], power_records,
         powers_by_set if powers_by_set is not None else _records_by_set(power_records),

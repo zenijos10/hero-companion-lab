@@ -3576,3 +3576,24 @@ body.layout-mode .lay-target .lay-target .lay-target .lay-target::before { top: 
 /* About footer links in the app's ink, not browser blue (Joel, 2026-08-10:
    'way too bright blue'). Underline stays so they still read as links. */
 .about-links a { color: var(--ink); }
+
+/* M5 build rating (scorecard / side-by-side). Grade colours reuse the theme
+   tokens; the table flows with the window (no inner scrollbar). */
+.rating-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 6px 0 10px; }
+.rating-controls label { display: flex; gap: 6px; align-items: center; }
+.rating-controls button, .rating-controls select { width: auto; flex: 0 0 auto; }
+/* the sanctioned in-modal scroll (the .about-body pattern): the box is a flex
+   column capped at 80vh, so the body scrolls instead of spilling past it */
+.rating-body { overflow-y: auto; min-height: 0; }
+.rating-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.rating-table th, .rating-table td { padding: 4px 8px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+.rating-table thead th { font-weight: 600; }
+.rating-table tr.rt-diff th[scope="row"] { color: var(--accent); }
+.rating-table td.rt-best { outline: 1px solid var(--accent); }
+.rt-g { display: inline-block; min-width: 1.6em; text-align: center; font-weight: 700; border-radius: 4px; padding: 0 4px; }
+.rt-g-S, .rt-g-A { background: var(--def); color: var(--bg); }
+.rt-g-B, .rt-g-C { background: var(--warn); color: var(--bg); }
+.rt-g-D, .rt-g-F { background: var(--bad); color: var(--bg); }
+.rt-g-x { background: transparent; border: 1px solid var(--border); }
+.rt-flag, .rt-refused { font-size: 12px; font-weight: 400; color: var(--accent); }
+.rt-low { cursor: help; }

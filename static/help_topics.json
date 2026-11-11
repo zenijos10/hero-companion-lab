@@ -868,6 +868,29 @@
    "where": "Everywhere, all the time - they are the fast lane through the whole loop.",
    "go": [],
    "example": "Ctrl+I to import your character, Ctrl+2 to check a number on Stats, Ctrl+Z if a change was a mistake, Ctrl+S to save: a whole session without touching the menus."
+  },
+  {
+   "term": "Build rating",
+   "aliases": [
+    "rate this build",
+    "scorecard",
+    "grades",
+    "compare builds",
+    "rating",
+    "S to F"
+   ],
+   "stage": "reference",
+   "what": "Grades your build S to F in 18 categories against +4 enemies: single-target, area and pet damage, survival, defense, resistance, endurance, recharge, control, healing, three team buffs and five debuffs. Each grade shows its exact number beside it.",
+   "how": "It measures the build exactly as you own it (booster previews and other people's buffs are left out, defense is read in combat) and compares each number with fixed cut points. Pick a saved character in the same window to see the two side by side, with the gap in every category where the grades differ or one is at least 10% ahead. It never names an overall winner: builds trade categories against each other.",
+   "why": "To see what a build is good and bad at before you change it, and to compare two characters without running the optimizer. Nothing here solves or saves anything.",
+   "where": "Stats tab, the 📊 Rate this build button, or Build → 📊 Rate this build. The grades are provisional: the cut points were set from optimized champion builds as a guide, so an ordinary build reads lower than its standing among players would. Unknown means the model cannot measure it for this build, None means the build has none of it, N/A means it cannot apply.",
+   "example": "A Super Strength / Invulnerability Brute reads A for survival and resistance and F for endurance; beside a Force Field Defender, the Defender leads on recharge, defense and control.",
+   "go": [
+    [
+     "tab:stats",
+     "Open Stats"
+    ]
+   ]
   }
  ]
 }

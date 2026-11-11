@@ -3873,6 +3873,12 @@ async function init() {
   $("modal-close").addEventListener("click", closeModal);
   $("tier-close").addEventListener("click", () => $("tier-modal").classList.add("hidden"));
   $("about-close").addEventListener("click", () => $("about-modal").classList.add("hidden"));
+  $("rate-btn").addEventListener("click", openRating);
+  $("rating-close").addEventListener("click", () => $("rating-modal").classList.add("hidden"));
+  $("rating-modal").addEventListener("click", (e) => {
+    if (e.target === $("rating-modal")) $("rating-modal").classList.add("hidden"); });
+  $("rating-compare-btn").addEventListener("click", compareRating);
+  $("rating-save-btn").addEventListener("click", saveRatingFile);
   $("about-modal").addEventListener("click", (e) => {
     if (e.target === $("about-modal")) $("about-modal").classList.add("hidden"); });
   $("modal-search").addEventListener("input", renderModalSets);
@@ -9848,6 +9854,147 @@ async function saveTextFile(filename, text) {
   a.remove();
   URL.revokeObjectURL(a.href);
   return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
+// M5: BUILD RATING. A scorecard for this build, or this build beside a saved
+// character. Read-only by construction: /build/compare evaluates (it never
+// solves), nothing here writes a save, and the build sent is the one you OWN
+// (buildWithAccolades(): booster previews live in PREVIEW_BOOSTS, never in
+// build.powers, so a preview cannot leak into a grade).
+// ---------------------------------------------------------------------------
+let _LAST_RATING = null;
+let _RATING_SEQ = 0;      // only the newest request may paint the modal
+
+const _RATING_UNITS = {
+  percent: "%", percent_bonus: "%", seconds: "s", damage_per_second: "DPS",
+  damage_per_second_per_target: "DPS/target", endurance_per_second: "end/s",
+  weighted_mez_seconds_proxy: "control pts", model_heal_units_per_second: "heal/s",
+};
+
+// Pure: the /build/compare response in, HTML out (escHtml is the only
+// dependency, so tools/test_rating_view.js runs it under node).
+function renderRatingHtml(cmp) {
+  if (!cmp || !Array.isArray(cmp.columns)) {
+    return `<p class="muted">The rating could not be read.</p>`;
+  }
+  const cols = cmp.columns;
+  const fmt = (v, unit) => {
+    if (v == null || typeof v !== "number" || !isFinite(v)) return "";
+    const n = Math.abs(v) >= 100 ? v.toFixed(0) : v.toFixed(1);
+    return `${n} ${escHtml(_RATING_UNITS[unit] || unit || "")}`.trim();
+  };
+  const head = cols.map(c => {
+    if (!c.ok) return `<th>${escHtml(c.label)}<div class="rt-refused">${escHtml(c.error)}</div></th>`;
+    const sets = [c.primary, c.secondary].filter(Boolean)
+      .map(x => String(x).split(".").pop().replace(/_/g, " ")).join(" / ");
+    const flags = [];
+    if (!c.rated) flags.push(`Not rated: ${escHtml(c.not_rated_reason || "")}`);
+    if (c.offense_complete === false) flags.push("Offense incomplete: a picked power deals damage the model does not read");
+    return `<th>${escHtml(c.label)}<div class="muted small">${escHtml(sets)}</div>`
+      + flags.map(f => `<div class="rt-flag">${f}</div>`).join("") + `</th>`;
+  }).join("");
+  const single = cmp.mode === "scorecard";
+  const rows = (cmp.rows || []).map(r => {
+    const best = new Set(r.best || []);
+    const cells = (r.cells || []).map((cell, i) => {
+      if (!cols[i] || !cols[i].ok) return `<td class="muted">-</td>`;
+      const g = cell.grade || "-";
+      const cls = /^[SABCDF]$/.test(g) ? `rt-g rt-g-${g}` : "rt-g rt-g-x";
+      const low = cell.low_sample ? ` <span class="rt-low" title="Few champions set this cut point: treat it as rough">≈</span>` : "";
+      const why = cell.why ? ` title="${escHtml(cell.why)}"` : "";
+      const note = single && cell.why ? `<div class="muted small">${escHtml(cell.why)}</div>` : "";
+      return `<td class="${best.has(i) ? "rt-best" : ""}"${why}><span class="${cls}">${escHtml(g)}</span> `
+        + `${fmt(cell.value, r.unit)}${low}${note}</td>`;
+    }).join("");
+    const diff = single ? "" : `<td class="muted small">${r.meaningful && r.difference != null
+      ? "Δ " + fmt(r.difference, r.unit) : ""}</td>`;
+    return `<tr class="${r.meaningful ? "rt-diff" : ""}"><th scope="row">${escHtml(r.label)}</th>${cells}${diff}</tr>`;
+  }).join("");
+  const unsupported = cols.filter(c => c.ok && (c.unsupported || []).length).map(c =>
+    `<details><summary>${escHtml(c.label)}: ${c.unsupported.length} power(s) the model does not fully measure</summary><ul>`
+    + c.unsupported.map(u => `<li>${escHtml(u.power)}: ${escHtml(String(u.reason).replace(/_/g, " "))}</li>`).join("")
+    + `</ul></details>`).join("");
+  const notes = (cmp.notes || []).map(n => `<li>${escHtml(n)}</li>`).join("");
+  return `<table class="rating-table"><thead><tr><th></th>${head}`
+    + `${single ? "" : "<th>Gap</th>"}</tr></thead><tbody>${rows}</tbody></table>`
+    + `${unsupported}<ul class="muted small keep-whole">${notes}</ul>`;
+}
+
+function _ratingLabel() {
+  return (CURRENT_SAVE && CURRENT_SAVE.name) || "This build";
+}
+
+async function _runRating(entries) {
+  const body = $("rating-body");
+  const seq = ++_RATING_SEQ;
+  body.innerHTML = `<p class="muted">Rating…</p>`;
+  let res = null;
+  try {
+    res = await api("/build/compare", postJson({ builds: entries }));
+  } catch (e) {
+    if (seq !== _RATING_SEQ) return;
+    body.innerHTML = `<p class="muted">The rating could not be computed.</p>`;
+    return;
+  }
+  if (seq !== _RATING_SEQ) return;       // a newer rating was asked for meanwhile
+  _LAST_RATING = res;
+  body.innerHTML = renderRatingHtml(res);
+}
+
+async function _populateRatingCompare() {
+  const sel = $("rating-compare-sel");
+  sel.innerHTML = `<option value="">a saved character…</option>`;
+  try {
+    const res = await api("/saves");
+    for (const sv of (res && res.saves) || []) {
+      if (CURRENT_SAVE && sv.id === CURRENT_SAVE.id) continue;
+      const o = document.createElement("option");
+      o.value = sv.id;
+      o.textContent = sv.name || sv.id;
+      sel.appendChild(o);
+    }
+  } catch (e) { /* the scorecard still works without the list */ }
+}
+
+function _hasBuildToRate() {
+  return !!build.archetype && (build.powers || []).length > 0;
+}
+
+async function openRating() {
+  $("rating-modal").classList.remove("hidden");
+  _LAST_RATING = null;
+  if (!_hasBuildToRate()) {
+    _RATING_SEQ++;                         // drop any rating still in flight
+    $("rating-compare-sel").innerHTML = "";
+    $("rating-body").innerHTML = `<p class="muted">Pick an archetype and some powers first: there is nothing to rate yet.</p>`;
+    return;
+  }
+  _populateRatingCompare();
+  await _runRating([{ label: _ratingLabel(), build: buildWithAccolades() }]);
+}
+
+async function compareRating() {
+  const id = $("rating-compare-sel").value;
+  if (!id || !_hasBuildToRate()) return;
+  let saved = null;
+  try {
+    const res = await api(`/saves/${encodeURIComponent(id)}`);
+    saved = res && res.save;
+  } catch (e) { /* reported below */ }
+  if (!saved || !saved.build) {
+    $("rating-body").innerHTML = `<p class="muted">That saved character could not be opened.</p>`;
+    return;
+  }
+  await _runRating([{ label: _ratingLabel(), build: buildWithAccolades() },
+                    { label: saved.name || id, build: saved.build }]);
+}
+
+async function saveRatingFile() {
+  if (!_LAST_RATING) return;
+  const labels = (_LAST_RATING.columns || []).map(c => c.label).join(" vs ");
+  const name = (labels || _ratingLabel()).replace(/[^A-Za-z0-9 _-]+/g, "").trim() || "build";
+  await saveTextFile(`${name} rating.json`, JSON.stringify(_LAST_RATING, null, 1));
 }
 
 async function exportMids() {

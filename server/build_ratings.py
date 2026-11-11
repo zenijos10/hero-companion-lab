@@ -18,6 +18,7 @@ response says why it is not rated instead of grading against the wrong fight.
 """
 import json
 import os
+import re
 
 GRADES = ("S", "A", "B", "C", "D")      # F = below the D cut
 LOW_SAMPLE = 30     # cuts set from fewer champions than this are flagged low_sample
@@ -76,10 +77,33 @@ def _summons(ev):
 
 _UNREAD = ("unknown_record", "unread_redirect", "damaging_unread", "effect_unread")
 
+# Which capability family an unread power could hide, from the game's own short
+# help ("Ranged, Ally Heal", "Ranged, Foe -Res", "Foe Hold"). A power whose help
+# names no family cannot make that family Unknown (a Brute's Taunt is not a team
+# buff); a power with no help at all, or an unknown record, could be anything.
+_FAMILY_WORDS = {
+    "ally": re.compile(r"\b(Ally|Allies|Team|Teammates?|Friend)\b"),
+    "debuff": re.compile(r"(Foe|Target)\s*-|-(Res|Def|ToHit|DMG|Dam|Regen|Rech|SPD|Recharge)"),
+    "control": re.compile(r"\b(Hold|Sleep|Immobili[sz]e|Disorient|Stun|Confuse|Fear|Terrori[sz]e|Knock(back|down|up))\b"),
+}
+_CATEGORY_FAMILY = {"healing": "ally", "buff_defense": "ally", "buff_damage": "ally",
+                    "buff_recharge": "ally", "control": "control",
+                    "debuff_resistance_av": "debuff", "debuff_regeneration_av": "debuff",
+                    "debuff_defense_spawn": "debuff", "debuff_tohit_spawn": "debuff",
+                    "debuff_damage_spawn": "debuff"}
 
-def _has_unread_effects(ev):
-    return any(u.get("reason") in _UNREAD
-               for u in (ev.get("unsupported") or {}).get("powers") or [])
+
+def _unread_families(ev):
+    """The capability families an unread power might be hiding."""
+    families = set()
+    for u in (ev.get("unsupported") or {}).get("powers") or []:
+        if u.get("reason") not in _UNREAD:
+            continue
+        text = u.get("short_help")
+        if u.get("reason") == "unknown_record" or not text:
+            return set(_FAMILY_WORDS)              # no evidence: could be anything
+        families |= {f for f, rx in _FAMILY_WORDS.items() if rx.search(text)}
+    return families
 
 
 _TYPES = ("Cold", "Energy", "Fire", "Lethal", "Negative", "Psionic", "Smashing", "Toxic")
@@ -170,7 +194,7 @@ def rate(evaluation, thresholds):
                           f"{thresholds.get('database_version')}, this evaluation ran on "
                           f"{versions.get('database_version')}; recalibrate", thresholds)
     offense_ok = (evaluation.get("confidence") or {}).get("offense_complete", False)
-    unread = _has_unread_effects(evaluation)
+    unread = _unread_families(evaluation)
     summons = _summons(evaluation)
     values = measure(evaluation)
     out = {}
@@ -193,7 +217,7 @@ def rate(evaluation, thresholds):
                                             "read (unsupported.powers, damaging: true)")
         elif value is None:
             row.update(grade="Unknown", why="not measured")
-        elif kind == "capability" and value <= 0 and unread:
+        elif kind == "capability" and value <= 0 and _CATEGORY_FAMILY.get(key) in unread:
             row.update(grade="Unknown", why="none measured, but the build picks powers whose "
                                             "effects the model does not read")
         elif kind == "capability" and value <= 0:

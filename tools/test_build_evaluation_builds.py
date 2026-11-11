@@ -237,6 +237,22 @@ class RealBuildEvaluationTests(unittest.TestCase):
         self.assertGreater(compared, 40)
         self.assertGreater(multi_row, 0, "the regression must cover a summed multi-row power")
 
+    def test_personal_force_field_is_a_mode_not_sustained_defense(self):
+        """Its help: 'while it is active, you can only use powers that affect
+        yourself'. Out of sustained totals, listed as a caster-locked toggle."""
+        pff = "Defender_Buff.Force_Field.Personal_Force_Field"
+        build = json.loads(json.dumps(self.builds["forcefield"]))
+        if pff not in {p["full_name"] for p in build["powers"]}:
+            build["powers"].append({"full_name": pff, "slots": [None]})
+        data = self.evaluate(build)
+        rows = {r["power"]: r for r in data["measurements"]["survival"]["emergency_powers"]}
+        self.assertEqual(rows[pff]["kind"], "caster_locked_toggle")
+        self.assertIn("only use powers that affect yourself", rows[pff]["restriction"])
+        self.assertTrue(rows[pff]["while_active_gain_percent_points"]["defense"])
+        self.assertIn(pff, data["inputs_normalized"]["emergency_excluded_from_sustained"])
+        melee = data["measurements"]["survival"]["defense"]["Melee"]["value"]
+        self.assertLess(melee, 100.0, "PFF must not inflate sustained defense")
+
     def test_av_single_target_regen_debuffer_is_recognized(self):
         """M3 acceptance: strong ST -regen vs an AV, without AoE -damage, is visible."""
         summary = self.support("cold")["summary"]["debuffs_landing_average_percent"]

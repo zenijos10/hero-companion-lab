@@ -149,6 +149,13 @@ out. Rules going forward:
   them"); peer cohorts are worked out as we go.** Ratings say `not_rated` when the scenario or its
   fingerprint differs from the calibration; `tools/test_build_ratings.py` fails on a model bump or
   scenario change until the thresholds are recalibrated.
+- **M5 (2026-11-10): `/build/compare` + the app's 📊 Rate this build (Stats row + Build menu)**
+  is read-only: it evaluates the OWNED build (`buildWithAccolades()`, never `buildPayload()`,
+  whose slots carry booster previews), never solves or saves, and never names an overall winner.
+- **Personal Force Field is a defensive MODE, not sustained defense** (its help: "while it is
+  active, you can only use powers that affect yourself"; 6 records). `/build/evaluate` keeps it out
+  of sustained totals as a `caster_locked_toggle`; the SCORE still counts it (KNOWN-GAPS, owner's
+  ruling class: moves scores).
 
 ## Communication protocol (token discipline — strict)
 
