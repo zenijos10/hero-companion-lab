@@ -147,6 +147,9 @@ class SearchRuleTests(unittest.TestCase):
                                                "io_level": 50}]}]
         self.assertNotEqual(fs.fingerprint(a), fs.fingerprint(b))
         self.assertEqual(fs.fingerprint(a), fs.fingerprint(copy.deepcopy(a)))
+        legacy = [{"full_name": "A.B.C", "slots": [{"uid": "Crafted_X_A", "set_uid": "X",
+                                                    "io_level": 50}]}]
+        self.assertEqual(fs.fingerprint(a), fs.fingerprint(legacy))   # one piece, two spellings
         img = copy.deepcopy(a)
         img[0]["slots"][0]["image"] = "x.png"                  # display fields do not count
         self.assertEqual(fs.fingerprint(a), fs.fingerprint(img))

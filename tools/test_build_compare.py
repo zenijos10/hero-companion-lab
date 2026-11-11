@@ -64,9 +64,10 @@ class CompareRuleTests(unittest.TestCase):
                                                 "error": "PvP evaluation is not supported"})
 
     def test_scope_states_what_is_compared(self):
-        def entry(label, at, pri, sec):
+        def entry(label, at, pri, sec, picked=None):
             e = stub(label, {"defense": ("B", 30.0)})
-            e["evaluation"]["build"] = {"archetype": at, "primary": pri, "secondary": sec}
+            e["evaluation"]["build"] = {"archetype": at, "primary": pri, "secondary": sec,
+                                        "picked_powersets": picked}
             return e
         a = entry("a", "Class_Brute", "SS", "Inv")
         self.assertIsNone(bc.compare([a])["scope"])
@@ -79,6 +80,19 @@ class CompareRuleTests(unittest.TestCase):
         self.assertIn("all-archetype", cross["scope_note"])
         refused = {"label": "x", "evaluation": None, "error": "no"}
         self.assertIsNone(bc.compare([a, refused])["scope"])   # one evaluated build: no scope
+        # a refused column is named in the scope, never silently left out of it
+        mixed = bc.compare([a, entry("b", "Class_Brute", "SS", "Inv"), refused])
+        self.assertEqual(mixed["scope"], "same_powersets")
+        self.assertIn("1 could not be evaluated", mixed["scope_note"])
+        # the PICKS decide, not how the request spelled the powersets
+        sets = ["Brute_Defense.Invulnerability", "Brute_Melee.Super_Strength"]
+        spelled = bc.compare([entry("a", "Class_Brute", "Brute_Melee.Super_Strength", None, sets),
+                              entry("b", "Class_Brute", "Super Strength", "Invuln", sets)])
+        self.assertEqual(spelled["scope"], "same_powersets")
+        other = bc.compare([entry("a", "Class_Brute", "SS", "Inv", sets),
+                            entry("b", "Class_Brute", "SS", "Inv",
+                                  ["Brute_Defense.Willpower", "Brute_Melee.Super_Strength"])])
+        self.assertEqual(other["scope"], "same_archetype")
 
     def test_no_overall_winner_is_declared(self):
         result = bc.compare([stub("a", {"defense": ("S", 45.0)}), stub("b", {"recharge": ("S", 90.0)})])

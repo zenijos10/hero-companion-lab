@@ -57,6 +57,14 @@ def _exemplar_level(build):
     return level if 1 <= level <= 49 else None
 
 
+_SHARED_PREFIXES = ("Pool.", "Epic.", "Inherent.", "Incarnate.")
+
+
+def _picked_powersets(powers):
+    return sorted({p["full_name"].rsplit(".", 1)[0] for p in powers
+                   if "." in p["full_name"] and not p["full_name"].startswith(_SHARED_PREFIXES)})
+
+
 def _validate(build):
     """Every structural check, in one place (the route only resolves the archetype)."""
     if not isinstance(build, dict) or not isinstance(build.get("powers"), list):
@@ -415,7 +423,11 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
                   # the record's own summons list, never inferred from pet damage
                   "summon_powers": sorted(p["full_name"] for p in build_copy["powers"]
                                           if (power_records.get(p["full_name"]) or {})
-                                          .get("summons"))},
+                                          .get("summons")),
+                  # the archetype powersets the PICKS come from (pools, epics,
+                  # inherents and incarnates aside): how a comparison tells "same
+                  # powersets" without trusting how the request spelled them
+                  "picked_powersets": _picked_powersets(build_copy["powers"])},
         "scenario": {"id": scenario, "enemy_level_shift": sc["shift"],
                      "enemies": sc["enemies"], "teammates": sc["teammates"],
                      "duration_seconds": sc["length"],

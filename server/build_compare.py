@@ -24,6 +24,7 @@ def _column(entry):
         "archetype": (ev.get("build") or {}).get("archetype"),
         "primary": (ev.get("build") or {}).get("primary"),
         "secondary": (ev.get("build") or {}).get("secondary"),
+        "picked_powersets": (ev.get("build") or {}).get("picked_powersets"),
         "rated": ratings.get("status") == "rated",
         "not_rated_reason": ratings.get("reason"),
         "offense_complete": (ev.get("confidence") or {}).get("offense_complete"),
@@ -75,6 +76,13 @@ SCOPES = {
 }
 
 
+def _powersets(column):
+    """The powersets a column's picks come from; the request's own primary/secondary
+    spelling only when the evaluation did not report them."""
+    picked = column.get("picked_powersets")
+    return tuple(picked) if picked else (column.get("primary"), column.get("secondary"))
+
+
 def scope(columns):
     """What a comparison compares, from the evaluated columns (None for a scorecard
     or when fewer than two builds were evaluated)."""
@@ -83,9 +91,19 @@ def scope(columns):
         return None
     if len({c.get("archetype") for c in ok}) > 1:
         return "cross_archetype"
-    if len({(c.get("primary"), c.get("secondary")) for c in ok}) > 1:
+    if len({_powersets(c) for c in ok}) > 1:
         return "same_archetype"
     return "same_powersets"
+
+
+def _scope_note(kind, columns):
+    if kind is None:
+        return None
+    refused = sum(1 for c in columns if not c.get("ok"))
+    if not refused:
+        return SCOPES[kind]
+    return (f"{SCOPES[kind]} (among the {len(columns) - refused} evaluated builds; "
+            f"{refused} could not be evaluated and are not part of it)")
 
 
 def compare(entries):
@@ -99,7 +117,7 @@ def compare(entries):
         "ok": any(c["ok"] for c in columns),
         "mode": "scorecard" if len(columns) == 1 else "comparison",
         "scope": kind,
-        "scope_note": SCOPES.get(kind),
+        "scope_note": _scope_note(kind, columns),
         "columns": columns,
         "rows": rows,
         "notes": [

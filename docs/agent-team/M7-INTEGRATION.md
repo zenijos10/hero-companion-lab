@@ -25,8 +25,9 @@ says so (battery A checks the report is there and that the untouched build keeps
 ## Offline, LLM-free
 
 Battery B runs evaluate, compare and frontier with `socket.create_connection` and
-`socket.connect` raising, and any process whose command names `claude` or `anthropic`
-refused (the solver's CBC subprocess is allowed). All three routes complete. The client
+`socket.connect` raising, and any process whose PROGRAM is a `claude`/`anthropic` CLI
+refused (`llm_program` judges the executable, never a path argument, so the solver's
+CBC call from a temp dir named `claude-0` passes). All three routes complete. The client
 ships with `AI_ENABLED` false.
 
 ## Reproducible, versioned artifacts
@@ -39,7 +40,10 @@ ships with `AI_ENABLED` false.
   says exactly how to reproduce it. `search.deterministic` is false only when a time
   budget stopped the run.
 - Battery C: identical inputs give byte-identical evaluations and frontiers (apart from
-  the measured seconds).
+  every measured-seconds field) for budget-bounded runs; a time stop is labeled
+  `deterministic: false` (pinned in `test_frontier_search.py`). The starting build is
+  evaluated once per frontier run. `versions` is one copy, taken from the evaluation
+  that graded the builds (`rating_thresholds` = its `ratings.thresholds_version`).
 
 ## Representative builds
 
@@ -52,8 +56,9 @@ numbers. Capability checks on purpose-picked builds:
   Controller measures control and team defense;
 - emergency protection: Broad Sword/Bio Stalker carries a `timed_click` kept out of the
   sustained totals;
-- damage procs (negative control): stripping the procs from the generated Brute
-  lowers its damage.
+- damage procs (negative control): emptying the proc slots the way the app's
+  `clearSlot` does (`null`) lowers the generated Brute's damage, and emptying as many
+  non-proc pieces in non-attack powers lowers it less.
 
 ## Performance and memory
 
@@ -80,7 +85,11 @@ Battery F walks every key of the three responses and fails on `score`,
 
 `/build/compare` states what it compares: `same_powersets`, `same_archetype`, or
 `cross_archetype` (with a note that every grade uses the same all-archetype cut points,
-so a gap can be the archetype rather than the build). The app shows it above the table
+so a gap can be the archetype rather than the build). Powersets are read from the PICKS
+(`build.picked_powersets` in the evaluation: the archetype sets the picked powers come
+from), never from how the request spelled them, and a refused column is named in the
+scope note. The line renders at the lede size (`.rt-scope`), warning-coloured when
+cross-archetype. The app shows it above the table
 and flags a cross-archetype comparison. Per-archetype or per-powerset cut points (peer
 cohorts) are not built: the owner ruled that cohorts are worked out as builds come in
 (backlog item 4).
@@ -90,7 +99,8 @@ cohorts) are not built: the owner ruled that cohorts are worked out as builds co
 - **Frontier fingerprint ignored the piece.** Real slots name their piece as
   `piece_uid`, but `frontier_search.fingerprint` hashed `uid`, so two slottings of the
   same sets with different pieces collided and the second was skipped as "same
-  slotting". Fixed and pinned in `test_frontier_search.py`.
+  slotting". Fixed: both spellings fold into one `piece` key, so the same piece also
+  fingerprints the same however it is spelled. Pinned in `test_frontier_search.py`.
 
 ## Open, for the owner
 

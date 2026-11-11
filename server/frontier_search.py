@@ -94,16 +94,24 @@ def plan_directions(objective_keys):
     return first + [d for d in DIRECTIONS if d not in first]
 
 
-# a slot names its piece as piece_uid (solver/app) or uid (hand-built); both count
-_SLOT_KEYS = ("piece_uid", "uid", "set_uid", "io_level", "level", "boost", "attuned")
+# A slot names its piece as piece_uid (solver/app) or uid (hand-built): both
+# spellings fold into ONE key, so the same piece always fingerprints the same.
+_SLOT_KEYS = ("set_uid", "io_level", "level", "boost", "attuned")
+
+
+def _slot_shape(slot):
+    if not isinstance(slot, dict):
+        return None
+    shape = {k: slot.get(k) for k in _SLOT_KEYS if k in slot}
+    shape["piece"] = slot.get("piece_uid") or slot.get("uid")
+    return shape
 
 
 def fingerprint(powers):
     """Stable id of a slotting: each picked power, its pick level and its pieces."""
     shape = sorted(
         (p.get("full_name") or "", p.get("pick_level"),
-         [None if not isinstance(s, dict) else {k: s.get(k) for k in _SLOT_KEYS if k in s}
-          for s in (p.get("slots") or [])])
+         [_slot_shape(s) for s in (p.get("slots") or [])])
         for p in powers if isinstance(p, dict))
     blob = json.dumps(shape, sort_keys=True, separators=(",", ":"), default=str)
     return hashlib.sha256(blob.encode()).hexdigest()[:16]

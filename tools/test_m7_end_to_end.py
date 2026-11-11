@@ -78,10 +78,22 @@ def walk_keys(node):
             yield from walk_keys(v)
 
 
-def without_timing(result):
-    out = copy.deepcopy(result)
-    out["search"]["seconds"] = 0
-    return out
+def llm_program(args):
+    """The program a Popen call starts, if it is a model CLI (else None). Only the
+    program decides: a checkout or temp path may well contain "claude", and the
+    solver's CBC call passes such paths as arguments."""
+    first = args[0] if isinstance(args, (list, tuple)) else str(args).split()[0]
+    name = os.path.basename(str(first)).lower()
+    return name if name.startswith(("claude", "anthropic")) else None
+
+
+def without_timing(node):
+    """Drop every measured wall-clock field (any key naming seconds), wherever it sits."""
+    if isinstance(node, dict):
+        return {k: without_timing(v) for k, v in node.items() if "seconds" not in k}
+    if isinstance(node, list):
+        return [without_timing(v) for v in node]
+    return node
 
 
 @unittest.skipUnless(SKIF.is_file(), "pinned Sidekick contract checkout not present (CI provides it)")
@@ -139,9 +151,8 @@ class B_OfflineAndLlmFree(unittest.TestCase):
         real_popen = subprocess.Popen
 
         def popen_guard(args, *a, **k):
-            text = " ".join(map(str, args)) if isinstance(args, (list, tuple)) else str(args)
-            if "claude" in text.lower() or "anthropic" in text.lower():
-                raise AssertionError(f"an LLM was invoked: {text[:80]}")
+            if llm_program(args):
+                raise AssertionError(f"an LLM was invoked: {llm_program(args)}")
             return real_popen(args, *a, **k)
 
         build = brute()
@@ -156,6 +167,12 @@ class B_OfflineAndLlmFree(unittest.TestCase):
             self.assertTrue(fr.get_json()["members"])
         self.assertFalse(srv.AI_ENABLED, "the client ships AI-free")
 
+    def test_guard_judges_the_program_not_its_paths(self):
+        self.assertEqual(llm_program(["/opt/node22/bin/claude", "-p", "hi"]), "claude")
+        self.assertEqual(llm_program("claude -p hi"), "claude")
+        self.assertIsNone(llm_program(["/usr/bin/cbc", "/tmp/claude-0/x-pulp.mps"]))
+        self.assertIsNone(llm_program(["/home/u/.claude/worktrees/x/cbc", "-solve"]))
+
 
 class C_ReproducibleAndVersioned(unittest.TestCase):
     def test_identical_inputs_identical_outputs(self):
@@ -165,7 +182,19 @@ class C_ReproducibleAndVersioned(unittest.TestCase):
         a = C.post("/build/frontier", json=body).get_json()
         b = C.post("/build/frontier", json=copy.deepcopy(body)).get_json()
         self.assertEqual(without_timing(a), without_timing(b))
+        # determinism is promised for budget-bounded runs; a time stop says otherwise
         self.assertTrue(a["search"]["deterministic"])
+        self.assertEqual(a["search"]["stop_reason"], "evaluation_budget")
+
+    def test_starting_build_is_evaluated_once(self):
+        build = brute()
+        real = srv._evaluate_build
+        calls = []
+        with patch.object(srv, "_evaluate_build",
+                          lambda b, s: calls.append(1) or real(b, s)):
+            fr = C.post("/build/frontier", json={"build": build, "max_evaluations": 1}).get_json()
+        self.assertEqual(fr["search"]["evaluations"], 1)      # only the start was offered
+        self.assertEqual(len(calls), 1)                       # and it was evaluated once
 
     def test_artifacts_carry_versions_scenario_and_request(self):
         build = brute()
@@ -178,6 +207,10 @@ class C_ReproducibleAndVersioned(unittest.TestCase):
                                              "max_evaluations": 2}).get_json()
         for k in ("app", "model", "database_version", "scenario_fingerprint", "rating_thresholds"):
             self.assertIn(k, fr["versions"])
+        # one copy of each fact, from the evaluation that graded the builds
+        self.assertEqual(fr["versions"]["rating_thresholds"], ev["ratings"]["thresholds_version"])
+        self.assertFalse({"model_version", "database_version"} & set(fr))
+        self.assertIn("picked_powersets", ev["build"])
         self.assertEqual(fr["versions"]["scenario_fingerprint"], ev["versions"]["scenario_fingerprint"])
         self.assertEqual(fr["request"]["objectives"], [{"key": "defense", "direction": "max"}])
         self.assertEqual(fr["request"]["floors"], {"recharge": {"min": 1}})
@@ -236,11 +269,23 @@ class D_RepresentativeBuilds(unittest.TestCase):
         stripped = copy.deepcopy(build)
         for i, j in placed:
             stripped["powers"][i]["slots"][j] = None
-        with_procs = evaluate(build)["measurements"]["offense"]
-        without = evaluate(stripped)["measurements"]["offense"]
-        total = lambda o: (o["scenario_single_target_dps"]["value"]  # noqa: E731
-                           + o["scenario_aoe_dps_per_target"]["value"])
-        self.assertGreater(total(with_procs), total(without))   # negative control: procs matter
+        # None is exactly what the app's clearSlot writes (app.js window.clearSlot)
+        total = lambda b: (lambda o: o["scenario_single_target_dps"]["value"]  # noqa: E731
+                           + o["scenario_aoe_dps_per_target"]["value"])(
+            evaluate(b)["measurements"]["offense"])
+        proc_drop = total(build) - total(stripped)
+        self.assertGreater(proc_drop, 0)
+        # control: emptying as many NON-proc pieces in non-attack powers costs less
+        # damage, so the drop is the procs' and not the act of emptying slots
+        others = [(i, j) for i, p in enumerate(build["powers"])
+                  if not srv.POWER_BY_FULL.get(p["full_name"], {}).get("is_attack")
+                  for j, s in enumerate(p.get("slots") or [])
+                  if isinstance(s, dict) and s.get("piece_uid") not in procs][:len(placed)]
+        self.assertEqual(len(others), len(placed))
+        emptied = copy.deepcopy(build)
+        for i, j in others:
+            emptied["powers"][i]["slots"][j] = None
+        self.assertLess(total(build) - total(emptied), proc_drop)
 
 
 class E_PerformanceBudgets(unittest.TestCase):
