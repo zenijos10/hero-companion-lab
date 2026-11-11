@@ -152,6 +152,12 @@ out. Rules going forward:
 - **M5 (2026-11-10): `/build/compare` + the app's 📊 Rate this build (Stats row + Build menu)**
   is read-only: it evaluates the OWNED build (`buildWithAccolades()`, never `buildPayload()`,
   whose slots carry booster previews), never solves or saves, and never names an overall winner.
+- **M6 backend (2026-11-11): `POST /build/frontier` = the DISCOVERED Pareto frontier** of legal
+  re-slottings of the build's locked picks (`server/pareto.py` comparator + frontier kept on every
+  insert; `server/frontier_search.py` runs `/build/solve` along the disclosed `DIRECTIONS`).
+  Numeric measurements only, never grades; no weighted sum ever decides; exact unless an opt-in
+  size cap says `exact: false`; never called the global frontier. Contract:
+  docs/agent-team/M6-FRONTIER-CONTRACT.md. The UI (plan 6.4) is the next PR.
 - **Personal Force Field is a defensive MODE, not sustained defense** (its help: "while it is
   active, you can only use powers that affect yourself"; 6 records). `/build/evaluate` keeps it out
   of sustained totals as a `caster_locked_toggle`; the SCORE still counts it (KNOWN-GAPS, owner's
