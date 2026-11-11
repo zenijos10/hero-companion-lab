@@ -176,6 +176,7 @@ def power_ledger(power, ctx, global_recharge, scenario, share):
     enh = role_output._power_enh(dict(rec, slots=slots), ctx, ("Defense", "ToHit", "RechargeTime"))
     enh_rech = _enhanced_recharge(rec, slots, ctx, global_recharge)
     out = {}
+    click = (rec.get("power_type") or 0) == 0
     for kind in ("buff", "debuff"):
         rows = []
         for effect, r in sorted(_effect_rows(rec, kind, ctx, enh, enh_rech, share).items()):
@@ -189,6 +190,13 @@ def power_ledger(power, ctx, global_recharge, scenario, share):
                    "instant": instant, "chance": r["chance"]}
             if kind == "debuff":
                 row["landing_peak_percent"] = _strengths(effect, r["peak"], scenario)
+                cycle = max(enh_rech, rec.get("cast_time") or 0.0)
+                if instant and cycle > 0 and r["peak"] > 0:
+                    # an instant drain lands once per cast: a rate, not an average
+                    # (an attack shares the one animation bar, like timed debuffs)
+                    per_cast = row["landing_peak_percent"]["vs_scenario"]
+                    bar = share if (rec.get("is_attack") and click) else 1.0
+                    row["landing_per_second_vs_scenario"] = round(per_cast * bar / cycle, 3)
             rows.append(row)
         if rows:
             out[kind + "s"] = rows

@@ -48,7 +48,7 @@ ships with `AI_ENABLED` false.
 ## Representative builds
 
 Battery D: all 15 playable archetypes (first primary and secondary each, generated
-through the real autopick + solve) evaluate to 20 rated categories with JSON-safe
+through the real autopick + solve) evaluate to 36 rated categories with JSON-safe
 numbers. Capability checks on purpose-picked builds:
 
 - pets: Beast Mastery Mastermind lists summon powers and grades pet damage;

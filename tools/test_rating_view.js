@@ -30,7 +30,8 @@ const escStart = src.indexOf("const escHtml");
 const escEnd = src.slice(escStart).search(/;\r?\n/);
 const escSrc = src.slice(escStart, escStart + escEnd + 1);
 assert.ok(unitsSrc.length > 20 && escSrc.length > 20, "helpers not found");
-const make = new Function(`${escSrc}\n${unitsSrc}\n${lift("function renderRatingHtml")}\nreturn renderRatingHtml;`);
+const sectionsSrc = src.slice(src.indexOf("const _RATING_SECTIONS"), src.indexOf("];", src.indexOf("const _RATING_SECTIONS")) + 2);
+const make = new Function(`${escSrc}\n${unitsSrc}\n${sectionsSrc}\n${lift("function _ratingSection")}\n${lift("function renderRatingHtml")}\nreturn renderRatingHtml;`);
 const render = make();
 
 const col = (label, extra = {}) => Object.assign({
@@ -108,6 +109,17 @@ html = render({ ok: true, mode: "comparison", columns: [col("A"), col("B")],
 ok(html.includes('title="weakest X"') && !html.includes('<div class="muted small">weakest X'),
    "a comparison keeps the detail in the title, not inline");
 ok(html.includes("400 × bare"), "the multiple carries its unit");
+
+// 5c. sections and where-it-is-delivered
+html = render({ ok: true, mode: "scorecard", columns: [col("Mine")],
+  rows: [row([{ grade: "B", value: 50, where: "60% melee, 40% midrange" }], { category: "single_target_damage", label: "ST" }),
+         row([{ grade: "C", value: 10 }], { category: "aoe_damage", label: "AoE" }),
+         row([{ grade: "A", value: 4 }], { category: "debuff_hitpoints_av", label: "-HP", unit: "percent_per_second" })],
+  notes: [] });
+ok((html.match(/rt-section/g) || []).length === 2, "one section header per section, not per row");
+ok(html.includes(">Damage</th>") && html.includes(">Debuffs</th>"), "sections are named");
+ok(html.includes("where: 60% melee, 40% midrange"), "where the output is delivered is shown");
+ok(html.includes("4.0 %/s"), "rate units render");
 
 // 6. a row without cells never throws
 html = render({ ok: true, mode: "scorecard", columns: [col("Y")], rows: [{ label: "Defense", unit: "percent" }], notes: [] });

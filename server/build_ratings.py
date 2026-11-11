@@ -20,6 +20,9 @@ import json
 import os
 import re
 
+import range_profile
+import rating_measures
+
 GRADES = ("S", "A", "B", "C", "D")      # F = below the D cut
 LOW_SAMPLE = 30     # cuts set from fewer champions than this are flagged low_sample
 THRESHOLDS_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "rating_thresholds.json")
@@ -53,16 +56,6 @@ def _summary(ev):
             .get("team_support") or {}).get("summary")
 
 
-def _support(section, bucket, effect):
-    def get(ev):
-        summary = _summary(ev)
-        if summary is None or section not in summary:
-            return None
-        # a measured summary without the effect means the build has none of it
-        return ((summary.get(section) or {}).get(bucket) or {}).get(effect, 0.0)
-    return get
-
-
 def _ally_heal(ev):
     summary = _summary(ev)
     if summary is None or "ally_heals" not in summary:
@@ -86,11 +79,8 @@ _FAMILY_WORDS = {
     "debuff": re.compile(r"(Foe|Target)\s*-|-(Res|Def|ToHit|DMG|Dam|Regen|Rech|SPD|Recharge)"),
     "control": re.compile(r"\b(Hold|Sleep|Immobili[sz]e|Disorient|Stun|Confuse|Fear|Terrori[sz]e|Knock(back|down|up))\b"),
 }
-_CATEGORY_FAMILY = {"healing": "ally", "buff_defense": "ally", "buff_damage": "ally",
-                    "buff_recharge": "ally", "control": "control",
-                    "debuff_resistance_av": "debuff", "debuff_regeneration_av": "debuff",
-                    "debuff_defense_spawn": "debuff", "debuff_tohit_spawn": "debuff",
-                    "debuff_damage_spawn": "debuff"}
+# _CATEGORY_FAMILY (which capability family hides each category) is built
+# below CATEGORIES, from the same table.
 
 
 def _unread_families(ev):
@@ -108,8 +98,57 @@ def _unread_families(ev):
 
 _TYPES = ("Cold", "Energy", "Fire", "Lethal", "Negative", "Psionic", "Smashing", "Toxic")
 _POSITIONS = ("Melee", "Ranged", "AoE")
-_DEB = "debuffs_landing_average_percent"
-_BUF = "buffs_average_percent"
+
+
+def _by_type(bucket, effect):
+    """One effect type from the evaluation's support_by_type (rating_measures):
+    None when the evaluation carries no breakdown (Unknown, never a measured
+    zero); 0 when it was measured and the build has none of the type."""
+    def get(ev):
+        types = ((ev.get("measurements") or {}).get("support") or {}).get("support_by_type")
+        if types is None or bucket not in types:
+            return None
+        return (types.get(bucket) or {}).get(effect, 0.0)
+    return get
+
+
+# The buff and debuff types graded one by one (owner, 2026-11-11: "each type of
+# debuff should matter"). key: (label, bucket, game effect, unit). AV-facing
+# debuffs land from every power; spawn-facing ones from area powers.
+BUFF_TYPES = {
+    "buff_defense": ("Team defense buff", "Defense"),
+    "buff_resistance": ("Team resistance buff", "Resistance"),
+    "buff_damage": ("Team damage buff", "DamageBuff"),
+    "buff_tohit": ("Team to-hit buff", "ToHit"),
+    "buff_recharge": ("Team recharge buff", "RechargeTime"),
+    "buff_recovery": ("Team recovery buff", "Recovery"),
+    "buff_regeneration": ("Team regeneration buff", "Regeneration"),
+    "buff_hitpoints": ("Team max HP buff", "HitPoints"),
+}
+_TYPE_UNIT = {"HitPoints": "hit_points"}          # rating_measures.ABSOLUTE_TYPES
+DEBUFF_TYPES = {
+    "debuff_resistance_av": ("-Resistance vs an AV", "debuffs_vs_av_percent", "Resistance", "percent"),
+    "debuff_regeneration_av": ("-Regeneration vs an AV", "debuffs_vs_av_percent", "Regeneration", "percent"),
+    "debuff_hitpoints_av": ("-Max HP vs an AV", "debuffs_vs_av_percent", "HitPoints", "hit_points"),
+    "debuff_defense_spawn": ("-Defense vs a spawn", "debuffs_vs_spawn_percent", "Defense", "percent"),
+    "debuff_tohit_spawn": ("-ToHit vs a spawn", "debuffs_vs_spawn_percent", "ToHit", "percent"),
+    "debuff_damage_spawn": ("-Damage vs a spawn", "debuffs_vs_spawn_percent", "DamageBuff", "percent"),
+    "debuff_slow_spawn": ("-Speed (slow) vs a spawn", "debuffs_vs_spawn_percent", "Slow", "percent"),
+    "debuff_recharge_spawn": ("-Recharge vs a spawn", "debuffs_vs_spawn_percent", "RechargeTime", "percent"),
+    "debuff_recovery_spawn": ("-Recovery vs a spawn", "debuffs_vs_spawn_percent", "Recovery", "percent"),
+    "debuff_ddr_spawn": ("-Defense debuff resistance vs a spawn", "debuffs_vs_spawn_percent",
+                         "DefDebuffResist", "percent"),
+    "debuff_endurance_spawn": ("Endurance drain vs a spawn", "drains_per_second_percent",
+                               "Endurance", "percent_per_second"),
+}
+
+
+def _debuff_resist(key):
+    def get(ev):
+        dr = ((ev.get("measurements") or {}).get("survival") or {}).get("debuff_resistance")
+        return None if dr is None else dr.get(key, 0.0)
+    return get
+
 
 # key: (label, extractor, unit, kind). kind: "offense" (Unknown while offense is
 # incomplete), "stat" (always graded), "capability" (None when zero),
@@ -127,27 +166,61 @@ CATEGORIES = {
                                "multiple_of_bare_archetype", "stat"),
     "defense": ("Defense (melee/ranged/AoE mean)", _mean_of("defense", _POSITIONS), "percent", "stat"),
     "resistance": ("Resistance (8-type mean)", _mean_of("resistance", _TYPES), "percent", "stat"),
+    "debuff_resist_defense": ("Defense debuff resistance (DDR)", _debuff_resist("defense_debuff"),
+                              "percent", "capability"),
+    "debuff_resist_slow": ("Slow and -Recharge resistance", _debuff_resist("slow_and_recharge_debuff"),
+                           "percent", "capability"),
     "endurance": ("Endurance (net per second)", _m("resources.net_per_second"),
                   "endurance_per_second", "stat"),
     "recharge": ("Recharge", _m("resources.global_recharge"), "percent_bonus", "stat"),
-    "control": ("Control", _m("support.control_proxy"), "weighted_mez_seconds_proxy", "capability"),
+    "control": ("Control (all)", _m("support.control_proxy"), "weighted_mez_seconds_proxy", "capability"),
+    "control_single_target": ("Control, single target", _m("support.control_single_target"),
+                              "weighted_mez_seconds_proxy", "capability"),
+    "control_aoe": ("Control, area", _m("support.control_aoe"), "weighted_mez_seconds_proxy",
+                    "capability"),
     "healing": ("Ally healing", _ally_heal, "model_heal_units_per_second", "capability"),
-    "buff_defense": ("Team defense buff", _support(_BUF, "sustained", "Defense"), "percent", "capability"),
-    "buff_damage": ("Team damage buff", _support(_BUF, "sustained", "DamageBuff"), "percent", "capability"),
-    "buff_recharge": ("Team recharge buff", _support(_BUF, "sustained", "RechargeTime"),
-                      "percent", "capability"),
-    "debuff_resistance_av": ("-Resistance vs an AV", _support(_DEB, "single_target_vs_av", "Resistance"),
-                             "percent", "capability"),
-    "debuff_regeneration_av": ("-Regeneration vs an AV",
-                               _support(_DEB, "single_target_vs_av", "Regeneration"),
-                               "percent", "capability"),
-    "debuff_defense_spawn": ("-Defense vs a spawn", _support(_DEB, "aoe_vs_scenario", "Defense"),
-                             "percent", "capability"),
-    "debuff_tohit_spawn": ("-ToHit vs a spawn", _support(_DEB, "aoe_vs_scenario", "ToHit"),
-                           "percent", "capability"),
-    "debuff_damage_spawn": ("-Damage vs a spawn", _support(_DEB, "aoe_vs_scenario", "DamageBuff"),
-                            "percent", "capability"),
 }
+CATEGORIES.update({key: (label, _by_type("buffs_average_percent", effect),
+                         _TYPE_UNIT.get(effect, "percent"), "capability")
+                   for key, (label, effect) in BUFF_TYPES.items()})
+CATEGORIES.update({key: (label, _by_type(bucket, effect), unit, "capability")
+                   for key, (label, bucket, effect, unit) in DEBUFF_TYPES.items()})
+# the rarity-weighted support index is graded from the per-type values (rate())
+SUPPORT_INDEX = "support_index"
+CATEGORIES[SUPPORT_INDEX] = ("Team support (rarity-weighted)", None, "support_index_points",
+                             "capability")
+
+_CATEGORY_FAMILY = dict({"healing": "ally", "control": "control",
+                         "control_single_target": "control", "control_aoe": "control",
+                         SUPPORT_INDEX: "ally"},
+                        **{k: "ally" for k in BUFF_TYPES}, **{k: "debuff" for k in DEBUFF_TYPES})
+# a type's effect (the rarity census key) and its side
+_TYPE_EFFECT = dict({k: ("buff", e) for k, (_l, e) in BUFF_TYPES.items()},
+                    **{k: ("debuff", e) for k, (_l, _b, e, _u) in DEBUFF_TYPES.items()})
+
+# which range profile (measurements.range_profile.profiles) each category reads
+_RANGE_KEY = dict({"single_target_damage": "single_target_damage", "aoe_damage": "aoe_damage",
+                   "pet_damage": "pet_damage", "control": "control",
+                   "control_single_target": "control_single_target", "control_aoe": "control_aoe",
+                   "healing": "healing", SUPPORT_INDEX: "support"},
+                  **{k: f"{side}:{effect}" for k, (side, effect) in _TYPE_EFFECT.items()})
+
+
+def support_index(values, cuts, rarity):
+    """Sum over every buff and debuff type the build has: rarity weight x
+    (value / that type's median cut). 1 point = one common type at a typical
+    strength; a rare type (-Max HP, -DDR, team regeneration) counts several.
+    None when the inputs to judge it are missing."""
+    if rarity is None:
+        return None
+    total = 0.0
+    for key, (side, effect) in _TYPE_EFFECT.items():
+        value, typical = values.get(key), ((cuts.get(key) or {}).get("cuts") or {}).get("B")
+        if not value or value <= 0 or not typical:
+            continue
+        weight = ((rarity.get(side) or {}).get(effect) or {}).get("weight") or 1.0
+        total += weight * value / typical
+    return round(total, 3)
 
 
 def _toughness_detail(ev):
@@ -169,13 +242,70 @@ def _toughness_detail(ev):
     return text
 
 
+def _section(ev, name):
+    return (ev.get("measurements") or {}).get(name) or {}
+
+
+def _types_detail(field):
+    def get(ev):
+        return rating_measures.describe_types(_section(ev, "offense").get(field))
+    return get
+
+
+def _cascade_detail(ev):
+    """'+4 enemies keep a 7.4% floor to hit; steady -Defense 2.0% (8.1% with no DDR)'."""
+    c = _section(ev, "survival").get("defense_cascade") or {}
+    if c.get("model") != "cascade":
+        return None
+    pct = lambda x: f"{x * 100:.1f}%"  # noqa: E731
+    text = (f"+4 enemies always keep a {pct(c['hit_chance_floor'])} chance to hit; "
+            f"their -Defense settles at {pct(c['steady_def_debuff'])}")
+    if c["steady_def_debuff_without_ddr"] > c["steady_def_debuff"]:
+        text += f" ({pct(c['steady_def_debuff_without_ddr'])} with no DDR)"
+    return text + f", hit chance {pct(c['hit_chance_before'])} -> {pct(c['hit_chance_after'])}"
+
+
+def _rarity_detail(key):
+    def get(ev):
+        side, effect = _TYPE_EFFECT[key]
+        r = ((_section(ev, "support").get("effect_rarity") or {}).get(side) or {}).get(effect)
+        if not r:
+            return None
+        return f"offered by {r['powersets']} player powersets (rarity weight {r['weight']:g})"
+    return get
+
+
+def _not_read_detail(ev):
+    dr = _section(ev, "survival").get("debuff_resistance") or {}
+    missing = dr.get("not_read")
+    return ("not in our data yet: " + ", ".join(missing)) if missing else None
+
+
 # one line of context shown beside a grade (the grade itself still reads `value`)
-_DETAIL = {"toughness": _toughness_detail}
+_DETAIL = dict({"toughness": _toughness_detail,
+                "single_target_damage": _types_detail("damage_types_single_target"),
+                "aoe_damage": _types_detail("damage_types_aoe"), "debuff_resist_defense": _cascade_detail,
+                "debuff_resist_slow": _not_read_detail},
+               **{k: _rarity_detail(k) for k in _TYPE_EFFECT})
 
 
-def measure(evaluation):
-    """{category: value} straight from an evaluation (the calibration reads this too)."""
-    return {key: spec[1](evaluation) for key, spec in CATEGORIES.items()}
+def measure(evaluation, thresholds=None):
+    """{category: value} straight from an evaluation (the calibration reads this
+    too). The support index needs the per-type median cuts, so it is measured
+    only when thresholds are given."""
+    out = {key: spec[1](evaluation) for key, spec in CATEGORIES.items() if spec[1]}
+    out[SUPPORT_INDEX] = None
+    if thresholds:
+        rarity = _section(evaluation, "support").get("effect_rarity")
+        out[SUPPORT_INDEX] = support_index(out, thresholds.get("categories") or {}, rarity)
+    return out
+
+
+def _range(ev, key):
+    """(profile, 'N% melee, N% midrange, N% range') for a category."""
+    profiles = ((ev.get("range_profile") or {}).get("profiles")) or {}
+    prof = profiles.get(_RANGE_KEY.get(key, "overall"))
+    return prof, range_profile.describe(prof)
 
 
 def load_thresholds(path=THRESHOLDS_PATH):
@@ -223,7 +353,7 @@ def rate(evaluation, thresholds):
     offense_ok = (evaluation.get("confidence") or {}).get("offense_complete", False)
     unread = _unread_families(evaluation)
     summons = _summons(evaluation)
-    values = measure(evaluation)
+    values = measure(evaluation, thresholds)
     out = {}
     for key, (label, _get, unit, kind) in CATEGORIES.items():
         value = values[key]
@@ -255,6 +385,9 @@ def rate(evaluation, thresholds):
             row["grade"] = grade(value, cuts)
         if key in _DETAIL:
             row["detail"] = _DETAIL[key](evaluation)
+        # where it is delivered: only for something the build has
+        row["range"], row["where"] = (_range(evaluation, key) if row.get("grade") not in
+                                      ("None", "N/A") else (None, None))
         out[key] = row
     return {"status": "rated", "thresholds_version": thresholds.get("version"),
             "scenario": thresholds.get("scenario"), "provisional": True,

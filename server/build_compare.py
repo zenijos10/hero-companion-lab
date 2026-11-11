@@ -50,6 +50,7 @@ def _row(key, label, unit, per_column):
         cell = cats.get(key) or {}
         cells.append({"grade": cell.get("grade"), "value": cell.get("value"),
                       "why": cell.get("why"), "detail": cell.get("detail"),
+                      "where": cell.get("where"),
                       "low_sample": cell.get("low_sample", False)})
     graded = [i for i, c in enumerate(cells)
               if c["grade"] in LETTERS and isinstance(c["value"], (int, float))]

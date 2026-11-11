@@ -9885,7 +9885,19 @@ const _RATING_UNITS = {
   damage_per_second_per_target: "DPS/target", endurance_per_second: "end/s",
   weighted_mez_seconds_proxy: "control pts", model_heal_units_per_second: "heal/s",
   incoming_damage_per_second: "dmg/s taken", multiple_of_bare_archetype: "× bare",
+  percent_per_second: "%/s", support_index_points: "pts", hit_points: "HP",
 };
+
+// Scorecard sections, by category key (first match wins).
+const _RATING_SECTIONS = [
+  [/damage$/, "Damage"], [/^(survival|toughness|defense|resistance|debuff_resist)/, "Survival"],
+  [/^(endurance|recharge)$/, "Resources"], [/^control/, "Control"],
+  [/^(healing|support_index)$/, "Support"], [/^buff_/, "Team buffs"], [/^debuff_/, "Debuffs"],
+];
+function _ratingSection(key) {
+  const hit = _RATING_SECTIONS.find(([rx]) => rx.test(key || ""));
+  return hit ? hit[1] : "";
+}
 
 // Pure: the /build/compare response in, HTML out (escHtml is the only
 // dependency, so tools/test_rating_view.js runs it under node).
@@ -9910,22 +9922,27 @@ function renderRatingHtml(cmp) {
       + flags.map(f => `<div class="rt-flag">${f}</div>`).join("") + `</th>`;
   }).join("");
   const single = cmp.mode === "scorecard";
+  let section = "";
+  const width = cols.length + 1 + (single ? 0 : 1);
   const rows = (cmp.rows || []).map(r => {
+    const sec = _ratingSection(r.category);
+    const band = sec && sec !== section ? `<tr class="rt-section"><th colspan="${width}">${escHtml(sec)}</th></tr>` : "";
+    if (sec) section = sec;
     const best = new Set(r.best || []);
     const cells = (r.cells || []).map((cell, i) => {
       if (!cols[i] || !cols[i].ok) return `<td class="muted">-</td>`;
       const g = cell.grade || "-";
       const cls = /^[SABCDF]$/.test(g) ? `rt-g rt-g-${g}` : "rt-g rt-g-x";
       const low = cell.low_sample ? ` <span class="rt-low" title="Few champions set this cut point: treat it as rough">≈</span>` : "";
-      const said = cell.why || cell.detail;
-      const why = said ? ` title="${escHtml(said)}"` : "";
-      const note = single && said ? `<div class="muted small">${escHtml(said)}</div>` : "";
+      const said = [cell.why, cell.detail, cell.where && `where: ${cell.where}`].filter(Boolean);
+      const why = said.length ? ` title="${escHtml(said.join("; "))}"` : "";
+      const note = single ? said.map(t => `<div class="muted small">${escHtml(t)}</div>`).join("") : "";
       return `<td class="${best.has(i) ? "rt-best" : ""}"${why}><span class="${cls}">${escHtml(g)}</span> `
         + `${fmt(cell.value, r.unit)}${low}${note}</td>`;
     }).join("");
     const diff = single ? "" : `<td class="muted small">${r.meaningful && r.difference != null
       ? "Δ " + fmt(r.difference, r.unit) : ""}</td>`;
-    return `<tr class="${r.meaningful ? "rt-diff" : ""}"><th scope="row">${escHtml(r.label)}</th>${cells}${diff}</tr>`;
+    return `${band}<tr class="${r.meaningful ? "rt-diff" : ""}"><th scope="row">${escHtml(r.label)}</th>${cells}${diff}</tr>`;
   }).join("");
   const unsupported = cols.filter(c => c.ok && (c.unsupported || []).length).map(c =>
     `<details><summary>${escHtml(c.label)}: ${c.unsupported.length} power(s) the model does not fully measure</summary><ul>`

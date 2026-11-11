@@ -880,7 +880,7 @@
     "S to F"
    ],
    "stage": "reference",
-   "what": "Grades your build S to F in 20 categories against +4 enemies: single-target, area and pet damage, survival, toughness (two ways), defense, resistance, endurance, recharge, control, healing, three team buffs and five debuffs. Each grade shows its exact number beside it.",
+   "what": "Grades your build S to F in 36 categories against +4 enemies, grouped as damage (single target, area, pets), survival (time to live, two toughness grades, defense, resistance, debuff resistance), resources, control (single target and area), support (healing and a rarity-weighted team support score), every team buff type and every debuff type. Each grade shows its exact number, and the scorecard says where the build has to stand to deliver it.",
    "how": "It measures the build exactly as you own it (booster previews and other people's buffs are left out, defense is read in combat) and compares each number with fixed cut points. Pick a saved character in the same window to see the two side by side, with the gap in every category where the grades differ or one is at least 10% ahead. It never names an overall winner: builds trade categories against each other.",
    "why": "To see what a build is good and bad at before you change it, and to compare two characters without running the optimizer. Nothing here solves or saves anything.",
    "where": "Stats tab, the 📊 Rate this build button, or Build → 📊 Rate this build. The grades are provisional: the cut points were set from optimized champion builds as a guide, so an ordinary build reads lower than its standing among players would. Unknown means the model cannot measure it for this build, None means the build has none of it, N/A means it cannot apply.",
@@ -904,10 +904,104 @@
    ],
    "stage": "reference",
    "what": "Two survival grades on the rating scorecard. Toughness is how much incoming damage per second your build can take and still be standing at the end of a fight, for an even mix of all eight damage types from melee, ranged and area attacks. Toughness for its archetype is the same number divided by a bare character of your archetype (its base hit points and regeneration, nothing else), so 2.0x means twice as tough as a bare one.",
-   "how": "Each of the 24 type and position cells uses the game's hit chance against +4 enemies with your defense (the better of the position and the damage type), your resistance up to its cap, and your regeneration, self heals and absorb shields. The even mix punishes a hole: weak Psionic or Toxic resistance pulls the whole number down, and the scorecard names your weakest spots (every type and position tied at the lowest value).",
+   "how": "Each of the 24 type and position cells uses the game's hit chance against +4 enemies with your defense (the better of the position and the damage type) after enemy -Defense has piled up, your resistance up to its cap, and your regeneration, self heals and absorb shields. Positions are weighted by where you operate: up close every attack reaches you, at full range melee attacks do not. The scorecard names your weakest spots (every type and position tied at the lowest value).",
    "why": "The first grade says how tough the build is in absolute terms, so a Tanker and a Blaster can be compared honestly. The second says how much the build adds on top of what its archetype starts with, so a squishy that is built well can still read high.",
    "where": "Stats tab, 📊 Rate this build: the two Toughness rows. The full grid travels in the saved rating file under measurements.survival.toughness. The method follows the community Survivability Tool (Homecoming forums); the numbers are this app's own model.",
    "example": "A generated Fire/Fire Blaster takes about 80 damage per second for a 30-second fight, 1.3x a bare Blaster, weakest against Cold, Fire, Negative and Psionic; an Invulnerability/Super Strength Tanker takes about 200, 2.1x a bare Tanker, weakest against Psionic.",
+   "go": [
+    [
+     "tab:stats",
+     "Open Stats"
+    ]
+   ]
+  },
+  {
+   "term": "Where you operate (range)",
+   "aliases": [
+    "range",
+    "melee",
+    "midrange",
+    "full range",
+    "where",
+    "operating range",
+    "up close"
+   ],
+   "stage": "reference",
+   "what": "Every graded output on the scorecard says where the build delivers it: the share in melee, at midrange and from full range. Melee is a single-target power that reaches 15 feet or less. Midrange is anything around you (a PBAoE or an aura), a cone, or an area that reaches 30 feet or less. Full range is everything that reaches farther.",
+   "how": "Each power's share is weighted by what it does: damage by how often the attack chain fires it, control by its control score, buffs and debuffs by their strength and uptime. Your overall position is the even mix of where your damage, control and support put you, and Toughness uses it.",
+   "why": "Two builds with the same numbers can play very differently: one has to stand in the middle of the spawn, the other never comes closer than 80 feet. Where you stand also decides which attacks reach you.",
+   "where": "Stats tab, 📊 Rate this build: the 'where:' line under each grade.",
+   "example": "A generated Fire/Radiation Corruptor deals all of its single-target damage from full range but lays its area control from midrange; a Super Strength Brute fights mostly in melee.",
+   "go": [
+    [
+     "tab:stats",
+     "Open Stats"
+    ]
+   ]
+  },
+  {
+   "term": "Defense debuff resistance and the cascade",
+   "aliases": [
+    "ddr",
+    "defense debuff resistance",
+    "cascade",
+    "debuff resistance",
+    "why did he hit me",
+    "5% floor",
+    "slow resistance"
+   ],
+   "stage": "reference",
+   "what": "Enemies always keep at least a 5% chance to hit you (more against +4 enemies), and many of their attacks lower your defense. Each debuffing hit that lands makes the next hit more likely, so defense can collapse in a long fight. Defense debuff resistance (DDR) shrinks every one of those debuffs. The scorecard grades your DDR and your resistance to slows and -Recharge, and shows where your defense settles.",
+   "how": "The rating finds the point where the -Defense piling up and the hits landing balance out, with your DDR and without it, against +4 enemies that each attack every 2 seconds, one attack in four carrying 5% -Defense for 10 seconds. Those enemy numbers are stated assumptions until enemy data is extracted. Toughness uses the defense that is left.",
+   "why": "High defense with no DDR is one of the most common reasons a build that looks unhittable on paper goes down: the first few lucky hits strip the defense and the rest follow.",
+   "where": "Stats tab, 📊 Rate this build: Defense debuff resistance and Slow and -Recharge resistance under Survival. Resistance to -ToHit, endurance drain, -Regeneration and -Recovery is not in our data yet and is listed as such, never counted as zero.",
+   "example": "A softcapped build with no DDR still sees about 2% of its defense stripped at +4; a build at 25% defense loses far more, because more hits land.",
+   "go": [
+    [
+     "tab:stats",
+     "Open Stats"
+    ]
+   ]
+  },
+  {
+   "term": "Buff and debuff types and rarity",
+   "aliases": [
+    "rarity",
+    "debuff types",
+    "buff types",
+    "support score",
+    "-hp",
+    "-regen",
+    "-ddr",
+    "team support"
+   ],
+   "stage": "reference",
+   "what": "Every team buff type (defense, resistance, damage, to-hit, recharge, recovery, regeneration, max HP) and every debuff type (-Resistance, -Regeneration and -Max HP against an AV; -Defense, -ToHit, -Damage, slows, -Recharge, -Recovery, -Defense debuff resistance and endurance drain against a spawn) gets its own grade. Regeneration is a buff, not healing. A rarity-weighted Team support score adds them up.",
+   "how": "Rarity is counted from the game data: how many player powersets offer each type. The most common type weighs 1; a type only four powersets offer (-Max HP, -Defense debuff resistance) weighs about 5. The support score adds each type you have, divided by that type's typical value, times its rarity weight.",
+   "why": "A build that brings what few others can is worth more to a team than one more source of the common debuffs.",
+   "where": "Stats tab, 📊 Rate this build: Team buffs, Debuffs and Support. Each row says how many powersets offer the type.",
+   "example": "-Resistance is offered by 131 player powersets and weighs about 1.1; -Max HP is offered by 4 and weighs about 5.3.",
+   "go": [
+    [
+     "tab:stats",
+     "Open Stats"
+    ]
+   ]
+  },
+  {
+   "term": "Damage types",
+   "aliases": [
+    "damage type",
+    "most common damage",
+    "fire damage",
+    "damage mix"
+   ],
+   "stage": "reference",
+   "what": "The damage grades say which damage types your build deals, ranked by how much of your damage each type makes up, so you know what enemies that resist it will do to you.",
+   "how": "Each attack's damage is split by its own damage rows and weighted by how often your attack chain fires it; area attacks outside the chain count at their recharge.",
+   "why": "Resistant enemies (robots against Lethal, fire demons against Fire) cut a single-type build much harder than a mixed one.",
+   "where": "Stats tab, 📊 Rate this build: the line under Single-target damage and Area damage.",
+   "example": "A generated Fire/Radiation Corruptor reads 'mostly Fire (96%), then Energy (3%), Cold (1%)'.",
    "go": [
     [
      "tab:stats",
