@@ -163,6 +163,21 @@ class EvaluationContractTests(unittest.TestCase):
         self.assertEqual(list(survival["defense_out_of_combat"]), ["AoE"])
         self.assertEqual(survival["defense_out_of_combat"]["AoE"]["value"], 88.0)
 
+    def test_toughness_measurement_shape(self):
+        """The documented M2 shape: 24 cells, weakest {value, cells}, the bare multiple."""
+        sv = self.evaluate()["measurements"]["survival"]
+        t = sv["toughness"]
+        self.assertEqual(t["unit"], "incoming_damage_per_second")
+        grid = t["by_position_and_type"]
+        self.assertEqual(sorted(grid), ["AoE", "Melee", "Ranged"])
+        self.assertTrue(all(len(row) == 8 for row in grid.values()))
+        self.assertEqual(set(t["weakest"]), {"value", "cells"})
+        for key in ("window_seconds", "break_even", "bare_archetype"):
+            self.assertIsInstance(t[key], float, key)
+        self.assertEqual(sv["toughness_vs_archetype"]["unit"], "multiple_of_bare_archetype")
+        self.assertAlmostEqual(sv["toughness_vs_archetype"]["value"],
+                               t["value"] / t["bare_archetype"], delta=0.01)
+
     def test_scenario_constants_are_fingerprinted(self):
         first = self.evaluate()
         self.assertEqual(self.encounter_kwargs["scenario_params"]["shift"], 4)

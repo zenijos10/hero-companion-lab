@@ -3,11 +3,14 @@ position, and the same number as a multiple of a bare character of its archetype
 
 Idea from the community Survivability Tool (Homecoming forums topic 12212,
 v3.0 spreadsheet): its "Max DPS for survival duration" and its score against an
-unbuffed character of the same archetype. The arithmetic here is OURS, the same
-the encounter's time-to-live uses (first_principles.incoming_hit, the best of
-positional and typed defense, DDR-eroded incoming -Defense, the -ToHit the build
-lands, AT-capped resistance, regeneration + self heals + absorb), so the grid
-cannot disagree with the survival score.
+unbuffed character of the same archetype. The arithmetic is OURS: the same
+helpers and inputs the encounter's time-to-live uses (first_principles
+incoming_hit / eroded_defense / capped_resistance / incoming_def_debuff, the
+-ToHit the build lands, regeneration + self heals + absorb). What differs is the
+incoming damage: the untyped encounter prices every hit as Smashing (defense =
+best of melee/smashing/lethal or ranged/AoE/energy), while each cell here reads
+its own type, so a build with one strong type and a hole elsewhere can show a
+long time to live and a low toughness. That gap is the point of the grid.
 
   cell(position, type) = incoming damage per second, as the enemies deal it,
                          that the build outlasts for `window` seconds
@@ -21,23 +24,18 @@ cannot disagree with the survival score.
 The bare archetype's damage taken is the same in every cell, so the multiple
 answers "how much tougher than a bare <archetype>" without peer cohorts.
 """
-from first_principles import _REGEN_PER_SEC, incoming_hit
+from first_principles import (_REGEN_PER_SEC, capped_resistance, eroded_defense,
+                              incoming_hit)
 
 TYPES = ("Smashing", "Lethal", "Fire", "Cold", "Energy", "Negative", "Psionic", "Toxic")
 POSITIONS = ("Melee", "Ranged", "AoE")
 
 
-def _value(totals, group, key):
-    row = (totals.get(group) or {}).get(key) or {}
-    return (row.get("value") or 0.0) / 100.0
-
-
 def _taken(totals, inputs, sc, position, dtype):
     """Share of the enemies' raw damage that lands: hit chance x unresisted part."""
-    defense = max(_value(totals, "defense", position), _value(totals, "defense", dtype))
-    defense = max(defense - inputs["def_debuff_in"], 0.0)
+    defense = eroded_defense(totals, [position, dtype], inputs["def_debuff_in"])
     hit = incoming_hit(defense, inputs["tohit_debuff"], sc)
-    return hit * (1.0 - min(_value(totals, "resistance", dtype), 0.90))
+    return hit * (1.0 - capped_resistance(totals, dtype))
 
 
 def _capacity(hp, sustain, taken, window):
@@ -57,14 +55,16 @@ def profile(totals, inputs, sc, base_hp, window):
             grid[position][dtype] = round(_capacity(hp, sustain, taken, window), 1)
     mean_taken = sum(t for t, _p, _d in takens) / len(takens)
     toughness = _capacity(hp, sustain, mean_taken, window)
-    worst_taken, worst_pos, worst_type = max(takens, key=lambda t: t[0])   # first of ties
+    worst = round(_capacity(hp, sustain, max(t for t, _p, _d in takens), window), 1)
+    # every cell at the worst value (ties are common: no defense means all three
+    # positions tie, and unresisted types tie with each other)
+    weakest = [[p, d] for p in POSITIONS for d in TYPES if grid[p][d] == worst]
     bare = _capacity(base_hp, base_hp * _REGEN_PER_SEC, incoming_hit(0.0, 0.0, sc), window)
     return {
         "window_seconds": window,
         "toughness": round(toughness, 1),
         "break_even": round(sustain / mean_taken, 1),
-        "weakest": {"position": worst_pos, "type": worst_type,
-                    "value": round(_capacity(hp, sustain, worst_taken, window), 1)},
+        "weakest": {"value": worst, "cells": weakest},
         "bare_archetype": round(bare, 1),
         "vs_archetype": round(toughness / bare, 2),
         "grid": grid,

@@ -37,6 +37,17 @@ def inputs(hp=HP, regen=None, heal=0.0, absorb=0.0, tohit=0.0, ddr=0.0):
             "def_debuff_in": ddr}
 
 
+def fp_types():
+    """The game's eight damage types, from the rating categories (independent of the grid)."""
+    import build_ratings
+    return build_ratings._TYPES
+
+
+def fp_positions():
+    import build_ratings
+    return build_ratings._POSITIONS
+
+
 def cells(p):
     return [v for row in p["grid"].values() for v in row.values()]
 
@@ -55,6 +66,22 @@ class ArithmeticTests(unittest.TestCase):
         harmonic = len(values) / sum(1.0 / v for v in values)
         self.assertAlmostEqual(p["toughness"], harmonic, delta=0.2)
         self.assertEqual(p["weakest"]["value"], min(values))
+        g = p["grid"]
+        self.assertTrue(all(g[pos][t] == min(values) for pos, t in p["weakest"]["cells"]))
+
+    def test_every_tied_weakest_cell_is_named(self):
+        # no positional defense: all three positions tie; Cold and Psionic both unresisted
+        p = surv.profile(totals(resistance={t: 30 for t in surv.TYPES if t not in ("Cold", "Psionic")}),
+                         inputs(), SC, HP, 30.0)
+        expected = sorted([pos, t] for pos in surv.POSITIONS for t in ("Cold", "Psionic"))
+        self.assertEqual(sorted(p["weakest"]["cells"]), expected)
+
+    def test_grid_covers_every_type_and_position(self):
+        p = surv.profile(totals(), inputs(), SC, HP, 30.0)
+        seen = {(pos, t) for pos, row in p["grid"].items() for t in row}
+        expected = {(pos, t) for pos in fp_positions() for t in fp_types()}
+        print(f"{len(seen & expected)} of {len(expected)} expected type x position cells checked")
+        self.assertEqual(seen, expected)
 
     def test_defense_is_the_best_of_position_and_type(self):
         p = surv.profile(totals({"Melee": 30, "Fire": 20}), inputs(), SC, HP, 30.0)
@@ -86,6 +113,21 @@ class ArithmeticTests(unittest.TestCase):
         self.assertLess(eroded["grid"]["Melee"]["Fire"], whole["grid"]["Melee"]["Fire"])
 
 
+class DetailTests(unittest.TestCase):
+    def test_detail_names_tied_cells_and_survives_missing_fields(self):
+        import build_ratings as br
+        ev = lambda t: {"measurements": {"survival": {"toughness": t}}}  # noqa: E731
+        text = br._toughness_detail(ev({"weakest": {"value": 70.7, "cells": [
+            ["Melee", "Psionic"], ["Ranged", "Psionic"], ["AoE", "Psionic"], ["Melee", "Cold"]]},
+            "bare_archetype": 61.5}))
+        self.assertEqual(text, "weakest 70.7 dmg/s: Psionic (melee, ranged, AoE); Cold (melee); "
+                               "a bare archetype takes 61.5 dmg/s")
+        self.assertEqual(br._toughness_detail(ev({"weakest": {"value": 70.7, "cells": [["AoE", "Fire"]]}})),
+                         "weakest 70.7 dmg/s: Fire (AoE)")       # no bare value: no crash
+        self.assertIsNone(br._toughness_detail(ev({})))
+        self.assertIsNone(br._toughness_detail(ev({"weakest": {"cells": [["AoE", "Fire"]]}})))
+
+
 class RouteTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -115,6 +157,8 @@ class RouteTests(unittest.TestCase):
         for key in ("toughness", "toughness_vs_archetype"):
             self.assertIn(cats[key]["grade"], tuple("SABCDF"), key)
         self.assertIn("weakest", cats["toughness"]["detail"])
+        self.assertIn("dmg/s", cats["toughness"]["detail"])
+        self.assertEqual(set(t["weakest"]), {"value", "cells"})
         print(f"Invuln/SS Tanker: toughness {t['value']} ({cats['toughness']['grade']}), "
               f"{sv['toughness_vs_archetype']['value']}x bare "
               f"({cats['toughness_vs_archetype']['grade']})")

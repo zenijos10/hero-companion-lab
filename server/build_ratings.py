@@ -151,12 +151,22 @@ CATEGORIES = {
 
 
 def _toughness_detail(ev):
+    """'weakest 70.7 dmg/s: Psionic (melee, ranged, AoE); a bare archetype takes 61.5 dmg/s'."""
     t = ((ev.get("measurements") or {}).get("survival") or {}).get("toughness") or {}
-    w = t.get("weakest")
-    if not w:
+    w = t.get("weakest") or {}
+    cells, value = w.get("cells"), w.get("value")
+    if not cells or not isinstance(value, (int, float)):
         return None
-    return (f"weakest: {w['type']} {w['position']} ({w['value']:g}); "
-            f"a bare archetype takes {t.get('bare_archetype'):g}")
+    positions = {}
+    for pos, dtype in cells:
+        positions.setdefault(dtype, []).append(pos)
+    where = "; ".join(f"{d} ({', '.join(p if p == 'AoE' else p.lower() for p in ps)})"
+                      for d, ps in positions.items())
+    text = f"weakest {value:g} dmg/s: {where}"
+    bare = t.get("bare_archetype")
+    if isinstance(bare, (int, float)):
+        text += f"; a bare archetype takes {bare:g} dmg/s"
+    return text
 
 
 # one line of context shown beside a grade (the grade itself still reads `value`)
