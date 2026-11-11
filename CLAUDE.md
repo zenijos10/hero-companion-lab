@@ -141,12 +141,20 @@ out. Rules going forward:
   damage folded from its five Fiery Aura siblings (`tools/patch_sibling_damage_folds.py`: same
   `Pets.Burn`, same caster stats, rows common to every sibling only; 0 champions hold it), and
   Blaster Archery Ranged Shot was never zero — the pet channel prices its click twin
-  (reclassified `modeled_elsewhere`). ⚠ **powers.json is ONE LINE of plain `json.dumps` (default
+  (reclassified `modeled_elsewhere`); since v58 that is the in-combat Quick twin. ⚠ **powers.json is ONE LINE of plain `json.dumps` (default
   separators, ASCII), not compact separators** — a compact re-dump is 1.6 MB smaller and NOT
-  byte-identical; patchers verify the round trip first. ⚠ Found doing it, owner's ruling
-  (KNOWN-GAPS): the `Redirects.*` channel prices 112 powers' caster attacks as PET damage at the
-  minion column, and Defender/Corruptor/Sentinel Ranged Shot sum its out-of-combat and in-combat
-  rows (11 champion contexts).
+  byte-identical; patchers verify the round trip first.
+- **`Redirects.*` powers are PSEUDOPETS and the pet channel is right (owner, 2026-11-11):** "those
+  powers spawn pets ... third-party entities that create the damage, even if they are not
+  targetable — this is how the game works and not a problem." Do not re-raise it.
+- **v58 (2026-11-11, owner: "fix the Ranged Shot problem", scope = all snipers): a sniper credits
+  ONE state per shot.** 24 records summed the out-of-combat snipe (4.5) and the in-combat quick
+  snipe (2.28); `tools/patch_snipe_states.py` moves the out-of-combat rows to
+  `damage_effects_out_of_combat` (fights are engaged) and folds the in-combat state our data lacked
+  onto the Blaster Quick twins + Defender Proton Volley from split siblings (identical out-of-combat
+  state = the second signal). Generic rule, pinned at 24 + 4; Dominator (4.5 / 3.56x0.75) and
+  Stalker-epic shapes are stated exclusions. 128 champion contexts pick an affected power: their
+  canonical scores are stale until the recert Joel schedules.
 - **Optimizer parity is pinned** (`tools/test_encounter_parity.py` + fixture): a display-only
   change to `encounter_value` must reproduce every pinned score; a model bump re-pins with `--write`.
 - Rating scenarios live in `build_evaluation.RATING_SCENARIOS` (rating_plus4 = general at +4),

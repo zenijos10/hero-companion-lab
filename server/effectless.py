@@ -90,7 +90,8 @@ def classify(rec, records_by_set, help_entry=None, full_name=None):
         return {"class": "modeled_elsewhere",
                 "evidence": "Mastermind upgrade: priced by its re-cast time"}
     twins = _twins(fn, rec, records_by_set)
-    priced = [t for t in twins if t.get("damage_effects") and (t.get("cast_time") or 0) > 0]
+    priced = [t for t in twins if (t.get("cast_time") or 0) > 0
+              and any(d.get("pv_mode", 0) != 2 for d in t.get("damage_effects") or [])]
     if priced:
         return {"class": "modeled_elsewhere",
                 "evidence": "damage priced by the pet channel from its click twin(s) "

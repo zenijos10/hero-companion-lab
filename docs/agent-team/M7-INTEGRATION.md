@@ -102,6 +102,15 @@ cohorts) are not built: the owner ruled that cohorts are worked out as builds co
   slotting". Fixed: both spellings fold into one `piece` key, so the same piece also
   fingerprints the same however it is spelled. Pinned in `test_frontier_search.py`.
 
+- **Snipers credited two exclusive states per shot (model v58, owner's ruling
+  2026-11-11).** 24 sniper records summed the out-of-combat snipe (4.5) and the
+  in-combat quick snipe (2.28); `tools/patch_snipe_states.py` keeps the in-combat
+  state and folds it where our data lacked it (Blaster redirect twins, Defender Proton
+  Volley). 128 champion contexts pick an affected power; their canonical scores are
+  stale until a recert (see the PR for the measured movement). Grade cut points
+  recalibrated (version 2). The `Redirects.*` pet channel is correct by the owner's
+  ruling: those powers spawn pseudopets.
+
 ## Open, for the owner
 
 - **Independent red/blue review** (plan §M7): the repository defines `hc-red` /

@@ -51,7 +51,10 @@ class EffectlessTests(unittest.TestCase):
         """The pet channel (engine._pet_damage_for_powerset) chains click twins."""
         row = self.by_power["Blaster_Ranged.Archery.Ranged_Shot"]
         self.assertEqual(row["class"], "modeled_elsewhere")
-        self.assertIn("Redirects.Blaster_Archery.Ranged_Shot_Normal", row["evidence"])
+        # the in-combat Quick twin (its state folded by tools/patch_snipe_states.py);
+        # the out-of-combat Normal twin keeps only its PvP row, so it prices nothing
+        self.assertIn("Redirects.Blaster_Archery.Ranged_Shot_Quick", row["evidence"])
+        self.assertNotIn("Ranged_Shot_Normal", row["evidence"])
         self.assertEqual(sorted(row["twins"]), ["Redirects.Blaster_Archery.Ranged_Shot_Normal",
                                                 "Redirects.Blaster_Archery.Ranged_Shot_Quick"])
 
