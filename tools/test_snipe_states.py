@@ -39,17 +39,47 @@ class SnipeRuleTests(unittest.TestCase):
     def test_rule_reaches_exactly_its_pinned_records(self):
         data = copy.deepcopy(POWERS)
         snipe.strip(data)
+        rule = [p for lst in data.values() for p in lst
+                if snipe.states_the_rule(HELP.get(p["full_name"])) and p.get("damage_effects")]
+        scales = snipe.derive_scales(rule)
+        self.assertEqual(scales, (4.5, 2.28))               # derived, never typed in
         split_records = []
-        for lst in data.values():
-            for p in lst:
-                if snipe.states_the_rule(HELP.get(p["full_name"])) and p.get("damage_effects"):
-                    got = snipe.split(p)
-                    if got:
-                        split_records.append((p["full_name"], *got))
+        for p in rule:
+            got = snipe.split(p, scales)
+            if got:
+                split_records.append((p["full_name"], *got))
         print(f"{len(split_records)} of {snipe.EXPECTED_COUNT} expected records split")
         self.assertEqual(len(split_records), snipe.EXPECTED_COUNT)
-        folded, _refused = snipe.second_pass(data, HELP, split_records, check_only=True)
+        folded, _refused = snipe.second_pass(data, HELP, split_records, True, scales)
         self.assertEqual(folded, snipe.EXPECTED_FOLDS)
+
+    def test_scales_follow_the_data(self):
+        """A patch that moves both snipe scales moves the rule with them."""
+        def rec(out, inc, extra=()):
+            rows = [{"scale": out, "nmag": 1.0, "damage_type": "Lethal", "probability": 1.0},
+                    {"scale": inc, "nmag": 1.0, "damage_type": "Lethal", "probability": 1.0}]
+            return {"damage_effects": rows + list(extra)}
+        recs = [rec(4.0, 2.0) for _ in range(5)] + [rec(4.5, 3.56)]
+        self.assertEqual(snipe.derive_scales(recs), (4.0, 2.0))
+        out, kept = snipe.split(recs[0], (4.0, 2.0))
+        self.assertEqual([r["scale"] for r in out], [4.0])
+        self.assertIsNone(snipe.derive_scales([rec(4.0, 2.0), rec(5.0, 1.0), rec(6.0, 3.0)]))
+        # the larger of the pair is the out-of-combat shot, whatever the row order
+        self.assertEqual(snipe.derive_scales([rec(2.0, 4.0) for _ in range(3)]), (4.0, 2.0))
+
+    def test_missing_probability_counts_like_the_engine(self):
+        self.assertTrue(snipe._pve({"scale": 4.5}))               # engine reads 1.0
+        self.assertFalse(snipe._pve({"scale": 4.5, "probability": 0.0}))
+        self.assertFalse(snipe._pve({"scale": 4.5, "pv_mode": 2}))
+
+    def test_form_detector_reproduces_the_file(self):
+        raw = (ROOT / "data" / "powers.json").read_bytes()
+        dumps = snipe.dumper(raw, POWERS)
+        self.assertIsNotNone(dumps)
+        self.assertEqual(dumps(POWERS), raw)
+        compact = json.dumps({"a": [1, 2]}, separators=(",", ":")).encode()
+        self.assertEqual(snipe.dumper(compact, {"a": [1, 2]})({"a": [1, 2]}), compact)
+        self.assertIsNone(snipe.dumper(b'{"a":  [1, 2]}', {"a": [1, 2]}))
 
     def test_shipped_data_is_split(self):
         rec = BY_FULL[DEF_RANGED_SHOT]
@@ -67,7 +97,12 @@ class SnipeRuleTests(unittest.TestCase):
         self.assertEqual(pve(normal), [])                      # out-of-combat moved aside
         self.assertEqual(pve(normal, snipe.MOVED), [(4.5, 1.0, "Lethal")])
         folded = [r for r in quick["damage_effects"] if r.get(snipe.FOLD)]
-        self.assertEqual([(r["scale"], r["damage_type"]) for r in folded], [(2.28, "Lethal")])
+        # the same in-combat state the split siblings keep: the quick snipe plus
+        # its expression row, so the shot is priced alike on every archetype
+        shape = lambda rows: sorted((r["scale"], r["nmag"], r["damage_type"]) for r in rows)  # noqa: E731
+        self.assertEqual(shape(folded),
+                         shape(snipe.in_combat_rows(BY_FULL[DEF_RANGED_SHOT]["damage_effects"], 2.28)))
+        self.assertEqual(len(folded), 2)
         self.assertEqual(sorted(folded[0][snipe.FOLD]),
                          ["Corruptor_Ranged.Archery.Ranged_Shot", DEF_RANGED_SHOT])
 

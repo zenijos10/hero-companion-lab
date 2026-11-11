@@ -85,6 +85,24 @@ def evaluate(build):
         powers_by_set=srv.POWERS, power_help=srv.POWER_HELP)
 
 
+# What a rating depends on: a change in any of these is a new calibration.
+_VERSIONED = ("categories", "scenario", "scenario_fingerprint", "model_version",
+              "database_version")
+
+
+def next_version(path, new):
+    """The version the new file carries: the old one when nothing a grade depends
+    on changed, else one past it (hand bumps are kept, never reset to 1)."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            old = json.load(f)
+    except (OSError, ValueError):
+        return 1
+    prev = old.get("version") if isinstance(old.get("version"), int) else 0
+    same = all(old.get(k) == new.get(k) for k in _VERSIONED)
+    return prev if same and prev else prev + 1
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--per-archetype", type=int, default=10)
@@ -116,7 +134,7 @@ def main():
         cuts = {g: round(quantile(vals, q), 3) for g, q in QUANTILES.items()} if len(vals) >= 5 else None
         categories[cat] = {"cuts": cuts, "sample_size": len(vals)}
     out = {
-        "version": 1,
+        "version": None,             # set below from the file being replaced
         "created": datetime.date.today().isoformat(),
         "scenario": build_evaluation.DEFAULT_SCENARIO,
         "scenario_fingerprint": fingerprint,
@@ -132,6 +150,7 @@ def main():
         "categories": categories,
     }
     path = os.path.join(ROOT, "data", "rating_thresholds.json")
+    out["version"] = next_version(path, out)
     with open(path, "w", encoding="utf-8") as f:
         f.write(json.dumps(out, indent=1, sort_keys=True) + "\n")
     print(f"wrote data/rating_thresholds.json: {len(used)} contexts, {len(skipped)} skipped")

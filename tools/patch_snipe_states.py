@@ -51,8 +51,9 @@ HELP = os.path.join(ROOT, "data", "power_help.json")
 
 MOVED = "damage_effects_out_of_combat"
 MOVED_AT = "damage_effects_out_of_combat_at"   # their original positions, for restoring
-OUT_OF_COMBAT_TOTAL = 4.5      # the full-strength snipe
-IN_COMBAT = 2.28               # the quick snipe
+# The two snipe scales are DERIVED from the data (derive_scales), never typed in:
+# a balance patch that moves them moves the rule with them. Measured 2026-11-11:
+# out-of-combat 4.5, in-combat 2.28.
 EXPECTED_COUNT = 24            # first pass: records holding both states
 EXPECTED_FOLDS = {             # second pass: record or Quick twin -> folded from
     "Defender_Ranged.Radiation_Blast.Proton_Volley",
@@ -64,8 +65,17 @@ FOLD = "snipe_state_fold"
 _EPS = 1e-9
 
 
-def dumps(data):
-    return json.dumps(data).encode("utf-8")
+_FORMS = ({}, {"separators": (",", ":")})
+
+
+def dumper(raw, data):
+    """The serialisation the file on disk ACTUALLY uses (it has varied: default
+    separators since the 2026-10-17 ingest, compact before): the one that
+    reproduces it byte for byte, else None."""
+    for form in _FORMS:
+        if json.dumps(data, **form).encode("utf-8") == raw:
+            return lambda d, form=form: json.dumps(d, **form).encode("utf-8")
+    return None
 
 
 def states_the_rule(help_entry):
@@ -75,22 +85,57 @@ def states_the_rule(help_entry):
 
 
 def _pve(row):
-    return row.get("pv_mode", 0) != 2 and (row.get("probability") or 0) > 0
+    """A PvE row that fires. A missing probability means 1.0, exactly as the
+    engine reads it (engine._resolve_mag)."""
+    p = row.get("probability", 1.0)
+    return row.get("pv_mode", 0) != 2 and (1.0 if p is None else p) > 0
 
 
-def split(rec):
+def _expression_row(row):
+    """A tiny-nMag row whose magnitude lives in an expression our data lacks
+    (2181.8 x 1e-5): it rides with the in-combat state on every split record."""
+    return row.get("nmag", 1.0) < 1e-3
+
+
+def derive_scales(records):
+    """(out_of_combat, in_combat) from the records that state the rule: the pair
+    of full-strength (nMag 1) scales that most of them carry TOGETHER; the larger
+    is the out-of-combat shot (the help: "not engaged, it will do bonus damage").
+    The pair must sit on a strict majority of the records carrying two or more
+    full-strength scales, else None (the tool then refuses)."""
+    from collections import Counter
+    from itertools import combinations
+    pairs, eligible = Counter(), 0
+    for rec in records:
+        full = sorted({r["scale"] for r in rec.get("damage_effects") or []
+                       if _pve(r) and abs(r.get("nmag", 1.0) - 1.0) < _EPS})
+        if len(full) < 2:
+            continue
+        eligible += 1
+        pairs.update(combinations(full, 2))
+    if not pairs:
+        return None
+    (low, high), n = pairs.most_common(1)[0]
+    ties = [p for p, c in pairs.items() if c == n]
+    if len(ties) > 1 or n * 2 <= eligible:
+        return None
+    return high, low
+
+
+def split(rec, scales):
     """(out_of_combat_rows, kept_rows) when the record holds both groups, else None."""
+    out_total, in_scale = scales
     rows = rec.get("damage_effects") or []
     pve = [r for r in rows if _pve(r)]
-    in_combat = [r for r in pve if abs(r["scale"] - IN_COMBAT) < _EPS]
+    in_combat = [r for r in pve if abs(r["scale"] - in_scale) < _EPS]
     # k = the in-combat state's total nMag: 1 for a single shot, 0.25 for Proton
     # Volley's per-bolt rows; the out-of-combat state is the same fraction of 4.5
     k = sum(r.get("nmag", 1.0) for r in in_combat)
     if k <= 0:
         return None                       # no in-combat state in our data
-    target = OUT_OF_COMBAT_TOTAL * k
+    target = out_total * k
     full = [r for r in pve if abs(r.get("nmag", 1.0) - 1.0) < _EPS
-            and abs(r["scale"] - IN_COMBAT) > _EPS]
+            and abs(r["scale"] - in_scale) > _EPS]
     single = [r for r in full if abs(r["scale"] - target) < 1e-6]
     if len(single) == 1:
         out = single
@@ -139,14 +184,21 @@ def _leaf(full_name):
     return full_name.rsplit(".", 1)[-1]
 
 
-def second_pass(data, help_, split_records, check_only):
+def in_combat_rows(kept, in_scale):
+    """The in-combat state as a split record keeps it: the quick-snipe rows plus
+    the expression rows that ride with them."""
+    return [r for r in kept if _pve(r)
+            and (abs(r["scale"] - in_scale) < _EPS or _expression_row(r))]
+
+
+def second_pass(data, help_, split_records, check_only, scales):
     """Fold the missing in-combat state from a split sibling. Returns the set of
     records folded and the reasons any candidate was refused."""
     by_full = {p["full_name"]: p for lst in data.values() for p in lst}
     # split siblings by power leaf: (out-of-combat signature, in-combat rows)
     sibs = {}
     for fn, out, kept in split_records:
-        inc = [r for r in kept if _pve(r) and abs(r["scale"] - IN_COMBAT) < _EPS]
+        inc = in_combat_rows(kept, scales[1])
         sibs.setdefault(_leaf(fn), []).append((fn, _sig(out), inc))
     candidates = []                   # (target to fold into, record whose rows move, leaf)
     for lst in data.values():
@@ -155,7 +207,7 @@ def second_pass(data, help_, split_records, check_only):
             if not states_the_rule(help_.get(fn)) or MOVED in p:
                 continue
             pve = [r for r in p.get("damage_effects") or [] if _pve(r)]
-            if pve and not any(abs(r["scale"] - IN_COMBAT) < _EPS for r in pve):
+            if pve and not any(abs(r["scale"] - scales[1]) < _EPS for r in pve):
                 candidates.append((p, p, _leaf(fn)))
             for ps in p.get("pet_powersets") or []:
                 if not ps.startswith("Redirects."):
@@ -191,12 +243,20 @@ def main():
     check_only = "--check" in sys.argv
     raw = open(POWERS, "rb").read()
     data = json.loads(raw.decode("utf-8"))
-    if dumps(data) != raw:
-        print("FAIL: powers.json does not round-trip byte-identically; refusing")
+    dumps = dumper(raw, data)
+    if dumps is None:
+        print("FAIL: powers.json matches no known serialisation byte for byte; refusing")
         sys.exit(2)
     strip(data)
     baseline = dumps(data)
     help_ = json.load(open(HELP, encoding="utf-8"))
+    scales = derive_scales([p for lst in data.values() for p in lst
+                            if states_the_rule(help_.get(p["full_name"]))
+                            and p.get("damage_effects")])
+    if scales is None:
+        print("FAIL: no majority out-of-combat / in-combat scale pair among the snipers")
+        sys.exit(1)
+    print(f"derived scales: out-of-combat {scales[0]}, in-combat {scales[1]}")
 
     rule_records = touched = 0
     unmatched = []
@@ -206,7 +266,7 @@ def main():
             if not states_the_rule(help_.get(p["full_name"])) or not p.get("damage_effects"):
                 continue
             rule_records += 1
-            got = split(p)
+            got = split(p, scales)
             if not got:
                 unmatched.append(p["full_name"])
                 continue
@@ -215,7 +275,7 @@ def main():
             split_records.append((p["full_name"], out, kept))
             print(f"{p['full_name']}: out-of-combat "
                   + " + ".join(f"{r['scale']} {r['damage_type']}" for r in out)
-                  + f" moved; in-combat {IN_COMBAT} kept")
+                  + f" moved; in-combat {scales[1]} kept")
             if check_only:
                 continue
             _move(p, out)
@@ -226,7 +286,7 @@ def main():
         if fn not in EXPECTED_FOLDS:
             print(f"  STATED EXCLUSION, the rule is stated but the two-state pair is not "
                   f"this shape: {fn}")
-    folded, refused = second_pass(data, help_, split_records, check_only)
+    folded, refused = second_pass(data, help_, split_records, check_only, scales)
     print(f"{len(folded & EXPECTED_FOLDS)} of {len(EXPECTED_FOLDS)} expected missing "
           f"in-combat states folded from a split sibling")
     for fn, why in refused:

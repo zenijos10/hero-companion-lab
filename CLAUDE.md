@@ -141,9 +141,11 @@ out. Rules going forward:
   damage folded from its five Fiery Aura siblings (`tools/patch_sibling_damage_folds.py`: same
   `Pets.Burn`, same caster stats, rows common to every sibling only; 0 champions hold it), and
   Blaster Archery Ranged Shot was never zero — the pet channel prices its click twin
-  (reclassified `modeled_elsewhere`); since v58 that is the in-combat Quick twin. ⚠ **powers.json is ONE LINE of plain `json.dumps` (default
-  separators, ASCII), not compact separators** — a compact re-dump is 1.6 MB smaller and NOT
-  byte-identical; patchers verify the round trip first.
+  (reclassified `modeled_elsewhere`); since v58 that is the in-combat Quick twin. ⚠ **powers.json is ONE LINE whose separators have VARIED** —
+  default `json.dumps` separators since the 2026-10-17 ingest, compact before, and 23 older
+  patchers still write compact (their "COMPACT single-line" docstrings describe the old file). A
+  wrong-form re-dump rewrites the whole 19 MB line (1.6 MB size swing): reproduce the form ON DISK
+  (`patch_snipe_states.dumper`, shared by the new patchers; refuses if neither form matches).
 - **`Redirects.*` powers are PSEUDOPETS and the pet channel is right (owner, 2026-11-11):** "those
   powers spawn pets ... third-party entities that create the damage, even if they are not
   targetable — this is how the game works and not a problem." Do not re-raise it.
@@ -525,7 +527,8 @@ lives in the repo + graphify, not in the always-loaded file). Query it via
   is CRLF: read `'rb'` → transform bytes → write `'wb'`; **never
   `newline=''` on a text-mode write** (silently rewrites CRLF→LF; bit
   server.py and RESUME-HERE.md in one week). Match each file's existing
-  serialisation (powers.json is COMPACT single-line — never `indent=`).
+  serialisation (powers.json is ONE line, never `indent=`; its separators have
+  varied, so reproduce the form ON DISK — see `patch_snipe_states.dumper`).
   Before committing, compare `git diff --stat` to INTENDED size (cross-check
   `--ignore-all-space`); >2× intent or whitespace-blind much smaller → STOP.
   **Never PowerShell string rewrites on source files** (PS5.1 reads BOM-less
@@ -1025,8 +1028,8 @@ launch, autostart toggle in the app UI, one-time share prompt for the Pulse feed
   generator REFUSES rather than guesses.
 - **⚠⚠ `open(path,"wb").write(expr)` TRUNCATES BEFORE `expr` EVALUATES** — it
   emptied powers.json to zero bytes once. Build all bytes first, then open.
-  Match each file's own serialisation (powers/summons compact single-line,
-  powersets `indent=1` CRLF).
+  Match each file's own serialisation (powers/summons ONE line in whatever
+  separator form is on disk, powersets `indent=1` CRLF).
 - **🎯 CONTROL DRIFT synced game-first (25 of 29)**; four multi-row ENCODINGS
   left alone — collapsing one is a different question from correcting a number.
   The 269 unresolved `summons[]` refs are metadata, not a pricing gap.

@@ -28,8 +28,9 @@ Two signals, per the evidence rule: the shared pet record itself (the same
 patch) and the siblings' agreeing fold. The patch's lifetime is not in our data;
 the fold carries it implicitly (1.44 = 0.06 per pulse x 24 pulses of 0.8 s).
 
-⚠ powers.json is ONE LINE written by plain json.dumps (default separators,
-ASCII). Read binary, build all bytes, then write; a round trip is byte-identical.
+⚠ powers.json is ONE LINE whose separators have varied (default since the
+2026-10-17 ingest, compact before): the tool reproduces whichever form is on disk
+(patch_snipe_states.dumper) and refuses if neither matches. Build all bytes, then write.
 Usage:  python tools/patch_sibling_damage_folds.py [--check]
 """
 import json
@@ -48,8 +49,7 @@ CASTER_HALF = ("power_type", "cast_time", "base_recharge", "radius", "max_target
 EXPECTED = {"Blaster_Support.Fire_Manipulation.Burn"}
 
 
-def dumps(data):
-    return json.dumps(data).encode("utf-8")
+from patch_snipe_states import dumper   # the ONE copy of "match the file's own form"
 
 
 def _row_key(row):
@@ -106,8 +106,9 @@ def main():
     check_only = "--check" in sys.argv
     raw = open(POWERS, "rb").read()
     data = json.loads(raw.decode("utf-8"))
-    if dumps(data) != raw:
-        print("FAIL: powers.json does not round-trip byte-identically; refusing")
+    dumps = dumper(raw, data)
+    if dumps is None:
+        print("FAIL: powers.json matches no known serialisation byte for byte; refusing")
         sys.exit(2)
     strip(data)
     baseline = dumps(data)
