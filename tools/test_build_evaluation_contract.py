@@ -20,7 +20,7 @@ class EvaluationContractTests(unittest.TestCase):
                       "powers": [{"full_name": "Test.One.Power", "slots": []}]}
         self.ctx = {"power_by_full": {"Test.One.Power": {}}}
         self.scenarios = {
-            "general": dict(shift=1, enemies=4, teammates=0, length=30.0),
+            "general": dict(shift=1, enemies=4, teammates=0, length=30.0, rank_acc=1.05),
         }
         self.totals = {
             "defense": {"Melee": {"value": 45.0}},
@@ -33,7 +33,10 @@ class EvaluationContractTests(unittest.TestCase):
         }
         self.encounter = dict(my_dps=43.0, amplified=2.0, prevented=15.0,
                               ttl=120.0, availability=0.95, hit_ml=0.05,
-                              hit_rn=0.10, hit_out=0.54)
+                              hit_rn=0.10, hit_out=0.54,
+                              survival_inputs=dict(hp=1000.0, regen_hps=4.2, self_heal_hps=0.0,
+                                                   absorb_hps=0.0, tohit_debuff=0.0,
+                                                   def_debuff_in=0.0))
 
     def evaluate(self, *, build=None, scenario="rating_plus4", out_of_combat=None):
         def calculate(b, *_a, **_k):

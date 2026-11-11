@@ -121,6 +121,10 @@ CATEGORIES = {
                    "damage_per_second_per_target", "offense"),
     "pet_damage": ("Pet damage", _m("offense.scenario_pet_dps"), "damage_per_second", "pets"),
     "survival": ("Survival (time to live)", _m("survival.time_to_live"), "seconds", "stat"),
+    "toughness": ("Toughness (damage you can take)", _m("survival.toughness"),
+                  "incoming_damage_per_second", "stat"),
+    "toughness_vs_archetype": ("Toughness for its archetype", _m("survival.toughness_vs_archetype"),
+                               "multiple_of_bare_archetype", "stat"),
     "defense": ("Defense (melee/ranged/AoE mean)", _mean_of("defense", _POSITIONS), "percent", "stat"),
     "resistance": ("Resistance (8-type mean)", _mean_of("resistance", _TYPES), "percent", "stat"),
     "endurance": ("Endurance (net per second)", _m("resources.net_per_second"),
@@ -144,6 +148,19 @@ CATEGORIES = {
     "debuff_damage_spawn": ("-Damage vs a spawn", _support(_DEB, "aoe_vs_scenario", "DamageBuff"),
                             "percent", "capability"),
 }
+
+
+def _toughness_detail(ev):
+    t = ((ev.get("measurements") or {}).get("survival") or {}).get("toughness") or {}
+    w = t.get("weakest")
+    if not w:
+        return None
+    return (f"weakest: {w['type']} {w['position']} ({w['value']:g}); "
+            f"a bare archetype takes {t.get('bare_archetype'):g}")
+
+
+# one line of context shown beside a grade (the grade itself still reads `value`)
+_DETAIL = {"toughness": _toughness_detail}
 
 
 def measure(evaluation):
@@ -226,6 +243,8 @@ def rate(evaluation, thresholds):
             row.update(grade="Unknown", why="no threshold for this category yet")
         else:
             row["grade"] = grade(value, cuts)
+        if key in _DETAIL:
+            row["detail"] = _DETAIL[key](evaluation)
         out[key] = row
     return {"status": "rated", "thresholds_version": thresholds.get("version"),
             "scenario": thresholds.get("scenario"), "provisional": True,

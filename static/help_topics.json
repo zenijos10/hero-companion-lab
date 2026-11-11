@@ -880,11 +880,34 @@
     "S to F"
    ],
    "stage": "reference",
-   "what": "Grades your build S to F in 18 categories against +4 enemies: single-target, area and pet damage, survival, defense, resistance, endurance, recharge, control, healing, three team buffs and five debuffs. Each grade shows its exact number beside it.",
+   "what": "Grades your build S to F in 20 categories against +4 enemies: single-target, area and pet damage, survival, toughness (two ways), defense, resistance, endurance, recharge, control, healing, three team buffs and five debuffs. Each grade shows its exact number beside it.",
    "how": "It measures the build exactly as you own it (booster previews and other people's buffs are left out, defense is read in combat) and compares each number with fixed cut points. Pick a saved character in the same window to see the two side by side, with the gap in every category where the grades differ or one is at least 10% ahead. It never names an overall winner: builds trade categories against each other.",
    "why": "To see what a build is good and bad at before you change it, and to compare two characters without running the optimizer. Nothing here solves or saves anything.",
    "where": "Stats tab, the 📊 Rate this build button, or Build → 📊 Rate this build. The grades are provisional: the cut points were set from optimized champion builds as a guide, so an ordinary build reads lower than its standing among players would. Unknown means the model cannot measure it for this build, None means the build has none of it, N/A means it cannot apply.",
    "example": "A Super Strength / Invulnerability Brute reads A for survival and resistance and F for endurance; beside a Force Field Defender, the Defender leads on recharge, defense and control.",
+   "go": [
+    [
+     "tab:stats",
+     "Open Stats"
+    ]
+   ]
+  },
+  {
+   "term": "Toughness",
+   "aliases": [
+    "toughness",
+    "survivability",
+    "damage you can take",
+    "survival grade",
+    "vs archetype",
+    "bare archetype"
+   ],
+   "stage": "reference",
+   "what": "Two survival grades on the rating scorecard. Toughness is how much incoming damage per second your build can take and still be standing at the end of a fight, for an even mix of all eight damage types from melee, ranged and area attacks. Toughness for its archetype is the same number divided by a bare character of your archetype (its base hit points and regeneration, nothing else), so 2.0x means twice as tough as a bare one.",
+   "how": "Each of the 24 type and position cells uses the game's hit chance against +4 enemies with your defense (the better of the position and the damage type), your resistance up to its cap, and your regeneration, self heals and absorb shields. The even mix punishes a hole: weak Psionic or Toxic resistance pulls the whole number down, and the scorecard names your weakest cell.",
+   "why": "The first grade says how tough the build is in absolute terms, so a Tanker and a Blaster can be compared honestly. The second says how much the build adds on top of what its archetype starts with, so a squishy that is built well can still read high.",
+   "where": "Stats tab, 📊 Rate this build: the two Toughness rows. The full grid travels in the saved rating file under measurements.survival.toughness. The method follows the community Survivability Tool (Homecoming forums); the numbers are this app's own model.",
+   "example": "A generated Fire/Fire Blaster takes about 80 damage per second for a 30-second fight, 1.3x a bare Blaster, weakest against Cold, Fire, Negative and Psionic; an Invulnerability/Super Strength Tanker takes about 200, 2.1x a bare Tanker, weakest against Psionic.",
    "go": [
     [
      "tab:stats",

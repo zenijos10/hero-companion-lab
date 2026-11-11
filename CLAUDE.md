@@ -168,6 +168,15 @@ out. Rules going forward:
   them"); peer cohorts are worked out as we go.** Ratings say `not_rated` when the scenario or its
   fingerprint differs from the calibration; `tools/test_build_ratings.py` fails on a model bump or
   scenario change until the thresholds are recalibrated.
+- **TOUGHNESS, two grades (owner, 2026-11-11: "We want both scores")** — `server/survival_profile.py`,
+  idea from the community Survivability Tool (forums topic 12212), arithmetic = the encounter's own
+  (`encounter_value` returns its `survival_inputs`, display only). `toughness` = incoming damage/s
+  outlasted for the scenario length, even mix of 8 types x melee/ranged/AoE (harmonic mean of the 24
+  cells, so holes pull it down; `weakest` named); `toughness_vs_archetype` = that / a bare archetype
+  (base HP + regen). Thresholds v3. NEXT (owner's idea): "VS enemy group" matchups = weights over the
+  same grid + rank/level mix; blocked on critter data (damage types/positions per group) that our
+  data does not carry. ⚠ Noted, not changed: enemy damage does not scale with level in the scenario
+  model (only accuracy does); the spreadsheet scales it (1.44 at +4). Uniform factor, a model change.
 - **M5 (2026-11-10): `/build/compare` + the app's 📊 Rate this build (Stats row + Build menu)**
   is read-only: it evaluates the OWNED build (`buildWithAccolades()`, never `buildPayload()`,
   whose slots carry booster previews), never solves or saves, and never names an overall winner.

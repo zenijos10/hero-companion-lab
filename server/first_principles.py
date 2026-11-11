@@ -1450,4 +1450,9 @@ def encounter_value(archetype, powers, ctx, totals, scenario="general", arch_row
         "prevented": round(prevented, 1),
         "hit_ml": round(p_ml, 3), "hit_rn": round(p_rn, 3), "hit_out": round(p_out, 3),
         "end_profile": [round(d_chain, 4), round(d_tog, 4), round(rec_ps, 4), round(e_max, 2)],
+        # display only: the survival inputs above, so the per-type toughness grid
+        # (server/survival_profile.py) reads the SAME hp, sustain, -ToHit and DDR
+        "survival_inputs": {"hp": hp, "regen_hps": regen_hps, "self_heal_hps": self_heal_hps,
+                            "absorb_hps": absorb_hps, "tohit_debuff": tohit_deb,
+                            "def_debuff_in": ddr_in},
     }
