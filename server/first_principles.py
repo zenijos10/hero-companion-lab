@@ -490,6 +490,27 @@ def _def_against(totals, kind_keys):
     return max(vals) if vals else 0.0
 
 
+# ONE copy of the incoming-damage arithmetic: the encounter's survival side, the
+# AFK sustain assessment and the toughness grid (survival_profile) all read these.
+def incoming_def_debuff(totals, sc):
+    """The scenario's incoming -Defense after the build's own DDR (capped at 95%).
+    ⚠ DDR lives in bonus_extras, not at the top level of calculate_build's response."""
+    ddr = min((((totals.get("bonus_extras") or {}).get("def_debuff_resist")
+                or {}).get("value") or 0.0) / 100.0, 0.95)
+    return sc.get("def_debuff_in", 0.0) * (1.0 - ddr)
+
+
+def eroded_defense(totals, kind_keys, def_debuff_in):
+    """The best applicable defense after incoming -Defense, never below zero."""
+    return max(_def_against(totals, kind_keys) - def_debuff_in, 0.0)
+
+
+def capped_resistance(totals, dtype):
+    """Typed resistance as a fraction, at most the game's 90%."""
+    return min((((totals.get("resistance") or {}).get(dtype) or {})
+                ).get("value", 0) or 0, 90.0) / 100.0
+
+
 # ── v31 AFK sustain assessment (Joel's ruling, 2026-07-16; requirements made
 # build-relative in v48) ─────────────────────────────────────────────────────
 # When a combo cannot meet the AFK floor, the certificate does not relax the
@@ -774,13 +795,10 @@ def afk_sustain_assessment(powers, totals, arch_row, ctx, role_output_mod=None,
     # build's own incoming HP/s per shift, same constants as the score side.
     sc = SCENARIOS["farm_afk"]
     _dt = sc.get("dmg_type") or "Smashing"
-    _ddr = min((((totals.get("bonus_extras") or {}).get("def_debuff_resist")
-                 or {}).get("value") or 0.0) / 100.0, 0.95)
-    ddr_in = sc.get("def_debuff_in", 0.0) * (1.0 - _ddr)
-    def_ml = max(_def_against(totals, ["Melee", _dt]) - ddr_in, 0.0)
-    def_rn = max(_def_against(totals, ["AoE", _dt]) - ddr_in, 0.0)
-    res_t = min((((totals.get("resistance") or {}).get(_dt) or {})
-                 ).get("value", 0) or 0, 90.0) / 100.0
+    ddr_in = incoming_def_debuff(totals, sc)
+    def_ml = eroded_defense(totals, ["Melee", _dt], ddr_in)
+    def_rn = eroded_defense(totals, ["AoE", _dt], ddr_in)
+    res_t = capped_resistance(totals, _dt)
     reqs = {}
     for n in range(5):
         sc_n = dict(sc, shift=n)
@@ -1050,9 +1068,7 @@ def encounter_value(archetype, powers, ctx, totals, scenario="general", arch_row
     # same haircut as a Blaster. Capped at the game's own 95%.
     # ⚠ READ IT FROM bonus_extras - calculate_build's response is curated and
     # def_debuff_resist is not at the top level (the trap that cost a revert).
-    _ddr = min((((totals.get("bonus_extras") or {}).get("def_debuff_resist")
-                 or {}).get("value") or 0.0) / 100.0, 0.95)
-    ddr_in = sc.get("def_debuff_in", 0.0) * (1.0 - _ddr)
+    ddr_in = incoming_def_debuff(totals, sc)
     # v47 TYPED SCENARIOS (Maelwys's example builds exposed it): a scenario may
     # declare its incoming damage TYPE. Homecoming fire farms deal essentially
     # Fire damage — that is WHY the community farm doctrine caps Fire res/def —
@@ -1064,17 +1080,16 @@ def encounter_value(archetype, powers, ctx, totals, scenario="general", arch_row
     # scenarios are byte-identical to v46.
     _dt = sc.get("dmg_type")
     if _dt:
-        def_ml = max(_def_against(totals, ["Melee", _dt]) - ddr_in, 0.0)
-        def_rn = max(_def_against(totals, ["AoE", _dt]) - ddr_in, 0.0)
+        def_ml = eroded_defense(totals, ["Melee", _dt], ddr_in)
+        def_rn = eroded_defense(totals, ["AoE", _dt], ddr_in)
     else:
-        def_ml = max(_def_against(totals, ["Melee", "Smashing", "Lethal"]) - ddr_in, 0.0)
-        def_rn = max(_def_against(totals, ["Ranged", "AoE", "Energy"]) - ddr_in, 0.0)
+        def_ml = eroded_defense(totals, ["Melee", "Smashing", "Lethal"], ddr_in)
+        def_rn = eroded_defense(totals, ["Ranged", "AoE", "Energy"], ddr_in)
     tohit_deb = _deb("ToHit") * pp * dres   # enhancement-aware, purple-patched, AV-resisted
     p_ml = incoming_hit(def_ml, tohit_deb, sc)
     p_rn = incoming_hit(def_rn, tohit_deb, sc)
-    res_sl = ((((totals.get("resistance") or {}).get(_dt or "Smashing") or {})
-               ).get("value", 0) or 0) / 100.0
-    incoming = sc["enemies"] * sc["enemy_dps"] * (0.5 * p_ml + 0.5 * p_rn) * (1.0 - min(res_sl, 0.90))
+    res_sl = capped_resistance(totals, _dt or "Smashing")
+    incoming = sc["enemies"] * sc["enemy_dps"] * (0.5 * p_ml + 0.5 * p_rn) * (1.0 - res_sl)
     base_hp = (arch_row or {}).get("hitpoints") or 1000
     hp = base_hp * (1.0 + _pct(totals, "max_hp"))
     regen_hps = hp * _REGEN_PER_SEC * (1.0 + _pct(totals, "regeneration"))
@@ -1450,4 +1465,9 @@ def encounter_value(archetype, powers, ctx, totals, scenario="general", arch_row
         "prevented": round(prevented, 1),
         "hit_ml": round(p_ml, 3), "hit_rn": round(p_rn, 3), "hit_out": round(p_out, 3),
         "end_profile": [round(d_chain, 4), round(d_tog, 4), round(rec_ps, 4), round(e_max, 2)],
+        # display only: the survival inputs above, so the per-type toughness grid
+        # (server/survival_profile.py) reads the SAME hp, sustain, -ToHit and DDR
+        "survival_inputs": {"hp": hp, "regen_hps": regen_hps, "self_heal_hps": self_heal_hps,
+                            "absorb_hps": absorb_hps, "tohit_debuff": tohit_deb,
+                            "def_debuff_in": ddr_in},
     }

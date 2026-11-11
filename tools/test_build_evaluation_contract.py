@@ -20,7 +20,7 @@ class EvaluationContractTests(unittest.TestCase):
                       "powers": [{"full_name": "Test.One.Power", "slots": []}]}
         self.ctx = {"power_by_full": {"Test.One.Power": {}}}
         self.scenarios = {
-            "general": dict(shift=1, enemies=4, teammates=0, length=30.0),
+            "general": dict(shift=1, enemies=4, teammates=0, length=30.0, rank_acc=1.05),
         }
         self.totals = {
             "defense": {"Melee": {"value": 45.0}},
@@ -33,7 +33,10 @@ class EvaluationContractTests(unittest.TestCase):
         }
         self.encounter = dict(my_dps=43.0, amplified=2.0, prevented=15.0,
                               ttl=120.0, availability=0.95, hit_ml=0.05,
-                              hit_rn=0.10, hit_out=0.54)
+                              hit_rn=0.10, hit_out=0.54,
+                              survival_inputs=dict(hp=1000.0, regen_hps=4.2, self_heal_hps=0.0,
+                                                   absorb_hps=0.0, tohit_debuff=0.0,
+                                                   def_debuff_in=0.0))
 
     def evaluate(self, *, build=None, scenario="rating_plus4", out_of_combat=None):
         def calculate(b, *_a, **_k):
@@ -159,6 +162,21 @@ class EvaluationContractTests(unittest.TestCase):
         self.assertEqual(survival["defense"]["AoE"]["value"], 10.0)
         self.assertEqual(list(survival["defense_out_of_combat"]), ["AoE"])
         self.assertEqual(survival["defense_out_of_combat"]["AoE"]["value"], 88.0)
+
+    def test_toughness_measurement_shape(self):
+        """The documented M2 shape: 24 cells, weakest {value, cells}, the bare multiple."""
+        sv = self.evaluate()["measurements"]["survival"]
+        t = sv["toughness"]
+        self.assertEqual(t["unit"], "incoming_damage_per_second")
+        grid = t["by_position_and_type"]
+        self.assertEqual(sorted(grid), ["AoE", "Melee", "Ranged"])
+        self.assertTrue(all(len(row) == 8 for row in grid.values()))
+        self.assertEqual(set(t["weakest"]), {"value", "cells"})
+        for key in ("window_seconds", "break_even", "bare_archetype"):
+            self.assertIsInstance(t[key], float, key)
+        self.assertEqual(sv["toughness_vs_archetype"]["unit"], "multiple_of_bare_archetype")
+        self.assertAlmostEqual(sv["toughness_vs_archetype"]["value"],
+                               t["value"] / t["bare_archetype"], delta=0.01)
 
     def test_scenario_constants_are_fingerprinted(self):
         first = self.evaluate()

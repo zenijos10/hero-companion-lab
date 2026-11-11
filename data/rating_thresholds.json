@@ -179,6 +179,26 @@
     "S": 1985.3
    },
    "sample_size": 246
+  },
+  "toughness": {
+   "cuts": {
+    "A": 723.35,
+    "B": 557.6,
+    "C": 378.55,
+    "D": 248.7,
+    "S": 1122.1
+   },
+   "sample_size": 246
+  },
+  "toughness_vs_archetype": {
+   "cuts": {
+    "A": 12.105,
+    "B": 8.595,
+    "C": 6.66,
+    "D": 4.74,
+    "S": 18.135
+   },
+   "sample_size": 246
   }
  },
  "created": "2026-11-11",
@@ -192,5 +212,5 @@
  },
  "scenario": "rating_plus4",
  "scenario_fingerprint": "cb4ae387852f",
- "version": 2
+ "version": 3
 }

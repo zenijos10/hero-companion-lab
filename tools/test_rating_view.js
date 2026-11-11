@@ -92,6 +92,23 @@ html = render({ ok: true, mode: "comparison", scope: "same_powersets", scope_not
 ok(html.includes("Comparing same archetype and powersets") && html.includes('class="rt-scope keep-whole"'),
    "a same-powerset comparison is stated plainly");
 
+// 5b. a graded row's detail (toughness: the weakest spots) shows on a scorecard,
+// rides the title in a comparison, and is escaped
+html = render({ ok: true, mode: "scorecard", columns: [col("Mine")],
+  rows: [row([{ grade: "C", value: 400, detail: "weakest 70.7 dmg/s: Psionic <b>(melee)</b>" }],
+             { category: "toughness", label: "Toughness", unit: "incoming_damage_per_second" })],
+  notes: [] });
+ok(html.includes("weakest 70.7 dmg/s: Psionic &lt;b&gt;(melee)&lt;/b&gt;</div>"), "scorecard shows the detail, escaped");
+ok(!html.includes("<b>(melee)"), "detail never renders as markup");
+ok(html.includes("400 dmg/s taken"), "toughness value carries its unit");
+html = render({ ok: true, mode: "comparison", columns: [col("A"), col("B")],
+  rows: [row([{ grade: "C", value: 400, detail: "weakest X" }, { grade: "B", value: 600, detail: "weakest Y" }],
+             { category: "toughness_vs_archetype", label: "T", unit: "multiple_of_bare_archetype" })],
+  notes: [] });
+ok(html.includes('title="weakest X"') && !html.includes('<div class="muted small">weakest X'),
+   "a comparison keeps the detail in the title, not inline");
+ok(html.includes("400 × bare"), "the multiple carries its unit");
+
 // 6. a row without cells never throws
 html = render({ ok: true, mode: "scorecard", columns: [col("Y")], rows: [{ label: "Defense", unit: "percent" }], notes: [] });
 ok(html.includes("Defense"), "a row missing cells still renders");

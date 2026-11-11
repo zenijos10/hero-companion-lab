@@ -17,6 +17,7 @@ import build_ratings
 import first_principles
 import role_output
 import support_ledger
+import survival_profile
 
 EVALUATION_SCHEMA_VERSION = 1
 DEFAULT_SCENARIO = "rating_plus4"
@@ -135,6 +136,18 @@ def _measurement(value, unit, basis):
     if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
         return {"value": None, "unit": unit, "basis": basis, "status": "unknown"}
     return {"value": value, "unit": unit, "basis": basis, "status": "modeled"}
+
+
+def _toughness(tp):
+    """The toughness measurement: even-mix value plus the grid it summarizes."""
+    row = _measurement(tp["toughness"], "incoming_damage_per_second",
+                       f"incoming damage per second (as the enemies deal it, an even mix of "
+                       f"8 types x melee/ranged/AoE) outlasted for {tp['window_seconds']:g} s: "
+                       "hit chance, defense, resistance, regeneration, heals, absorb")
+    row.update(window_seconds=tp["window_seconds"], break_even=tp["break_even"],
+               weakest=tp["weakest"], bare_archetype=tp["bare_archetype"],
+               by_position_and_type=tp["grid"])
+    return row
 
 
 def _typed_stat(rows, basis):
@@ -381,6 +394,9 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
     encounter = first_principles.encounter_value(
         archetype, build_copy["powers"], ctx, totals, scenario=scenario,
         arch_row=archetype_record, role_output_mod=role_output, scenario_params=sc)
+    toughness = survival_profile.profile(
+        totals, encounter["survival_inputs"], sc,
+        archetype_record.get("hitpoints") or 1000, sc["length"])
     offense = totals.get("offense") or {}
     endurance = totals.get("endurance") or {}
     rech_row = totals.get("recharge") or {}
@@ -473,6 +489,11 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
                 "resistance": _typed_stat(totals.get("resistance"), "build totals, AT caps applied"),
                 "time_to_live": _measurement(encounter.get("ttl"), "seconds",
                                               "scenario damage pressure and sustain; estimate"),
+                "toughness": _toughness(toughness),
+                "toughness_vs_archetype": _measurement(
+                    toughness["vs_archetype"], "multiple_of_bare_archetype",
+                    f"toughness / a bare {archetype}'s ({toughness['bare_archetype']}: base hit "
+                    "points and regeneration, no defense, resistance or heals)"),
                 "availability": _measurement(encounter.get("availability"), "fraction",
                                              "scenario survival and control-pressure model"),
                 "incoming_melee_hit": _measurement(encounter.get("hit_ml"), "probability",

@@ -9884,6 +9884,7 @@ const _RATING_UNITS = {
   percent: "%", percent_bonus: "%", seconds: "s", damage_per_second: "DPS",
   damage_per_second_per_target: "DPS/target", endurance_per_second: "end/s",
   weighted_mez_seconds_proxy: "control pts", model_heal_units_per_second: "heal/s",
+  incoming_damage_per_second: "dmg/s taken", multiple_of_bare_archetype: "× bare",
 };
 
 // Pure: the /build/compare response in, HTML out (escHtml is the only
@@ -9916,8 +9917,9 @@ function renderRatingHtml(cmp) {
       const g = cell.grade || "-";
       const cls = /^[SABCDF]$/.test(g) ? `rt-g rt-g-${g}` : "rt-g rt-g-x";
       const low = cell.low_sample ? ` <span class="rt-low" title="Few champions set this cut point: treat it as rough">≈</span>` : "";
-      const why = cell.why ? ` title="${escHtml(cell.why)}"` : "";
-      const note = single && cell.why ? `<div class="muted small">${escHtml(cell.why)}</div>` : "";
+      const said = cell.why || cell.detail;
+      const why = said ? ` title="${escHtml(said)}"` : "";
+      const note = single && said ? `<div class="muted small">${escHtml(said)}</div>` : "";
       return `<td class="${best.has(i) ? "rt-best" : ""}"${why}><span class="${cls}">${escHtml(g)}</span> `
         + `${fmt(cell.value, r.unit)}${low}${note}</td>`;
     }).join("");
