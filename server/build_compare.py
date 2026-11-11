@@ -67,15 +67,39 @@ def _row(key, label, unit, per_column):
     return row
 
 
+SCOPES = {
+    "same_powersets": "same archetype and powersets: the builds differ only in picks and slotting",
+    "same_archetype": "same archetype, different powersets",
+    "cross_archetype": "different archetypes: every grade uses the same all-archetype cut "
+                       "points, so a gap can be the archetype rather than the build",
+}
+
+
+def scope(columns):
+    """What a comparison compares, from the evaluated columns (None for a scorecard
+    or when fewer than two builds were evaluated)."""
+    ok = [c for c in columns if c.get("ok")]
+    if len(ok) < 2:
+        return None
+    if len({c.get("archetype") for c in ok}) > 1:
+        return "cross_archetype"
+    if len({(c.get("primary"), c.get("secondary")) for c in ok}) > 1:
+        return "same_archetype"
+    return "same_powersets"
+
+
 def compare(entries):
     """One table for 1..MAX_BUILDS evaluated builds."""
     columns = [_column(e) for e in entries]
     per_column = _cells(entries)
     rows = [_row(key, spec[0], spec[2], per_column)
             for key, spec in build_ratings.CATEGORIES.items()]
+    kind = scope(columns)
     return {
         "ok": any(c["ok"] for c in columns),
         "mode": "scorecard" if len(columns) == 1 else "comparison",
+        "scope": kind,
+        "scope_note": SCOPES.get(kind),
         "columns": columns,
         "rows": rows,
         "notes": [

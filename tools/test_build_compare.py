@@ -63,6 +63,23 @@ class CompareRuleTests(unittest.TestCase):
         self.assertEqual(result["columns"][1], {"label": "pvp", "ok": False,
                                                 "error": "PvP evaluation is not supported"})
 
+    def test_scope_states_what_is_compared(self):
+        def entry(label, at, pri, sec):
+            e = stub(label, {"defense": ("B", 30.0)})
+            e["evaluation"]["build"] = {"archetype": at, "primary": pri, "secondary": sec}
+            return e
+        a = entry("a", "Class_Brute", "SS", "Inv")
+        self.assertIsNone(bc.compare([a])["scope"])
+        self.assertEqual(bc.compare([a, entry("b", "Class_Brute", "SS", "Inv")])["scope"],
+                         "same_powersets")
+        self.assertEqual(bc.compare([a, entry("b", "Class_Brute", "SS", "WP")])["scope"],
+                         "same_archetype")
+        cross = bc.compare([a, entry("b", "Class_Tanker", "Inv", "SS")])
+        self.assertEqual(cross["scope"], "cross_archetype")
+        self.assertIn("all-archetype", cross["scope_note"])
+        refused = {"label": "x", "evaluation": None, "error": "no"}
+        self.assertIsNone(bc.compare([a, refused])["scope"])   # one evaluated build: no scope
+
     def test_no_overall_winner_is_declared(self):
         result = bc.compare([stub("a", {"defense": ("S", 45.0)}), stub("b", {"recharge": ("S", 90.0)})])
         self.assertFalse({"winner", "overall", "total", "score"} & set(result))

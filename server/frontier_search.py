@@ -94,7 +94,8 @@ def plan_directions(objective_keys):
     return first + [d for d in DIRECTIONS if d not in first]
 
 
-_SLOT_KEYS = ("uid", "set_uid", "io_level", "level", "boost", "attuned")
+# a slot names its piece as piece_uid (solver/app) or uid (hand-built); both count
+_SLOT_KEYS = ("piece_uid", "uid", "set_uid", "io_level", "level", "boost", "attuned")
 
 
 def fingerprint(powers):

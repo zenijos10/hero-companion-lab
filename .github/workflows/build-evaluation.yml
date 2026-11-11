@@ -16,6 +16,7 @@ on:
       - "tools/test_pareto.py"
       - "tools/test_frontier_search.py"
       - "tools/test_frontier_view.js"
+      - "tools/test_m7_end_to_end.py"
       - "static/app.js"
       - "tools/calibrate_rating_thresholds.py"
       - "tools/classify_effectless_powers.py"
@@ -29,7 +30,7 @@ permissions:
 jobs:
   evaluate-contract:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -70,5 +71,7 @@ jobs:
         run: python tools/test_frontier_search.py
       - name: Alternatives view renderer (M6, node)
         run: node tools/test_frontier_view.js
+      - name: End to end, offline, reproducible, all archetypes, budgets (M7)
+        run: python tools/test_m7_end_to_end.py
       - name: Route-coverage smoke battery
         run: python tools/test_user_paths.py

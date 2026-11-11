@@ -3028,7 +3028,7 @@ def build_frontier():
         objectives, floors, budget, seconds, size = frontier_search.parse_request(body)
     except ValueError as exc:
         return jsonify({"ok": False, "error": str(exc)}), 400
-    _, refused = _evaluate_build(copy.deepcopy(build), build_evaluation.DEFAULT_SCENARIO)
+    start_eval, refused = _evaluate_build(copy.deepcopy(build), build_evaluation.DEFAULT_SCENARIO)
     if refused:
         return jsonify({"ok": False, "error": refused}), 400
     result = frontier_search.search(
@@ -3042,6 +3042,13 @@ def build_frontier():
     import first_principles as fp
     result["model_version"] = fp.MODEL_VERSION
     result["database_version"] = DB_VERSION
+    # M7: everything needed to reproduce the run travels with it
+    result["versions"] = dict(start_eval.get("versions") or {},
+                              rating_thresholds=(RATING_THRESHOLDS or {}).get("version"))
+    result["request"] = {"objectives": [{"key": o.key, "direction": o.direction}
+                                        for o in objectives],
+                         "floors": floors, "max_evaluations": budget, "max_seconds": seconds,
+                         "max_frontier_size": size, "keep_sets": bool(body.get("keep_sets"))}
     return jsonify(result)
 
 

@@ -159,6 +159,13 @@ out. Rules going forward:
   size cap says `exact: false`; never called the global frontier. Contract:
   docs/agent-team/M6-FRONTIER-CONTRACT.md. App: 📊 Rate this build → 🧭 Alternatives; sort and
   minimums HIDE, never delete; "Use this build" is an ordinary edit (recordEdit → Undo).
+- **M7 (2026-11-11): the end-to-end battery is `tools/test_m7_end_to_end.py`** (real Sidekick
+  import → validate → evaluate → rate → compare → frontier → export → re-import; offline with the
+  network and the Claude CLI closed; byte-reproducible; all 15 archetypes rate; procs negative-
+  controlled; budgets). Doc: docs/agent-team/M7-INTEGRATION.md. ⚠ **A slot names its piece
+  `piece_uid`, not `uid`** — the M6 frontier fingerprint hashed `uid` and collided distinct
+  slottings until M7 caught it. `/build/compare` now states its `scope` (same_powersets /
+  same_archetype / cross_archetype). Open for the owner: red/blue agent review (opt-in), peer cohorts.
 - **Personal Force Field is a defensive MODE, not sustained defense** (its help: "while it is
   active, you can only use powers that affect yourself"; 6 records). `/build/evaluate` keeps it out
   of sustained totals as a `caster_locked_toggle`; the SCORE still counts it (KNOWN-GAPS, owner's

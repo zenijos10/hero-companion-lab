@@ -81,11 +81,22 @@ ok(html.includes("Not rated: recalibrate"), "not-rated reason shown");
 ok(html.includes("Offense incomplete"), "incomplete offense flagged");
 ok(html.includes("unread redirect"), "unsupported powers listed in plain words");
 
-// 5. a row without cells never throws
+// 5. the comparison states its scope; cross-archetype is flagged
+html = render({ ok: true, mode: "comparison", scope: "cross_archetype",
+  scope_note: "different archetypes: every grade uses the same all-archetype cut points",
+  columns: [col("A"), col("B")], rows: [], notes: [] });
+ok(html.includes("Comparing different archetypes") && html.includes('class="rt-flag keep-whole"'),
+   "a cross-archetype comparison says so, flagged");
+html = render({ ok: true, mode: "comparison", scope: "same_powersets", scope_note: "same archetype and powersets",
+  columns: [col("A"), col("B")], rows: [], notes: [] });
+ok(html.includes("Comparing same archetype and powersets") && !html.includes("rt-flag keep-whole"),
+   "a same-powerset comparison is stated plainly");
+
+// 6. a row without cells never throws
 html = render({ ok: true, mode: "scorecard", columns: [col("Y")], rows: [{ label: "Defense", unit: "percent" }], notes: [] });
 ok(html.includes("Defense"), "a row missing cells still renders");
 
-// 6. garbage in: never throws
+// 7. garbage in: never throws
 ok(render(null).includes("could not be read"), "a bad response reads as an error, not a crash");
 
 console.log(`test_rating_view: ${checks} checks passed`);
