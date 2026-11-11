@@ -26,7 +26,8 @@ import server as srv  # noqa: E402
 
 CONTRACT = ROOT / "_sidekick_contract_fixture"
 UNSTOPPABLE = "Brute_Defense.Invulnerability.Unstoppable"
-RANGED_SHOT = "Blaster_Ranged.Archery.Ranged_Shot"
+RANGED_SHOT = "Blaster_Ranged.Archery.Ranged_Shot"      # priced via its click twin
+RAIN_OF_ARROWS = "Blaster_Ranged.Archery.Rain_of_Arrows"  # damage nothing reads
 
 CASES = {
     "mastermind": ("Class_Mastermind", "Mastermind_Summon.Mercenaries",
@@ -78,8 +79,9 @@ class RealBuildEvaluationTests(unittest.TestCase):
         if BENUMB not in {p["full_name"] for p in cold["powers"]}:
             cold["powers"].append({"full_name": BENUMB, "slots": [None]})
         archer = cls.builds["archer"]
-        if RANGED_SHOT not in {p["full_name"] for p in archer["powers"]}:
-            archer["powers"].append({"full_name": RANGED_SHOT, "slots": [None]})
+        for name in (RANGED_SHOT, RAIN_OF_ARROWS):
+            if name not in {p["full_name"] for p in archer["powers"]}:
+                archer["powers"].append({"full_name": name, "slots": [None]})
 
     @classmethod
     def _generate(cls, archetype, primary, secondary):
@@ -172,10 +174,14 @@ class RealBuildEvaluationTests(unittest.TestCase):
         self.assertEqual(again["inputs_normalized"]["emergency_excluded_from_sustained"],
                          [UNSTOPPABLE])
 
-    def test_unreadable_redirect_power_is_disclosed(self):
+    def test_unread_damage_is_disclosed_and_redirects_are_priced(self):
         data = self.evaluate(self.builds["archer"])
         reasons = {(u["power"], u["reason"]) for u in data["unsupported"]["powers"]}
-        self.assertIn((RANGED_SHOT, "unread_redirect"), reasons)
+        self.assertIn((RAIN_OF_ARROWS, "damaging_unread"), reasons)
+        # Ranged Shot's damage is chained by the pet channel from its click twin
+        elsewhere = {m["power"] for m in data["unsupported"]["modeled_without_effect_rows"]}
+        self.assertIn(RANGED_SHOT, elsewhere)
+        self.assertNotIn(RANGED_SHOT, {p for p, _r in reasons})
         conf = data["confidence"]
         self.assertLess(conf["powers_read"]["value"], conf["powers_total"])
         self.assertIs(conf["offense_complete"], False)   # a damaging power is unread

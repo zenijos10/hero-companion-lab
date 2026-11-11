@@ -133,11 +133,20 @@ out. Rules going forward:
   MVP is NOT import/export alone: rate an imported build per category, compare it, optimize to a
   Pareto frontier. M1 audit = `M1-TRACEABILITY-AUDIT.md` (its backlog replaces GitHub Issues,
   which are disabled). M2 = `/build/evaluate`, contract in `M2-EVALUATION-CONTRACT.md` (merged).
-- **⚠ 31 DAMAGING POWERS ARE CREDITED ZERO DAMAGE — owner: fix later, tracked** (KNOWN-GAPS.md,
-  docs/EFFECTLESS-POWERS.md, `server/effectless.py`, pinned by `tools/test_effectless.py`). 2 have
-  twin records we ship and nothing reads (Archery Ranged Shot, Fire Manipulation Burn); 29 need the
-  client (next PATCH-WATCH export). Model change, moves scores. Until fixed: **no M4 offense grade
-  ships for a build whose `confidence.offense_complete` is false.**
+- **⚠ 29 DAMAGING POWERS ARE CREDITED ZERO DAMAGE — owner: fix later, tracked** (KNOWN-GAPS.md,
+  docs/EFFECTLESS-POWERS.md, `server/effectless.py`, pinned by `tools/test_effectless.py`). They
+  need the client (next PATCH-WATCH export). Model change, moves scores. Until fixed: **no M4
+  offense grade ships for a build whose `confidence.offense_complete` is false.** The two twin
+  cases are CLOSED (2026-11-11, owner's pick): Blaster Fire Manipulation Burn carries its patch
+  damage folded from its five Fiery Aura siblings (`tools/patch_sibling_damage_folds.py`: same
+  `Pets.Burn`, same caster stats, rows common to every sibling only; 0 champions hold it), and
+  Blaster Archery Ranged Shot was never zero — the pet channel prices its click twin
+  (reclassified `modeled_elsewhere`). ⚠ **powers.json is ONE LINE of plain `json.dumps` (default
+  separators, ASCII), not compact separators** — a compact re-dump is 1.6 MB smaller and NOT
+  byte-identical; patchers verify the round trip first. ⚠ Found doing it, owner's ruling
+  (KNOWN-GAPS): the `Redirects.*` channel prices 112 powers' caster attacks as PET damage at the
+  minion column, and Defender/Corruptor/Sentinel Ranged Shot sum its out-of-combat and in-combat
+  rows (11 champion contexts).
 - **Optimizer parity is pinned** (`tools/test_encounter_parity.py` + fixture): a display-only
   change to `encounter_value` must reproduce every pinned score; a model bump re-pins with `--write`.
 - Rating scenarios live in `build_evaluation.RATING_SCENARIOS` (rating_plus4 = general at +4),

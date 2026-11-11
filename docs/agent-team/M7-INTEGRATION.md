@@ -109,5 +109,5 @@ cohorts) are not built: the owner ruled that cohorts are worked out as builds co
   so far had a `/code-review` pass with findings fixed or reported.
 - **Peer cohorts** (same-powerset / same-archetype grade baselines): owner's ruling
   pending, as above.
-- The 31 zero-damage powers and the other KNOWN-GAPS items stand; an
+- The 29 zero-damage powers and the other KNOWN-GAPS items stand; an
   `offense_complete: false` build gets Unknown offense grades.

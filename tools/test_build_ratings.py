@@ -201,8 +201,9 @@ class ShippedThresholdTests(unittest.TestCase):
     def test_incomplete_offense_is_never_graded(self):
         build = self.build("Class_Blaster", "Blaster_Ranged.Archery", "Blaster_Support.Tactical_Arrow")
         names = {p["full_name"] for p in build["powers"]}
-        if "Blaster_Ranged.Archery.Ranged_Shot" not in names:
-            build["powers"].append({"full_name": "Blaster_Ranged.Archery.Ranged_Shot", "slots": [None]})
+        # Rain of Arrows: damage the model does not read (docs/EFFECTLESS-POWERS.md)
+        if "Blaster_Ranged.Archery.Rain_of_Arrows" not in names:
+            build["powers"].append({"full_name": "Blaster_Ranged.Archery.Rain_of_Arrows", "slots": [None]})
         cats = self.client.post("/build/evaluate", json={"build": build}).get_json()["ratings"]["categories"]
         self.assertEqual(cats["single_target_damage"]["grade"], "Unknown")
         self.assertEqual(cats["aoe_damage"]["grade"], "Unknown")

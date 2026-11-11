@@ -19,8 +19,11 @@ sys.path[:0] = [str(ROOT / "server"), str(ROOT / "tools")]
 import classify_effectless_powers as tool  # noqa: E402
 import effectless  # noqa: E402
 
+# 2026-11-11 (backlog 2b, owner's pick): Burn's patch damage folded from its Fiery
+# Aura siblings (tools/patch_sibling_damage_folds.py), so it leaves the catalogue;
+# Ranged Shot is priced by the pet channel from its click twin (modeled_elsewhere).
 PINNED = {"effect_unread": 142, "mechanic": 100, "auto_granted": 49, "damaging_unread": 29,
-          "modeled_elsewhere": 14, "unread_twins_damage": 2}
+          "modeled_elsewhere": 15}
 
 
 class EffectlessTests(unittest.TestCase):
@@ -44,11 +47,45 @@ class EffectlessTests(unittest.TestCase):
     def test_class_counts_are_pinned_both_ways(self):
         self.assertEqual(dict(Counter(r["class"] for r in self.rows)), PINNED)
 
-    def test_redirect_with_twins_in_our_data(self):
+    def test_redirect_with_click_twins_is_priced_elsewhere(self):
+        """The pet channel (engine._pet_damage_for_powerset) chains click twins."""
         row = self.by_power["Blaster_Ranged.Archery.Ranged_Shot"]
-        self.assertEqual(row["class"], "unread_twins_damage")
+        self.assertEqual(row["class"], "modeled_elsewhere")
+        self.assertIn("Redirects.Blaster_Archery.Ranged_Shot_Normal", row["evidence"])
         self.assertEqual(sorted(row["twins"]), ["Redirects.Blaster_Archery.Ranged_Shot_Normal",
                                                 "Redirects.Blaster_Archery.Ranged_Shot_Quick"])
+
+    def test_a_pulsing_patch_twin_is_still_unread(self):
+        """A twin the pet channel cannot chain (no cast time) stays unread damage."""
+        rec = {"full_name": "X_Support.Set.Patch", "level_available": 10,
+               "pet_powersets": ["Pets.Patch"], "accepted_enhancement_types": ["Damage Increase"]}
+        twin = {"full_name": "Pets.Patch.Patch", "cast_time": 0.0, "power_type": 1,
+                "damage_effects": [{"effect": "Damage", "scale": 0.06}]}
+        out = effectless.classify(rec, {"Pets.Patch": [twin]})
+        self.assertEqual(out["class"], "unread_twins_damage")
+        twin["cast_time"] = 1.0
+        self.assertEqual(effectless.classify(rec, {"Pets.Patch": [twin]})["class"],
+                         "modeled_elsewhere")
+
+    def test_burn_carries_its_siblings_fold(self):
+        burn = next(r for r in self.powers["Blaster_Support.Fire_Manipulation"]
+                    if r["full_name"].endswith(".Burn"))
+        self.assertNotIn("Blaster_Support.Fire_Manipulation.Burn", self.by_power)
+        rows = [r for r in burn["damage_effects"] if r.get("sibling_fold")]
+        self.assertEqual([(r["damage_type"], r["scale"], r["modifier_table"]) for r in rows],
+                         [("Fire", 1.44, "Melee_Damage")])
+        self.assertEqual(len(burn["sibling_fold_from"]), 5)
+
+    def test_fold_rule_reaches_exactly_its_expected_records(self):
+        """The patcher's rule, re-run on the shipped data with its own rows
+        stripped, folds exactly EXPECTED and refuses nothing else silently."""
+        import copy
+        import patch_sibling_damage_folds as fold
+        data = copy.deepcopy(self.powers)
+        fold.strip(data)
+        plans = fold.plan(data)
+        self.assertEqual({fn for fn, rows, _s, _w in plans if rows}, fold.EXPECTED)
+        self.assertEqual([w for _f, rows, _s, w in plans if not rows], [])
 
     def test_a_storm_blast_attack_is_not_a_mastermind_upgrade(self):
         self.assertEqual(self.cls_of("Blaster_Ranged.Storm_Blast.Direct_Strike"), "damaging_unread")
