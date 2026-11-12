@@ -16,6 +16,7 @@ import engine
 import build_ratings
 import first_principles
 import role_output
+import matchups
 import range_profile
 import rating_measures
 import support_ledger
@@ -30,13 +31,13 @@ DEFAULT_SCENARIO = "rating_plus4"
 # fingerprint below always describes the numbers actually used.
 RATING_SCENARIOS = {
     # +4 version of the general solo encounter; nothing else changed.
-    # The defense cascade's constants (survival_profile): stated assumptions,
-    # provisional until critter data (the same data enemy-group matchups need)
-    # replaces them: each enemy attacks every 2 s, one attack in four carries
-    # -Defense, 5% per landed hit, for 10 s.
-    "rating_plus4": ("general", {"shift": 4, "enemy_attacks_per_second": 0.5,
-                                 "def_debuff_attack_share": 0.25, "def_debuff_per_hit": 0.05,
-                                 "def_debuff_seconds": 10.0}),
+    # The defense cascade's constants (survival_profile), from the game's critter
+    # records: data/critter_groups.json "all_groups_mean" (106 level-50 enemy
+    # groups, tools/fetch_critter_data.py). Copied here so a data refresh is a
+    # visible scenario change (new fingerprint, recalibrate), never a silent one.
+    "rating_plus4": ("general", {"shift": 4, "enemy_attacks_per_second": 0.454,
+                                 "def_debuff_attack_share": 0.133, "def_debuff_per_hit": 0.0975,
+                                 "def_debuff_seconds": 7.73}),
 }
 
 
@@ -578,6 +579,10 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
                                   "unit": "model_heal_units_per_second"},
             },
         },
+        # VS enemy group (server/matchups.py): the rating spawn refought with each
+        # group's own make-up, hardest first; None when no critter data is installed
+        "matchups": matchups.all_matchups(totals, encounter["survival_inputs"], sc,
+                                          damage_mix["types"]),
         "range_profile": {
             "bands": {"melee": f"single target, reach up to {range_profile.MELEE_MAX:g} ft",
                       "midrange": f"around you (PBAoE, auras), cones and areas up to "

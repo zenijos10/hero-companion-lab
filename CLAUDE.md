@@ -189,6 +189,15 @@ out. Rules going forward:
   `RATING_SCENARIOS`, provisional until critter data). ⚠ AV-facing debuffs now land from EVERY power
   (the ledger's old single_target_vs_av bucket missed area -Res toggles). Rating only; champion
   scores untouched. Four debuff-resistance families are absent from our data (`NOT_READ`).
+- **VS ENEMY GROUP (owner, 2026-11-12; "unless you can get the game client export, get from wiki")** —
+  the cloud box cannot reach his client, so the source is **City of Data** (cod.uberguy.net, the game's
+  own critter records; closer to the client than the wiki). `tools/fetch_critter_data.py` (cached in
+  gitignored `tools/gamedata/_cod_cache/`, 4 parallel) -> `data/critter_groups.json`: 106 level-50 groups,
+  class tables at level 54, allies/events/decoys excluded. `server/matchups.py` refights the rating spawn
+  per group; `evaluation.matchups`, scorecard fold, help topic. The rating scenario's cascade constants
+  are now that data's all-groups mean (0.454 att/s, 13.3% carry -Def, 9.75%/hit, 7.73 s), replacing my
+  placeholders. ⚠ CoD revision 2025-12-09 predates our July 2026 client bins: re-run the fetch (or a
+  client re-export) at PATCH-WATCH. The `environment` hero-companion-lab allows homecoming.wiki + cod.
 - **M5 (2026-11-10): `/build/compare` + the app's 📊 Rate this build (Stats row + Build menu)**
   is read-only: it evaluates the OWNED build (`buildWithAccolades()`, never `buildPayload()`,
   whose slots carry booster previews), never solves or saves, and never names an overall winner.

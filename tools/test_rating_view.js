@@ -30,7 +30,7 @@ const escStart = src.indexOf("const escHtml");
 const escEnd = src.slice(escStart).search(/;\r?\n/);
 const escSrc = src.slice(escStart, escStart + escEnd + 1);
 assert.ok(unitsSrc.length > 20 && escSrc.length > 20, "helpers not found");
-const make = new Function(`${escSrc}\n${unitsSrc}\n${lift("function renderRatingHtml")}\nreturn renderRatingHtml;`);
+const make = new Function(`${escSrc}\n${unitsSrc}\n${lift("function renderMatchupsHtml")}\n${lift("function renderRatingHtml")}\nreturn renderRatingHtml;`);
 const render = make();
 
 const col = (label, extra = {}) => Object.assign({
@@ -121,6 +121,22 @@ ok(html.includes(">Damage</th>") && html.includes(">Debuffs</th>"), "sections ar
 ok(html.indexOf(">Team buffs</th>") < html.indexOf("Team damage buff"), "a team damage buff sits under Team buffs, not Damage");
 ok(html.includes("where: 60% melee, 40% midrange"), "where the output is delivered is shown");
 ok(html.includes("4.0 %/s"), "rate units render");
+
+// 5d. enemy-group matchups: hardest first as given, outlasting stated in words, escaped
+html = render({ ok: true, mode: "scorecard", rows: [], notes: [],
+  columns: [col("Mine", { matchups: [
+    { group: "Council", name: "Council <x>", time_to_live: 12.34, damage_landing_per_second: 88,
+      their_damage: [{ type: "Lethal", share: 0.6 }], steady_def_debuff: 0.03,
+      steady_def_debuff_without_ddr: 0.09, your_damage_unresisted: 0.9, mez: ["Held"] },
+    { group: "Hellions", name: "Hellions", time_to_live: null, damage_landing_per_second: 10,
+      their_damage: [], steady_def_debuff: 0.0, steady_def_debuff_without_ddr: 0.0,
+      your_damage_unresisted: 1.0, mez: [] }] })] });
+ok(html.includes("versus 2 enemy groups") && html.includes("Council &lt;x&gt;"), "matchups render, escaped");
+ok(html.indexOf("Council &lt;x&gt;") < html.indexOf("Hellions"), "hardest first, in the order the server ranked");
+ok(html.includes("12.3 s") && html.includes("outlasts them"), "time to live, and outlasting said in words");
+ok(html.includes("9.0% with no DDR"), "the DDR difference is shown");
+ok(!render({ ok: true, mode: "scorecard", rows: [], notes: [], columns: [col("Y")] }).includes("rt-matchups"),
+   "no matchups section without data");
 
 // 6. a row without cells never throws
 html = render({ ok: true, mode: "scorecard", columns: [col("Y")], rows: [{ label: "Defense", unit: "percent" }], notes: [] });

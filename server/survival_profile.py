@@ -64,18 +64,25 @@ def _mean_hit(totals, sc, tohit, weights, debuff):
                for p, w in weights.items() for t in TYPES)
 
 
+def fixed_point(k, ddr, mean_hit):
+    """The cascade's steady -Defense: D = k x (1 - DDR) x mean_hit(D), climbed
+    from D = 0 (the debuff piles up from nothing). One copy, shared with the
+    enemy-group matchups (server/matchups.py)."""
+    debuff = 0.0
+    for _ in range(500):
+        nxt = k * (1.0 - ddr) * mean_hit(debuff)
+        if abs(nxt - debuff) < 1e-7:
+            return nxt
+        debuff = nxt
+    return debuff
+
+
 def _steady_debuff(totals, sc, tohit, weights, ddr):
     """The cascade's fixed point (see the module docstring)."""
     k = sc["enemies"]
     for key in CASCADE_KEYS:
         k *= sc[key]
-    debuff = 0.0
-    for _ in range(500):
-        nxt = k * (1.0 - ddr) * _mean_hit(totals, sc, tohit, weights, debuff)
-        if abs(nxt - debuff) < 1e-7:
-            return nxt
-        debuff = nxt
-    return debuff
+    return fixed_point(k, ddr, lambda d: _mean_hit(totals, sc, tohit, weights, d))
 
 
 def cascade(totals, inputs, sc, weights):

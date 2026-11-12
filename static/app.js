@@ -9891,6 +9891,28 @@ const _RATING_UNITS = {
 // Scorecard sections come from the server (build_ratings.SECTIONS, one per
 // category, in table order), so a section is never split across the table.
 
+// Pure: one build's enemy-group matchups (server/matchups.py), hardest first.
+function renderMatchupsHtml(label, groups) {
+  if (!Array.isArray(groups) || !groups.length) return "";
+  const pct = x => (x == null ? "-" : `${(x * 100).toFixed(1)}%`);
+  const rows = groups.map(g => {
+    const ttl = g.time_to_live == null ? "outlasts them" : `${g.time_to_live.toFixed(1)} s`;
+    const theirs = (g.their_damage || []).map(t => `${escHtml(t.type)} ${Math.round(t.share * 100)}%`).join(", ");
+    const ddr = g.steady_def_debuff_without_ddr > g.steady_def_debuff
+      ? ` <span class="muted small">(${pct(g.steady_def_debuff_without_ddr)} with no DDR)</span>` : "";
+    return `<tr><th scope="row">${escHtml(g.name || g.group)}</th><td>${ttl}</td>`
+      + `<td>${(g.damage_landing_per_second || 0).toFixed(0)}</td><td>${theirs}</td>`
+      + `<td>${pct(g.steady_def_debuff)}${ddr}</td><td>${pct(g.your_damage_unresisted)}</td>`
+      + `<td class="muted small">${escHtml((g.mez || []).join(", "))}</td></tr>`;
+  }).join("");
+  return `<details class="rt-matchups"><summary>${escHtml(label)}: versus ${groups.length} enemy groups at +4, hardest first</summary>`
+    + `<p class="rt-scope keep-whole">The rating spawn refought with each group's own damage types, attack positions, rank accuracy, `
+    + `-Defense and resistances (game data from City of Data). Time to live counts your regeneration, heals and absorb.</p>`
+    + `<table class="rating-table"><thead><tr><th>Group</th><th>Time to live</th><th>Damage landing/s</th>`
+    + `<th>Their damage</th><th>Your defense lost</th><th>Your damage not resisted</th><th>Mez</th></tr></thead>`
+    + `<tbody>${rows}</tbody></table></details>`;
+}
+
 // Pure: the /build/compare response in, HTML out (escHtml is the only
 // dependency, so tools/test_rating_view.js runs it under node).
 function renderRatingHtml(cmp) {
@@ -9940,12 +9962,13 @@ function renderRatingHtml(cmp) {
     `<details><summary>${escHtml(c.label)}: ${c.unsupported.length} power(s) the model does not fully measure</summary><ul>`
     + c.unsupported.map(u => `<li>${escHtml(u.power)}: ${escHtml(String(u.reason).replace(/_/g, " "))}</li>`).join("")
     + `</ul></details>`).join("");
+  const matchups = cols.filter(c => c.ok).map(c => renderMatchupsHtml(c.label, c.matchups)).join("");
   const notes = (cmp.notes || []).map(n => `<li>${escHtml(n)}</li>`).join("");
   const scope = cmp.scope_note ? `<p class="rt-scope${cmp.scope === "cross_archetype" ? " rt-scope-warn" : ""} keep-whole">`
     + `Comparing ${escHtml(cmp.scope_note)}.</p>` : "";
   return `${scope}<table class="rating-table"><thead><tr><th></th>${head}`
     + `${single ? "" : "<th>Gap</th>"}</tr></thead><tbody>${rows}</tbody></table>`
-    + `${unsupported}<ul class="muted small keep-whole">${notes}</ul>`;
+    + `${matchups}${unsupported}<ul class="muted small keep-whole">${notes}</ul>`;
 }
 
 function _ratingLabel() {

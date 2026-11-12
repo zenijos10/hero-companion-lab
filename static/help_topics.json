@@ -952,10 +952,35 @@
    ],
    "stage": "reference",
    "what": "Enemies always keep at least a 5% chance to hit you (more against +4 enemies), and many of their attacks lower your defense. Each debuffing hit that lands makes the next hit more likely, so defense can collapse in a long fight. Defense debuff resistance (DDR) shrinks every one of those debuffs. The scorecard grades your DDR and your resistance to slows and -Recharge, and shows where your defense settles.",
-   "how": "The rating finds the point where the -Defense piling up and the hits landing balance out, with your DDR and without it, against +4 enemies that each attack every 2 seconds, one attack in four carrying 5% -Defense for 10 seconds. Those enemy numbers are stated assumptions until enemy data is extracted. Toughness uses the defense that is left.",
+   "how": "The rating finds the point where the -Defense piling up and the hits landing balance out, with your DDR and without it. The enemy numbers come from the game's own critter records across 106 level-50 enemy groups: on average a critter attacks about every 2.2 seconds, about one attack in eight carries -Defense, and each landed one takes about 9.75% for 7.7 seconds. Toughness uses the defense that is left.",
    "why": "High defense with no DDR is one of the most common reasons a build that looks unhittable on paper goes down: the first few lucky hits strip the defense and the rest follow.",
    "where": "Stats tab, 📊 Rate this build: Defense debuff resistance and Slow and -Recharge resistance under Survival. Resistance to -ToHit, endurance drain, -Regeneration and -Recovery is not in our data yet and is listed as such, never counted as zero.",
-   "example": "A softcapped build with no DDR still sees about 2% of its defense stripped at +4; a build at 25% defense loses far more, because more hits land.",
+   "example": "A softcapped build with no DDR still loses a little defense at +4; a build at 25% defense loses far more, because more hits land. The enemy-group matchups show the same cascade with each group's own numbers.",
+   "go": [
+    [
+     "tab:stats",
+     "Open Stats"
+    ]
+   ]
+  },
+  {
+   "term": "Enemy group matchups",
+   "aliases": [
+    "matchups",
+    "vs enemy group",
+    "enemy groups",
+    "council",
+    "malta",
+    "carnival",
+    "versus",
+    "hardest enemies"
+   ],
+   "stage": "reference",
+   "what": "How your build fares against each of 106 level-50 enemy groups at +4: how long you last in a spawn of them, how much of their damage lands, how much defense their -Defense strips, how much of your damage they do not resist, and which mez they bring. Listed hardest first.",
+   "how": "The rating spawn is refought with each group's own make-up, read from the game's critter records (City of Data): its damage types and attack positions against your defense and resistance, its rank mix's accuracy, its real -Defense against your DDR, and its own resistances against your damage types. Your regeneration, heals and absorb count toward how long you last.",
+   "why": "A build that is tough on average can still fold to the one group whose damage type is its hole. The list names that group before you meet it.",
+   "where": "Stats tab, 📊 Rate this build: the 'versus enemy groups' fold under the grades. A spawn you outlast reads 'outlasts them'.",
+   "example": "A generated Fire/Fire Blaster lasts about 4 to 6 seconds against its hardest groups (Void Hunters first) and outlasts none; an Invulnerability/Super Strength Tanker lasts about 20 seconds against its hardest and outlasts 55 of the 106 groups.",
    "go": [
     [
      "tab:stats",

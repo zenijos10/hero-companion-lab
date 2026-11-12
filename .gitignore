@@ -64,3 +64,4 @@ sidekick-data/
 tools/sidekick_verify/target/
 tools/sidekick_verify/Cargo.lock
 _skif_exports/
+tools/gamedata/_cod_cache/
