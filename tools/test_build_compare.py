@@ -128,7 +128,7 @@ class CompareRouteTests(unittest.TestCase):
         two = self.post([{"label": "Brute", "build": self.brute},
                          {"label": "FF", "build": self.ff}]).get_json()
         self.assertEqual(two["mode"], "comparison")
-        self.assertEqual(len(two["rows"]), 20)
+        self.assertEqual(len(two["rows"]), 36)
         self.assertTrue(any(r["meaningful"] for r in two["rows"]))
 
     def test_refusals_come_back_as_columns(self):

@@ -177,6 +177,18 @@ out. Rules going forward:
   same grid + rank/level mix; blocked on critter data (damage types/positions per group) that our
   data does not carry. ⚠ Noted, not changed: enemy damage does not scale with level in the scenario
   model (only accuracy does); the spreadsheet scales it (1.44 at +4). Uniform factor, a model change.
+- **RATING BREAKDOWN (owner, 2026-11-11)** — 36 categories. Range bands (`server/range_profile.py`,
+  melee ≤15 ft single target / midrange = around you, cones, ≤30 ft / range) on every graded row
+  (`where`), toughness weighted by where the build operates (overall = damage 1/2, control 1/4,
+  support 1/4: owner, distance matters most for damage); -Def is COMMON (156 sets), the rare one
+  is DefDebuffResist on foes (Sonic Siphon, 4 sets); damage types ranked by chain use;
+  control split ST vs AoE; EVERY buff and debuff type graded (regen = a buff, never healing);
+  rarity = player powersets offering the type (data census, `rating_measures.rarity`) feeding a
+  rarity-weighted support index (two-pass calibration); DDR + slow resistance graded; the DEFENSE
+  CASCADE (`survival_profile.cascade`: -Def fixed point at the hit floor, K constants stated in
+  `RATING_SCENARIOS`, provisional until critter data). ⚠ AV-facing debuffs now land from EVERY power
+  (the ledger's old single_target_vs_av bucket missed area -Res toggles). Rating only; champion
+  scores untouched. Four debuff-resistance families are absent from our data (`NOT_READ`).
 - **M5 (2026-11-10): `/build/compare` + the app's 📊 Rate this build (Stats row + Build menu)**
   is read-only: it evaluates the OWNED build (`buildWithAccolades()`, never `buildPayload()`,
   whose slots carry booster previews), never solves or saves, and never names an overall winner.

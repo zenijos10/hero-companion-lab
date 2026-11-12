@@ -16,6 +16,8 @@ import engine
 import build_ratings
 import first_principles
 import role_output
+import range_profile
+import rating_measures
 import support_ledger
 import survival_profile
 
@@ -28,7 +30,13 @@ DEFAULT_SCENARIO = "rating_plus4"
 # fingerprint below always describes the numbers actually used.
 RATING_SCENARIOS = {
     # +4 version of the general solo encounter; nothing else changed.
-    "rating_plus4": ("general", {"shift": 4}),
+    # The defense cascade's constants (survival_profile): stated assumptions,
+    # provisional until critter data (the same data enemy-group matchups need)
+    # replaces them: each enemy attacks every 2 s, one attack in four carries
+    # -Defense, 5% per landed hit, for 10 s.
+    "rating_plus4": ("general", {"shift": 4, "enemy_attacks_per_second": 0.5,
+                                 "def_debuff_attack_share": 0.25, "def_debuff_per_hit": 0.05,
+                                 "def_debuff_seconds": 10.0}),
 }
 
 
@@ -141,13 +149,20 @@ def _measurement(value, unit, basis):
 def _toughness(tp):
     """The toughness measurement: even-mix value plus the grid it summarizes."""
     row = _measurement(tp["toughness"], "incoming_damage_per_second",
-                       f"incoming damage per second (as the enemies deal it, an even mix of "
-                       f"8 types x melee/ranged/AoE) outlasted for {tp['window_seconds']:g} s: "
-                       "hit chance, defense, resistance, regeneration, heals, absorb")
+                       f"incoming damage per second (as the enemies deal it, 8 types evenly, "
+                       f"positions weighted by where the build operates) outlasted for "
+                       f"{tp['window_seconds']:g} s: hit chance, defense after the -Defense "
+                       "cascade, resistance, regeneration, heals, absorb")
     row.update(window_seconds=tp["window_seconds"], break_even=tp["break_even"],
                weakest=tp["weakest"], bare_archetype=tp["bare_archetype"],
-               by_position_and_type=tp["grid"])
+               up_close=tp["up_close"], at_range=tp["at_range"],
+               position_weights=tp["position_weights"], by_position_and_type=tp["grid"])
     return row
+
+
+def _summon_powers(powers, records):
+    return sorted(p["full_name"] for p in powers
+                  if (records.get(p["full_name"]) or {}).get("summons"))
 
 
 def _typed_stat(rows, basis):
@@ -394,9 +409,6 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
     encounter = first_principles.encounter_value(
         archetype, build_copy["powers"], ctx, totals, scenario=scenario,
         arch_row=archetype_record, role_output_mod=role_output, scenario_params=sc)
-    toughness = survival_profile.profile(
-        totals, encounter["survival_inputs"], sc,
-        archetype_record.get("hitpoints") or 1000, sc["length"])
     offense = totals.get("offense") or {}
     endurance = totals.get("endurance") or {}
     rech_row = totals.get("recharge") or {}
@@ -415,6 +427,20 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
     buffs = role_output.enhanced_team_buffs(
         build_copy["powers"], ctx, global_recharge=global_recharge)
     team_support = support_ledger.build_ledger(build_copy["powers"], ctx, global_recharge, sc)
+    damage_mix = rating_measures.damage(offense, power_records)
+    control_split = rating_measures.control(build_copy["powers"], ctx)
+    support_types = rating_measures.support_types(team_support, power_records)
+    pet_profile = range_profile.profile(
+        [(power_records.get(n), 1.0) for n in _summon_powers(build_copy["powers"], power_records)])
+    operating = range_profile.blend({"damage": damage_mix["profiles"]["damage"],
+                                     "control": control_split["profiles"]["control"],
+                                     "support": support_types["profiles"]["support"]},
+                                    range_profile.OVERALL_WEIGHTS)
+    profiles = dict(damage_mix["profiles"], **control_split["profiles"],
+                    **support_types["profiles"], pet_damage=pet_profile, overall=operating)
+    toughness = survival_profile.profile(
+        totals, encounter["survival_inputs"], sc,
+        archetype_record.get("hitpoints") or 1000, sc["length"], operating)
     emergency = _emergency_ledger(build_copy, totals, power_records, ctx, set_bonuses,
                                   res_cap, global_recharge, power_help)
     unsupported, modeled_elsewhere = _unsupported_powers(
@@ -437,9 +463,7 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
                   "power_count": len(build_copy["powers"]),
                   # picked powers that summon an entity (pets, pseudo-pets): from
                   # the record's own summons list, never inferred from pet damage
-                  "summon_powers": sorted(p["full_name"] for p in build_copy["powers"]
-                                          if (power_records.get(p["full_name"]) or {})
-                                          .get("summons")),
+                  "summon_powers": _summon_powers(build_copy["powers"], power_records),
                   # the archetype powersets the PICKS come from (pools, epics,
                   # inherents and incarnates aside): how a comparison tells "same
                   # powersets" without trusting how the request spelled them
@@ -475,6 +499,10 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
                 "scenario_personal_dps": _measurement(
                     encounter.get("my_dps"), "damage_per_second_equivalent",
                     "scenario-weighted ST/AoE plus pets, hit chance, level, endurance and uptime"),
+                "damage_types": damage_mix["types"],
+                "damage_types_single_target": damage_mix["types_single_target"],
+                "damage_types_aoe": damage_mix["types_aoe"],
+                "damage_types_basis": damage_mix["basis"],
                 "scenario_team_damage_amplified": _measurement(
                     encounter.get("amplified"), "damage_per_second_equivalent",
                     "scenario contribution created by buffs and resistance debuffs"),
@@ -494,6 +522,8 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
                     toughness["vs_archetype"], "multiple_of_bare_archetype",
                     f"toughness / a bare {archetype}'s ({toughness['bare_archetype']}: base hit "
                     "points and regeneration, no defense, resistance or heals)"),
+                "defense_cascade": toughness["defense_cascade"],
+                "debuff_resistance": rating_measures.debuff_resistance(totals),
                 "availability": _measurement(encounter.get("availability"), "fraction",
                                              "scenario survival and control-pressure model"),
                 "incoming_melee_hit": _measurement(encounter.get("hit_ml"), "probability",
@@ -527,6 +557,15 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
                                                "heuristic magnitude/duration/area; not exact lockdown"),
                 "control_by_power": [{"power": name, "proxy_score": score}
                                      for name, score in control_rows],
+                "control_single_target": _measurement(
+                    control_split["single_target"], "weighted_mez_seconds_proxy",
+                    "the control proxy of powers that lock one foe"),
+                "control_aoe": _measurement(
+                    control_split["aoe"], "weighted_mez_seconds_proxy",
+                    "the control proxy of powers with a radius (they lock a group)"),
+                "control_split_by_power": control_split["by_power"],
+                "support_by_type": {k: v for k, v in support_types.items() if k != "profiles"},
+                "effect_rarity": rating_measures.rarity(power_records),
                 "hard_control_uptime": control_uptime,
                 "team_buff_percent_by_effect": dict(sorted(buffs.items())),
                 "enemy_debuff_percent_by_effect": dict(sorted(debuffs.items())),
@@ -538,6 +577,16 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
                                   "resurrection_powers": healing.get("rez"),
                                   "unit": "model_heal_units_per_second"},
             },
+        },
+        "range_profile": {
+            "bands": {"melee": f"single target, reach up to {range_profile.MELEE_MAX:g} ft",
+                      "midrange": f"around you (PBAoE, auras), cones and areas up to "
+                                  f"{range_profile.MID_MAX:g} ft",
+                      "range": f"reach beyond {range_profile.MID_MAX:g} ft"},
+            "basis": "share of each output by the delivering power's own range and area; "
+                     "overall = damage half, control and support a quarter each "
+                     "(renormalised over what the build has)",
+            "profiles": profiles,
         },
         "unsupported": {
             "unknown_power_records": unknown,

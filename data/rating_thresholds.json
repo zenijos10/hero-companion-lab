@@ -12,33 +12,83 @@
   },
   "buff_damage": {
    "cuts": {
-    "A": 26.25,
-    "B": 15.0,
-    "C": 11.25,
-    "D": 10.5,
-    "S": 45.0
+    "A": 46.888,
+    "B": 42.645,
+    "C": 36.328,
+    "D": 11.25,
+    "S": 56.661
    },
-   "sample_size": 134
+   "sample_size": 138
   },
   "buff_defense": {
    "cuts": {
-    "A": 9.528,
-    "B": 3.5,
-    "C": 2.62,
-    "D": 2.27,
-    "S": 28.87
+    "A": 23.328,
+    "B": 20.395,
+    "C": 12.486,
+    "D": 2.62,
+    "S": 37.9
    },
-   "sample_size": 157
+   "sample_size": 160
+  },
+  "buff_hitpoints": {
+   "cuts": {
+    "A": 535.45,
+    "B": 449.775,
+    "C": 428.36,
+    "D": 428.36,
+    "S": 1204.76
+   },
+   "sample_size": 14
   },
   "buff_recharge": {
    "cuts": {
-    "A": 30.0,
-    "B": 30.0,
-    "C": 24.0,
-    "D": 5.0,
-    "S": 50.0
+    "A": 45.264,
+    "B": 24.0,
+    "C": 5.0,
+    "D": 2.144,
+    "S": 54.731
    },
-   "sample_size": 10
+   "sample_size": 22
+  },
+  "buff_recovery": {
+   "cuts": {
+    "A": 40.158,
+    "B": 30.34,
+    "C": 29.198,
+    "D": 21.772,
+    "S": 100.0
+   },
+   "sample_size": 30
+  },
+  "buff_regeneration": {
+   "cuts": {
+    "A": 175.96,
+    "B": 137.5,
+    "C": 85.614,
+    "D": 72.537,
+    "S": 304.599
+   },
+   "sample_size": 14
+  },
+  "buff_resistance": {
+   "cuts": {
+    "A": 41.25,
+    "B": 20.0,
+    "C": 15.0,
+    "D": 8.248,
+    "S": 56.25
+   },
+   "sample_size": 77
+  },
+  "buff_tohit": {
+   "cuts": {
+    "A": 35.524,
+    "B": 30.31,
+    "C": 21.76,
+    "D": 10.0,
+    "S": 42.012
+   },
+   "sample_size": 143
   },
   "control": {
    "cuts": {
@@ -50,6 +100,26 @@
    },
    "sample_size": 246
   },
+  "control_aoe": {
+   "cuts": {
+    "A": 268.2,
+    "B": 123.2,
+    "C": 70.4,
+    "D": 25.01,
+    "S": 577.34
+   },
+   "sample_size": 242
+  },
+  "control_single_target": {
+   "cuts": {
+    "A": 21.0,
+    "B": 13.8,
+    "C": 7.6,
+    "D": 1.82,
+    "S": 42.98
+   },
+   "sample_size": 243
+  },
   "debuff_damage_spawn": {
    "cuts": {
     "A": 10.08,
@@ -59,6 +129,10 @@
     "S": 16.8
    },
    "sample_size": 81
+  },
+  "debuff_ddr_spawn": {
+   "cuts": null,
+   "sample_size": 0
   },
   "debuff_defense_spawn": {
    "cuts": {
@@ -70,31 +144,101 @@
    },
    "sample_size": 132
   },
-  "debuff_regeneration_av": {
+  "debuff_endurance_spawn": {
    "cuts": {
-    "A": 18.69,
-    "B": 8.115,
-    "C": 4.068,
-    "D": 0.552,
-    "S": 46.236
+    "A": 5.238,
+    "B": 0.695,
+    "C": 0.597,
+    "D": 0.156,
+    "S": 7.575
+   },
+   "sample_size": 60
+  },
+  "debuff_hitpoints_av": {
+   "cuts": {
+    "A": 20.048,
+    "B": 19.6,
+    "C": 19.032,
+    "D": 15.944,
+    "S": 20.826
+   },
+   "sample_size": 5
+  },
+  "debuff_recharge_spawn": {
+   "cuts": {
+    "A": 19.308,
+    "B": 11.19,
+    "C": 6.188,
+    "D": 1.704,
+    "S": 48.77
+   },
+   "sample_size": 123
+  },
+  "debuff_recovery_spawn": {
+   "cuts": {
+    "A": 12.073,
+    "B": 9.145,
+    "C": 3.14,
+    "D": 2.3,
+    "S": 49.336
    },
    "sample_size": 40
   },
+  "debuff_regeneration_av": {
+   "cuts": {
+    "A": 14.238,
+    "B": 7.38,
+    "C": 3.065,
+    "D": 1.08,
+    "S": 43.98
+   },
+   "sample_size": 90
+  },
+  "debuff_resist_defense": {
+   "cuts": {
+    "A": 47.3,
+    "B": 30.0,
+    "C": 27.68,
+    "D": 13.84,
+    "S": 79.844
+   },
+   "sample_size": 92
+  },
+  "debuff_resist_slow": {
+   "cuts": {
+    "A": 75.0,
+    "B": 60.0,
+    "C": 45.0,
+    "D": 30.0,
+    "S": 90.0
+   },
+   "sample_size": 246
+  },
   "debuff_resistance_av": {
    "cuts": {
-    "A": 7.658,
-    "B": 5.785,
-    "C": 5.2,
-    "D": 3.675,
-    "S": 20.7
+    "A": 17.192,
+    "B": 13.62,
+    "C": 7.944,
+    "D": 5.2,
+    "S": 31.88
    },
-   "sample_size": 142
+   "sample_size": 205
+  },
+  "debuff_slow_spawn": {
+   "cuts": {
+    "A": 162.269,
+    "B": 119.675,
+    "C": 15.519,
+    "D": 4.026,
+    "S": 405.723
+   },
+   "sample_size": 154
   },
   "debuff_tohit_spawn": {
    "cuts": {
-    "A": 5.731,
+    "A": 5.732,
     "B": 2.23,
-    "C": 0.81,
+    "C": 0.819,
     "D": 0.433,
     "S": 17.199
    },
@@ -170,6 +314,16 @@
    },
    "sample_size": 237
   },
+  "support_index": {
+   "cuts": {
+    "A": 15.528,
+    "B": 9.315,
+    "C": 5.721,
+    "D": 2.606,
+    "S": 32.846
+   },
+   "sample_size": 246
+  },
   "survival": {
    "cuts": {
     "A": 1353.55,
@@ -182,26 +336,26 @@
   },
   "toughness": {
    "cuts": {
-    "A": 723.35,
-    "B": 557.6,
-    "C": 378.55,
-    "D": 248.7,
-    "S": 1122.1
+    "A": 679.85,
+    "B": 464.2,
+    "C": 322.95,
+    "D": 184.8,
+    "S": 1101.55
    },
    "sample_size": 246
   },
   "toughness_vs_archetype": {
    "cuts": {
-    "A": 12.105,
-    "B": 8.595,
-    "C": 6.66,
-    "D": 4.74,
-    "S": 18.135
+    "A": 11.12,
+    "B": 7.385,
+    "C": 5.41,
+    "D": 3.635,
+    "S": 18.165
    },
    "sample_size": 246
   }
  },
- "created": "2026-11-11",
+ "created": "2026-11-12",
  "database_version": "2026.1.1242",
  "method": "PROVISIONAL fixed numbers (owner, 2026-11-10). Cut points = quantiles of an archetype-stratified sample of shipped itrial champions, rebuilt as served and evaluated at the rating scenario: S>=p90 A>=p70 B>=p50 C>=p30 D>=p10, else F. Champions are a guideline, NOT the comparison population. Capability categories are cut from champions that have the capability. Edit by hand and bump version as builds come in.",
  "model_version": 58,
@@ -211,6 +365,6 @@
   "skipped": []
  },
  "scenario": "rating_plus4",
- "scenario_fingerprint": "cb4ae387852f",
- "version": 3
+ "scenario_fingerprint": "1d56c5e30087",
+ "version": 4
 }

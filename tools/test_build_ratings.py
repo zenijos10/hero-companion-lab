@@ -51,7 +51,12 @@ def stub_eval(st=60.0, offense_ok=True, pets=0.0, control=0.0, scenario="rating_
                             "debuffs_landing_average_percent": {"single_target_vs_av": {},
                                                                 "aoe_vs_scenario": {}},
                             "ally_heals": {"sustained_per_second": 0.0}}}
-                            if summary else {})},
+                            if summary else {}),
+                        **({"support_by_type": {"buffs_average_percent": {},
+                                                "debuffs_vs_av_percent": {},
+                                                "debuffs_vs_spawn_percent": {},
+                                                "drains_per_second_percent": {}}}
+                           if summary else {})},
         },
     }
 

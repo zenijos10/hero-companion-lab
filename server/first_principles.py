@@ -492,12 +492,16 @@ def _def_against(totals, kind_keys):
 
 # ONE copy of the incoming-damage arithmetic: the encounter's survival side, the
 # AFK sustain assessment and the toughness grid (survival_profile) all read these.
-def incoming_def_debuff(totals, sc):
-    """The scenario's incoming -Defense after the build's own DDR (capped at 95%).
+def defense_debuff_resistance(totals):
+    """The build's DDR as a fraction, at most the game's 95%.
     ⚠ DDR lives in bonus_extras, not at the top level of calculate_build's response."""
-    ddr = min((((totals.get("bonus_extras") or {}).get("def_debuff_resist")
-                or {}).get("value") or 0.0) / 100.0, 0.95)
-    return sc.get("def_debuff_in", 0.0) * (1.0 - ddr)
+    return min((((totals.get("bonus_extras") or {}).get("def_debuff_resist")
+                 or {}).get("value") or 0.0) / 100.0, 0.95)
+
+
+def incoming_def_debuff(totals, sc):
+    """The scenario's incoming -Defense after the build's own DDR."""
+    return sc.get("def_debuff_in", 0.0) * (1.0 - defense_debuff_resistance(totals))
 
 
 def eroded_defense(totals, kind_keys, def_debuff_in):

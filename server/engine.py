@@ -1427,6 +1427,7 @@ def _offense(build, totals, ctx):
             continue
         attacks.append({
             "name": p.get("display_name"), "damage": round(pdps, 1),
+            "full_name": p.get("full_name"),    # the summoner (display: types, range)
             "host_type": p.get("power_type"),   # v45: a patch SUMMON is a click — AFK it competes for the one auto-fire
             "damage_types": [], "cast_time": 0.0, "recharge": 1.0,
             "end_cost": p.get("end_cost") or 0.0, "is_aoe": True,

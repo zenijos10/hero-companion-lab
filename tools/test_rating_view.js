@@ -109,6 +109,19 @@ ok(html.includes('title="weakest X"') && !html.includes('<div class="muted small
    "a comparison keeps the detail in the title, not inline");
 ok(html.includes("400 × bare"), "the multiple carries its unit");
 
+// 5c. sections and where-it-is-delivered
+html = render({ ok: true, mode: "scorecard", columns: [col("Mine")],
+  rows: [row([{ grade: "B", value: 50, where: "60% melee, 40% midrange" }], { category: "single_target_damage", label: "ST", section: "Damage" }),
+         row([{ grade: "C", value: 10 }], { category: "aoe_damage", label: "AoE", section: "Damage" }),
+         row([{ grade: "B", value: 30 }], { category: "buff_damage", label: "Team damage buff", section: "Team buffs" }),
+         row([{ grade: "A", value: 4 }], { category: "debuff_endurance_spawn", label: "Drain", unit: "percent_per_second", section: "Debuffs" })],
+  notes: [] });
+ok((html.match(/rt-section/g) || []).length === 3, "one section header per section, not per row");
+ok(html.includes(">Damage</th>") && html.includes(">Debuffs</th>"), "sections are named");
+ok(html.indexOf(">Team buffs</th>") < html.indexOf("Team damage buff"), "a team damage buff sits under Team buffs, not Damage");
+ok(html.includes("where: 60% melee, 40% midrange"), "where the output is delivered is shown");
+ok(html.includes("4.0 %/s"), "rate units render");
+
 // 6. a row without cells never throws
 html = render({ ok: true, mode: "scorecard", columns: [col("Y")], rows: [{ label: "Defense", unit: "percent" }], notes: [] });
 ok(html.includes("Defense"), "a row missing cells still renders");

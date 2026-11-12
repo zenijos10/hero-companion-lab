@@ -110,6 +110,7 @@ def main():
     champions = json.load(open(os.path.join(ROOT, "benchmarks", "champions.json"), encoding="utf-8"))
     keys = sample_keys(champions, args.per_archetype)
     values = defaultdict(list)
+    per_build = []                     # (values, rarity): the support index's second pass
     used, skipped, fingerprint = [], [], None
     for i, key in enumerate(keys, 1):
         build = served_build(key, champions[key])
@@ -119,7 +120,9 @@ def main():
         ev = evaluate(build)
         fingerprint = ev["versions"]["scenario_fingerprint"]
         offense_ok = ev["confidence"]["offense_complete"]
-        for cat, value in build_ratings.measure(ev).items():
+        measured = build_ratings.measure(ev)
+        per_build.append((measured, ev["measurements"]["support"].get("effect_rarity")))
+        for cat, value in measured.items():
             kind = build_ratings.CATEGORIES[cat][3]
             if value is None or (kind == "offense" and not offense_ok):
                 continue
@@ -128,11 +131,20 @@ def main():
             values[cat].append(value)
         used.append(key)
         print(f"[{i}/{len(keys)}] {key}", flush=True)
+    def cut(vals):
+        vals = sorted(vals)
+        return ({g: round(quantile(vals, q), 3) for g, q in QUANTILES.items()}
+                if len(vals) >= 5 else None)
+
     categories = {}
     for cat in build_ratings.CATEGORIES:
         vals = sorted(values.get(cat, []))
-        cuts = {g: round(quantile(vals, q), 3) for g, q in QUANTILES.items()} if len(vals) >= 5 else None
+        cuts = cut(vals)
         categories[cat] = {"cuts": cuts, "sample_size": len(vals)}
+    # second pass: the rarity-weighted support index reads the per-type medians
+    index = [v for v in (build_ratings.support_index(m, categories, r) for m, r in per_build)
+             if v and v > 0]
+    categories[build_ratings.SUPPORT_INDEX] = {"cuts": cut(index), "sample_size": len(index)}
     out = {
         "version": None,             # set below from the file being replaced
         "created": datetime.date.today().isoformat(),

@@ -27,6 +27,7 @@ on:
       - "tools/fixtures/encounter_parity.json"
       - "tools/test_user_paths.py"
       - "tools/test_survival_profile.py"
+      - "tools/test_rating_breakdown.py"
       - ".github/workflows/build-evaluation.yml"
   workflow_dispatch:
 permissions:
@@ -67,6 +68,8 @@ jobs:
         run: python tools/test_snipe_states.py
       - name: Toughness grades (damage taken per type and position, vs a bare archetype)
         run: python tools/test_survival_profile.py
+      - name: Rating breakdown (range, damage types, control split, every buff/debuff, cascade)
+        run: python tools/test_rating_breakdown.py
       - name: S-F ratings (rules + shipped thresholds current)
         run: python tools/test_build_ratings.py
       - name: Build compare route + rules (M5)
