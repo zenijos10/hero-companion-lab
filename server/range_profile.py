@@ -47,13 +47,21 @@ def profile(weights):
     return {b: round(v / whole, 3) for b, v in totals.items()}
 
 
-def blend(profiles):
-    """The even mean of the profiles that exist: where the build operates
-    overall, when it deals damage, controls and supports."""
-    present = [p for p in profiles if p]
+# Where the build operates overall (owner, 2026-11-11): distance matters most for
+# damage, but still for control, support and defense. Damage carries half the
+# weight, control and support a quarter each (renormalised over what exists).
+OVERALL_WEIGHTS = {"damage": 0.5, "control": 0.25, "support": 0.25}
+
+
+def blend(profiles, weights=None):
+    """The weighted mean of {name: profile} for the profiles that exist (even
+    weights when none are given)."""
+    present = {k: p for k, p in profiles.items() if p}
     if not present:
         return None
-    return {b: round(sum(p[b] for p in present) / len(present), 3) for b in BANDS}
+    w = {k: (weights or {}).get(k, 1.0) for k in present}
+    whole = sum(w.values())
+    return {b: round(sum(w[k] * p[b] for k, p in present.items()) / whole, 3) for b in BANDS}
 
 
 def describe(prof):

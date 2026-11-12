@@ -432,9 +432,10 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
     support_types = rating_measures.support_types(team_support, power_records)
     pet_profile = range_profile.profile(
         [(power_records.get(n), 1.0) for n in _summon_powers(build_copy["powers"], power_records)])
-    operating = range_profile.blend([damage_mix["profiles"]["damage"],
-                                     control_split["profiles"]["control"],
-                                     support_types["profiles"]["support"]])
+    operating = range_profile.blend({"damage": damage_mix["profiles"]["damage"],
+                                     "control": control_split["profiles"]["control"],
+                                     "support": support_types["profiles"]["support"]},
+                                    range_profile.OVERALL_WEIGHTS)
     profiles = dict(damage_mix["profiles"], **control_split["profiles"],
                     **support_types["profiles"], pet_damage=pet_profile, overall=operating)
     toughness = survival_profile.profile(
@@ -583,7 +584,8 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
                                   f"{range_profile.MID_MAX:g} ft",
                       "range": f"reach beyond {range_profile.MID_MAX:g} ft"},
             "basis": "share of each output by the delivering power's own range and area; "
-                     "overall = the even mean of damage, control and support",
+                     "overall = damage half, control and support a quarter each "
+                     "(renormalised over what the build has)",
             "profiles": profiles,
         },
         "unsupported": {

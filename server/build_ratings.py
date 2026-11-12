@@ -136,7 +136,7 @@ DEBUFF_TYPES = {
     "debuff_slow_spawn": ("-Speed (slow) vs a spawn", "debuffs_vs_spawn_percent", "Slow", "percent"),
     "debuff_recharge_spawn": ("-Recharge vs a spawn", "debuffs_vs_spawn_percent", "RechargeTime", "percent"),
     "debuff_recovery_spawn": ("-Recovery vs a spawn", "debuffs_vs_spawn_percent", "Recovery", "percent"),
-    "debuff_ddr_spawn": ("-Defense debuff resistance vs a spawn", "debuffs_vs_spawn_percent",
+    "debuff_ddr_spawn": ("Lowers enemies' defense debuff resistance", "debuffs_vs_spawn_percent",
                          "DefDebuffResist", "percent"),
     "debuff_endurance_spawn": ("Endurance drain vs a spawn", "drains_per_second_percent",
                                "Endurance", "percent_per_second"),

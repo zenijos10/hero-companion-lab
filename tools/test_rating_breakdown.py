@@ -60,8 +60,12 @@ class RangeTests(unittest.TestCase):
         self.assertEqual(prof, {"melee": 0.75, "midrange": 0.0, "range": 0.25})
         self.assertIsNone(rp.profile([({"range": 0}, 5.0)]))
         self.assertEqual(rp.describe(prof), "75% melee, 25% range")
-        self.assertEqual(rp.blend([prof, None, {"melee": 0.25, "midrange": 0.0, "range": 0.75}]),
+        far = {"melee": 0.25, "midrange": 0.0, "range": 0.75}
+        self.assertEqual(rp.blend({"damage": prof, "control": None, "support": far}),
                          {"melee": 0.5, "midrange": 0.0, "range": 0.5})
+        # damage weighs double control or support (owner: distance matters most there)
+        self.assertEqual(rp.blend({"damage": prof, "support": far}, rp.OVERALL_WEIGHTS),
+                         {"melee": 0.583, "midrange": 0.0, "range": 0.417})
 
     def test_operating_range_moves_toughness(self):
         weights = surv.position_weights({"melee": 0.0, "midrange": 0.0, "range": 1.0})

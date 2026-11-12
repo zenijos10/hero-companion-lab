@@ -179,7 +179,9 @@ out. Rules going forward:
   model (only accuracy does); the spreadsheet scales it (1.44 at +4). Uniform factor, a model change.
 - **RATING BREAKDOWN (owner, 2026-11-11)** — 36 categories. Range bands (`server/range_profile.py`,
   melee ≤15 ft single target / midrange = around you, cones, ≤30 ft / range) on every graded row
-  (`where`), toughness weighted by where the build operates; damage types ranked by chain use;
+  (`where`), toughness weighted by where the build operates (overall = damage 1/2, control 1/4,
+  support 1/4: owner, distance matters most for damage); -Def is COMMON (156 sets), the rare one
+  is DefDebuffResist on foes (Sonic Siphon, 4 sets); damage types ranked by chain use;
   control split ST vs AoE; EVERY buff and debuff type graded (regen = a buff, never healing);
   rarity = player powersets offering the type (data census, `rating_measures.rarity`) feeding a
   rarity-weighted support index (two-pass calibration); DDR + slow resistance graded; the DEFENSE
