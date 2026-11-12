@@ -265,3 +265,43 @@ def debuff_resistance(totals):
             "slow_and_recharge_debuff": round(val("slow_resist"), 2),
             "unit": "percent",
             "not_read": list(NOT_READ)}
+
+
+# ── keeping melee at bay ─────────────────────────────────────────────────────
+
+# Area controls that hold a spawn where it is or push it away (owner,
+# 2026-11-12: a root keeps them in place, knockback and repel push them off).
+# Fear and holds stop attacks outright; that is control's own grade, not
+# positioning, so they are not counted here.
+KEEP_AT_BAY = ("Immobilized", "Knockback", "Knockup", "Repel")
+KNOCK_SECONDS = 3.0         # one knock keeps a foe off its feet ~3 s (role_output's rule)
+
+
+def positioning(team_support):
+    """How much of the fight the build keeps melee foes at bay: the best area
+    root, knockback or repel by its uptime (a toggle holds it the whole time; a
+    click root lasts its duration per cycle; a knock buys ~3 s per cast)."""
+    best, source = 0.0, None
+    for entry in team_support.get("powers") or []:
+        if entry.get("area") != "aoe":
+            continue
+        cost = entry.get("cost") or {}
+        toggle = str(cost.get("basis", "")).startswith("toggle")
+        for c in entry.get("controls") or []:
+            if c.get("mez") not in KEEP_AT_BAY:
+                continue
+            if toggle:
+                up = 1.0
+            elif c["mez"] == "Immobilized":
+                up = c.get("uptime") or 0.0
+            else:
+                # the ledger's knock "duration" is a magnitude, not seconds:
+                # a knock buys KNOCK_SECONDS per cast, once per recharge cycle
+                cycle = c.get("cycle_seconds") or 0.0
+                up = min(1.0, KNOCK_SECONDS / cycle) if cycle > 0 else 0.0
+            if up > best:
+                best, source = up, {"power": entry.get("power"), "mez": c["mez"],
+                                    "uptime": round(up, 3)}
+    return {"keep_at_bay": round(best, 3), "source": source,
+            "basis": "best area root/knockback/repel by uptime; fear and holds are control, "
+                     "not positioning"}

@@ -67,24 +67,60 @@ class RangeTests(unittest.TestCase):
         self.assertEqual(rp.blend({"damage": prof, "support": far}, rp.OVERALL_WEIGHTS),
                          {"melee": 0.583, "midrange": 0.0, "range": 0.417})
 
-    def test_operating_range_moves_toughness(self):
-        weights = surv.position_weights({"melee": 0.0, "midrange": 0.0, "range": 1.0})
-        self.assertEqual(weights["Melee"], 0.0)
-        # a build with only Ranged defense is tougher where melee attacks cannot reach it
+    def test_melee_reach_follows_the_owners_rules(self):
+        """Melee critters follow you: range alone barely helps; keeping them at
+        bay (root/knock/repel) or slowing their approach does."""
+        far = {"melee": 0.0, "midrange": 0.0, "range": 1.0}
+        close = {"melee": 1.0, "midrange": 0.0, "range": 0.0}
+        self.assertEqual(surv.melee_reach(close, keep_at_bay=1.0)["reach"], 1.0)   # up close: always
+        running = surv.melee_reach(far)
+        self.assertGreater(running["reach"], 0.9)          # they close the 60 ft in about 2 s
+        self.assertAlmostEqual(running["approach_seconds"], 60.0 / 30.8, places=2)
+        self.assertEqual(surv.melee_reach(far, keep_at_bay=1.0)["reach"], 0.0)
+        slowed = surv.melee_reach(far, slow=0.5)
+        self.assertLess(slowed["reach"], running["reach"])
+        self.assertEqual(surv.melee_reach(far, slow=5.0)["approach_seconds"],
+                         surv.melee_reach(far, slow=0.9)["approach_seconds"])      # slow cap
+        self.assertEqual(surv.position_weights(0.5),
+                         {"Melee": 0.5 / 3, "Ranged": 1 / 3, "AoE": 1 / 3})
+
+    def test_keeping_them_at_bay_moves_toughness(self):
         t = totals({"Ranged": 40, "AoE": 40})
-        close = surv.profile(t, inputs(), SC, 1200.0, 30.0, {"melee": 1.0, "midrange": 0, "range": 0})
-        far = surv.profile(t, inputs(), SC, 1200.0, 30.0, {"melee": 0, "midrange": 0, "range": 1.0})
-        self.assertGreater(far["toughness"], close["toughness"])
-        self.assertEqual(far["toughness"], far["at_range"])
+        far = {"melee": 0, "midrange": 0, "range": 1.0}
+        running = surv.profile(t, inputs(), SC, 1200.0, 30.0, far)
+        rooted = surv.profile(t, inputs(), SC, 1200.0, 30.0, far, keep_at_bay=1.0)
+        close = surv.profile(t, inputs(), SC, 1200.0, 30.0, {"melee": 1.0, "midrange": 0, "range": 0},
+                             keep_at_bay=1.0)
+        self.assertGreater(rooted["toughness"], running["toughness"])
+        self.assertLess(close["toughness"], rooted["toughness"])    # a root does not help up close
+        self.assertEqual(rooted["melee_reach"]["keep_at_bay"], 1.0)
+
+    def test_positioning_reads_area_roots_and_knocks(self):
+        ledger = {"powers": [
+            {"power": "Root", "area": "aoe", "cost": {"basis": "click cast on cooldown"},
+             "controls": [{"mez": "Immobilized", "uptime": 0.6, "cycle_seconds": 10.0}]},
+            {"power": "Knock", "area": "aoe", "cost": {"basis": "click cast on cooldown"},
+             "controls": [{"mez": "Knockback", "uptime": 1.0, "duration_seconds": 9.0,
+                           "cycle_seconds": 4.0}]},
+            {"power": "Hold", "area": "aoe", "cost": {"basis": "toggle/auto: endurance"},
+             "controls": [{"mez": "Held", "uptime": 1.0}]},
+            {"power": "SingleRoot", "area": "single_target", "cost": {"basis": "toggle/auto"},
+             "controls": [{"mez": "Immobilized", "uptime": 1.0}]}]}
+        out = rm.positioning(ledger)
+        self.assertEqual(out["keep_at_bay"], 0.75)           # a knock buys 3 s of every 4
+        self.assertEqual(out["source"]["power"], "Knock")
+        repel = {"powers": [{"power": "Repel", "area": "aoe", "cost": {"basis": "toggle/auto"},
+                             "controls": [{"mez": "Repel", "uptime": 1.0}]}]}
+        self.assertEqual(rm.positioning(repel)["keep_at_bay"], 1.0)
+        self.assertEqual(rm.positioning({"powers": []})["keep_at_bay"], 0.0)
 
 
 class CascadeTests(unittest.TestCase):
     def test_fixed_point_and_ddr(self):
-        w = surv.position_weights(None)
+        w = surv.position_weights(1.0)
         t = totals({"Melee": 30, "Ranged": 30, "AoE": 30})
         c = surv.cascade(t, inputs(), SC, w)
-        k = SC["enemies"] * SC["enemy_attacks_per_second"] * SC["def_debuff_attack_share"] \
-            * SC["def_debuff_per_hit"] * SC["def_debuff_seconds"]
+        k = SC["enemies"] * SC["def_debuff_pressure"]
         d = c["debuff"]
         self.assertAlmostEqual(d, k * surv._mean_hit(t, SC, 0.0, w, d), places=5)   # a fixed point
         self.assertGreater(c["hit_chance_after"], c["hit_chance_before"])          # it cascades
@@ -93,7 +129,7 @@ class CascadeTests(unittest.TestCase):
         self.assertAlmostEqual(resisted["steady_def_debuff_without_ddr"], round(d, 4), places=4)
 
     def test_lower_defense_cascades_harder_and_the_floor_always_hits(self):
-        w = surv.position_weights(None)
+        w = surv.position_weights(1.0)
         soft = surv.cascade(totals({"Melee": 45, "Ranged": 45, "AoE": 45}), inputs(), SC, w)
         low = surv.cascade(totals({"Melee": 25, "Ranged": 25, "AoE": 25}), inputs(), SC, w)
         self.assertGreater(low["debuff"], soft["debuff"])
@@ -103,7 +139,7 @@ class CascadeTests(unittest.TestCase):
 
     def test_without_constants_the_flat_model_is_kept(self):
         flat = dict(fp.SCENARIOS["general"], shift=4)
-        c = surv.cascade(totals(), dict(inputs(), def_debuff_in=0.03), flat, surv.position_weights(None))
+        c = surv.cascade(totals(), dict(inputs(), def_debuff_in=0.03), flat, surv.position_weights(1.0))
         self.assertEqual(c["model"], "flat")
         self.assertEqual(c["debuff"], 0.03)
 

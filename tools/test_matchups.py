@@ -45,6 +45,7 @@ def group(mix, def_share=0.2, res=None):
     return {"damage_mix": mix, "rank_accuracy": 1.1, "dps_per_critter": 60.0,
             "attacks_per_second_per_critter": 0.45,
             "def_debuff": {"attack_share": def_share, "percent_per_hit": 10.0, "seconds": 8.0},
+            "def_debuff_pressure": 0.45 * def_share * 0.10 * 8.0,
             "resistances": res or {}, "mez": ["Held"]}
 
 
@@ -58,16 +59,25 @@ class DataTests(unittest.TestCase):
             self.assertAlmostEqual(sum(g["damage_mix"].values()), 1.0, delta=0.02, msg=name)
             for key in g["damage_mix"]:
                 pos, dtype = key.split("|")
-                self.assertIn(pos, fetch.POSITIONS, name)
+                self.assertTrue(set(pos.split("+")) <= set(fetch.POSITIONS), name)
                 self.assertIn(dtype, fetch.TYPES.values(), name)
-            self.assertTrue(all(0 <= v <= 100 for v in g["resistances"].values()), name)
+            # a negative resistance is a vulnerability and is kept
+            self.assertTrue(all(-100 <= v <= 100 for v in g["resistances"].values()), name)
+            self.assertAlmostEqual(g["def_debuff_pressure"], fetch.def_debuff_pressure(g))
         self.assertFalse(set(groups) & fetch.NOT_ENEMY_GROUPS)
+        # the game's "Area" attack type reaches the AoE position (it did not, once)
+        area = sum(1 for g in groups.values() for k in g["damage_mix"] if "AoE" in k.split("|")[0])
+        print(f"{area} area-attack cells across the groups")
+        self.assertGreater(area, 100)
 
     def test_rating_scenario_uses_the_data(self):
         mean = DATA["all_groups_mean"]
-        for key in ("enemy_attacks_per_second", "def_debuff_attack_share",
-                    "def_debuff_per_hit", "def_debuff_seconds"):
+        for key in ("def_debuff_pressure", "def_debuff_hit_rate"):
             self.assertAlmostEqual(SC[key], mean[key], places=3, msg=key)
+        groups = DATA["groups"].values()
+        # the mean of each group's own product, never a product of separate means
+        self.assertAlmostEqual(mean["def_debuff_pressure"],
+                               sum(g["def_debuff_pressure"] for g in groups) / len(groups), places=3)
 
 
 class ParserTests(unittest.TestCase):
@@ -84,11 +94,22 @@ class ParserTests(unittest.TestCase):
     def test_attack_profile(self):
         a = fetch.attack_profile(self.POWER, self.TABLES)
         self.assertAlmostEqual(a["damage"]["Lethal"], 0.27 * 72.9, places=3)
-        self.assertEqual(a["positions"], ["Ranged"])           # the damage type tag is not a position
+        self.assertEqual(a["positions"], "Ranged")             # the damage type tag is not a position
         self.assertEqual(a["debuffs"], [("def_debuff", 8.0, 8.0)])
         self.assertEqual(a["cycle"], 4.0)
         self_power = dict(self.POWER, target_type="Self")
         self.assertIsNone(fetch.attack_profile(self_power, self.TABLES))
+
+    def test_area_dot_and_multi_position(self):
+        burn = {"target_type": "Foe (Alive)", "attack_types": ["Area", "Ranged", "Fire"],
+                "activation_time": 1.0, "recharge_time": 9.0, "effects": [{
+                    "chance": 1.0, "templates": [
+                        {"attribs": ["Fire_Dmg"], "aspect": "Absolute", "target": "AnyAffected",
+                         "table": "Ranged_Damage", "scale": 0.1, "duration": "3.1 seconds",
+                         "application_period": 1.0, "tick_chance": 1.0}]}]}
+        a = fetch.attack_profile(burn, self.TABLES)
+        self.assertEqual(a["positions"], "Ranged+AoE")         # one cell, best of both
+        self.assertAlmostEqual(a["damage"]["Fire"], 4 * 0.1 * 72.9, places=3)   # 4 ticks
 
     def test_overlapping_animations_scale_down(self):
         busy = dict(self.POWER, activation_time=3.0, recharge_time=0.0)
@@ -102,6 +123,44 @@ class ArithmeticTests(unittest.TestCase):
         smash = matchups.matchup(t, INPUTS, SC, group({"Melee|Smashing": 1.0}), [])
         psi = matchups.matchup(t, INPUTS, SC, group({"Melee|Psionic": 1.0}), [])
         self.assertLess(psi["time_to_live"], smash["time_to_live"])
+
+    def test_melee_reach_and_multi_position_defense(self):
+        g = group({"Melee|Smashing": 1.0})
+        full = matchups.matchup(totals(), INPUTS, SC, g, [], reach=1.0)
+        kept = matchups.matchup(totals(), INPUTS, SC, g, [], reach=0.0)
+        self.assertEqual(kept["damage_landing_per_second"], 0.0)
+        self.assertTrue(kept["outlasts"])
+        self.assertGreater(full["damage_landing_per_second"], 0.0)
+        ranged = matchups.matchup(totals(), INPUTS, SC, group({"Ranged|Fire": 1.0}), [], reach=0.0)
+        self.assertGreater(ranged["damage_landing_per_second"], 0.0)   # ranged always reaches
+        both = group({"Ranged+AoE|Fire": 1.0})
+        aoe_def = matchups.matchup(totals({"AoE": 45}), INPUTS, SC, both, [])
+        none_def = matchups.matchup(totals(), INPUTS, SC, both, [])
+        self.assertLess(aoe_def["damage_landing_per_second"], none_def["damage_landing_per_second"])
+
+    def test_outlasting_the_fight_is_not_dying_slowly(self):
+        g = group({"Ranged|Lethal": 1.0})
+        hp = dict(INPUTS, hp=1e6)                  # dies, but long after the fight ends
+        m = matchups.matchup(totals(), hp, SC, g, [])
+        self.assertIsNotNone(m["time_to_live"])
+        self.assertGreater(m["time_to_live"], SC["length"])
+        self.assertTrue(m["outlasts"])
+        self.assertFalse(matchups.matchup(totals(), INPUTS, SC, g, [])["outlasts"])
+
+    def test_a_vulnerability_lifts_your_damage(self):
+        types = [{"type": "Fire", "damage_share": 1.0}]
+        m = matchups.matchup(totals(), INPUTS, SC, group({"Melee|Smashing": 1.0}, res={"Fire": -20.0}), types)
+        self.assertAlmostEqual(m["your_damage_unresisted"], 1.2, places=3)
+
+    def test_a_failed_fetch_is_never_cached(self):
+        import urllib.request
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as tmp, \
+                mock.patch.object(fetch, "CACHE", tmp), mock.patch.object(fetch.time, "sleep"), \
+                mock.patch.object(urllib.request, "urlopen", side_effect=OSError("down")):
+            with self.assertRaises(fetch.FetchError):
+                fetch._get("entities/x.json")
+            self.assertFalse(os.path.exists(os.path.join(tmp, "entities", "x.json")))
 
     def test_ddr_and_the_defense_cap(self):
         g = group({"Ranged|Lethal": 1.0}, def_share=0.5)
@@ -154,7 +213,7 @@ class RouteTests(unittest.TestCase):
         self.assertEqual(len(tank), EXPECTED_GROUPS)
         ttl = [g["time_to_live"] for g in blaster if g["time_to_live"] is not None]
         self.assertEqual(ttl, sorted(ttl))
-        outlast = lambda rows: sum(1 for g in rows if g["time_to_live"] is None)  # noqa: E731
+        outlast = lambda rows: sum(1 for g in rows if g["outlasts"])  # noqa: E731
         self.assertGreater(outlast(tank), outlast(blaster))
         print(f"Tanker outlasts {outlast(tank)} groups, Blaster {outlast(blaster)}; "
               f"hardest for the Blaster: {blaster[0]['name']} ({blaster[0]['time_to_live']} s)")

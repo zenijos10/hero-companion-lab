@@ -1,9 +1,7 @@
 {
  "all_groups_mean": {
-  "def_debuff_attack_share": 0.133,
-  "def_debuff_per_hit": 0.0975,
-  "def_debuff_seconds": 7.73,
-  "enemy_attacks_per_second": 0.454,
+  "def_debuff_hit_rate": 0.0663,
+  "def_debuff_pressure": 0.042,
   "groups": 106,
   "groups_landing_def_debuff": 71
  },
@@ -17,26 +15,32 @@
     "minion": 20
    },
    "damage_mix": {
-    "Melee|Cold": 0.0007,
-    "Melee|Energy": 0.0144,
-    "Melee|Lethal": 0.0022,
-    "Melee|Negative": 0.1177,
-    "Melee|Smashing": 0.4647,
-    "Ranged|Cold": 0.0051,
-    "Ranged|Energy": 0.0131,
-    "Ranged|Fire": 0.0534,
-    "Ranged|Lethal": 0.2027,
-    "Ranged|Negative": 0.0398,
-    "Ranged|Psionic": 0.0299,
-    "Ranged|Smashing": 0.0546,
-    "Ranged|Toxic": 0.001
+    "AoE|Fire": 0.0885,
+    "AoE|Lethal": 0.1632,
+    "AoE|Negative": 0.0193,
+    "AoE|Smashing": 0.0085,
+    "Melee|Cold": 0.0006,
+    "Melee|Energy": 0.0164,
+    "Melee|Fire": 0.0006,
+    "Melee|Lethal": 0.0019,
+    "Melee|Negative": 0.1039,
+    "Melee|Smashing": 0.4119,
+    "Ranged|Cold": 0.0045,
+    "Ranged|Energy": 0.0115,
+    "Ranged|Fire": 0.0065,
+    "Ranged|Lethal": 0.0231,
+    "Ranged|Negative": 0.0621,
+    "Ranged|Psionic": 0.0264,
+    "Ranged|Smashing": 0.0465,
+    "Ranged|Toxic": 0.0037
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 82.7,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 93.6,
    "mez": [
     "Held",
     "Immobilized",
@@ -56,7 +60,7 @@
     "Lethal": 7.9,
     "Negative": 2.9,
     "Psionic": 8.7,
-    "Smashing": 2.8,
+    "Smashing": 1.3,
     "Toxic": 2.8
    },
    "tohit_debuff": {
@@ -73,22 +77,25 @@
     "minion": 9
    },
    "damage_mix": {
-    "Melee|Negative": 0.0897,
-    "Melee|Smashing": 0.4359,
-    "Ranged|Cold": 0.0037,
-    "Ranged|Energy": 0.0069,
-    "Ranged|Fire": 0.0425,
-    "Ranged|Lethal": 0.2663,
-    "Ranged|Negative": 0.0205,
-    "Ranged|Psionic": 0.0325,
-    "Ranged|Smashing": 0.102
+    "AoE|Fire": 0.0678,
+    "AoE|Lethal": 0.2293,
+    "Melee|Negative": 0.0819,
+    "Melee|Smashing": 0.3983,
+    "Ranged|Cold": 0.0034,
+    "Ranged|Energy": 0.0063,
+    "Ranged|Fire": 0.0049,
+    "Ranged|Lethal": 0.0221,
+    "Ranged|Negative": 0.0631,
+    "Ranged|Psionic": 0.0296,
+    "Ranged|Smashing": 0.0932
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 85.4,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 93.5,
    "mez": [
     "Immobilized",
     "Sleep",
@@ -107,7 +114,7 @@
     "Lethal": 8.5,
     "Negative": 5.5,
     "Psionic": 9.1,
-    "Smashing": 5.5,
+    "Smashing": 4.6,
     "Toxic": 5.5
    },
    "tohit_debuff": {
@@ -124,21 +131,26 @@
     "minion": 4
    },
    "damage_mix": {
-    "Melee|Lethal": 0.0683,
-    "Melee|Smashing": 0.0564,
-    "Ranged|Cold": 0.0846,
-    "Ranged|Energy": 0.1915,
-    "Ranged|Fire": 0.1977,
-    "Ranged|Negative": 0.1025,
-    "Ranged|Psionic": 0.0792,
-    "Ranged|Smashing": 0.2198
+    "AoE|Energy": 0.0917,
+    "AoE|Fire": 0.0148,
+    "AoE|Negative": 0.025,
+    "AoE|Smashing": 0.0446,
+    "Melee|Lethal": 0.0539,
+    "Melee|Smashing": 0.0566,
+    "Ranged|Cold": 0.0668,
+    "Ranged|Energy": 0.1013,
+    "Ranged|Fire": 0.1795,
+    "Ranged|Negative": 0.1044,
+    "Ranged|Psionic": 0.0625,
+    "Ranged|Smashing": 0.1988
    },
    "def_debuff": {
     "attack_share": 0.071,
     "percent_per_hit": 7.4,
     "seconds": 7.6
    },
-   "dps_per_critter": 44.7,
+   "def_debuff_pressure": 0.01575,
+   "dps_per_critter": 56.6,
    "mez": [
     "Held",
     "Immobilized",
@@ -151,13 +163,14 @@
     "seconds": 8.1
    },
    "resistances": {
-    "Cold": 1.9,
-    "Energy": 3.2,
-    "Fire": 1.9,
-    "Lethal": 1.7,
-    "Psionic": 1.9,
-    "Smashing": 1.7,
-    "Toxic": 0.4
+    "Cold": -1.1,
+    "Energy": 2.9,
+    "Fire": 0.4,
+    "Lethal": 0.7,
+    "Negative": -2.3,
+    "Psionic": 1.7,
+    "Smashing": -0.3,
+    "Toxic": 0.2
    },
    "tohit_debuff": {
     "attack_share": 0.142,
@@ -180,6 +193,7 @@
     "percent_per_hit": 11.49,
     "seconds": 3.9
    },
+   "def_debuff_pressure": 0.25828,
    "dps_per_critter": 42.2,
    "mez": [],
    "rank_accuracy": 1.075,
@@ -206,25 +220,32 @@
     "minion": 4
    },
    "damage_mix": {
-    "Melee|Energy": 0.0023,
-    "Melee|Fire": 0.0375,
-    "Melee|Lethal": 0.3105,
-    "Melee|Smashing": 0.3511,
-    "Melee|Toxic": 0.03,
-    "Ranged|Energy": 0.1141,
-    "Ranged|Fire": 0.0024,
-    "Ranged|Lethal": 0.0844,
-    "Ranged|Negative": 0.0026,
-    "Ranged|Psionic": 0.0329,
-    "Ranged|Smashing": 0.017,
-    "Ranged|Toxic": 0.0151
+    "AoE|Energy": 0.0268,
+    "AoE|Fire": 0.0106,
+    "AoE|Lethal": 0.0625,
+    "AoE|Negative": 0.0031,
+    "AoE|Psionic": 0.0049,
+    "AoE|Smashing": 0.0118,
+    "AoE|Toxic": 0.0228,
+    "Melee|Energy": 0.0019,
+    "Melee|Fire": 0.0522,
+    "Melee|Lethal": 0.2713,
+    "Melee|Smashing": 0.2939,
+    "Melee|Toxic": 0.0731,
+    "Ranged|Energy": 0.0898,
+    "Ranged|Lethal": 0.0305,
+    "Ranged|Negative": 0.002,
+    "Ranged|Psionic": 0.0232,
+    "Ranged|Smashing": 0.0024,
+    "Ranged|Toxic": 0.017
    },
    "def_debuff": {
     "attack_share": 0.226,
     "percent_per_hit": 8.22,
     "seconds": 6.7
    },
-   "dps_per_critter": 95.8,
+   "def_debuff_pressure": 0.06174,
+   "dps_per_critter": 114.4,
    "mez": [
     "Held",
     "Immobilized",
@@ -239,10 +260,10 @@
    },
    "resistances": {
     "Cold": 5.9,
-    "Energy": 7.5,
+    "Energy": 4.2,
     "Fire": 13.3,
     "Lethal": 20.2,
-    "Negative": 7.5,
+    "Negative": 7.4,
     "Psionic": 26.5,
     "Smashing": 20.2,
     "Toxic": 7.8
@@ -261,23 +282,29 @@
     "minion": 5
    },
    "damage_mix": {
-    "Melee|Fire": 0.0305,
-    "Melee|Lethal": 0.2388,
-    "Melee|Smashing": 0.2454,
-    "Melee|Toxic": 0.0531,
-    "Ranged|Energy": 0.1335,
-    "Ranged|Fire": 0.001,
-    "Ranged|Lethal": 0.1256,
-    "Ranged|Psionic": 0.1042,
-    "Ranged|Smashing": 0.0216,
-    "Ranged|Toxic": 0.0462
+    "AoE|Energy": 0.0272,
+    "AoE|Fire": 0.0072,
+    "AoE|Lethal": 0.1026,
+    "AoE|Psionic": 0.0103,
+    "AoE|Smashing": 0.0137,
+    "AoE|Toxic": 0.0656,
+    "Melee|Fire": 0.0433,
+    "Melee|Lethal": 0.212,
+    "Melee|Smashing": 0.2093,
+    "Melee|Toxic": 0.0953,
+    "Ranged|Energy": 0.0923,
+    "Ranged|Lethal": 0.0139,
+    "Ranged|Psionic": 0.0827,
+    "Ranged|Smashing": 0.0047,
+    "Ranged|Toxic": 0.0198
    },
    "def_debuff": {
     "attack_share": 0.191,
     "percent_per_hit": 9.02,
     "seconds": 8.4
    },
-   "dps_per_critter": 94.1,
+   "def_debuff_pressure": 0.06937,
+   "dps_per_critter": 110.3,
    "mez": [
     "Held",
     "Sleep",
@@ -313,25 +340,31 @@
     "minion": 13
    },
    "damage_mix": {
-    "Melee|Cold": 0.0271,
-    "Melee|Energy": 0.0981,
-    "Melee|Fire": 0.0072,
-    "Melee|Lethal": 0.005,
-    "Melee|Psionic": 0.0832,
-    "Melee|Smashing": 0.3296,
-    "Ranged|Cold": 0.0295,
-    "Ranged|Energy": 0.0058,
-    "Ranged|Fire": 0.0144,
-    "Ranged|Lethal": 0.0326,
-    "Ranged|Psionic": 0.2703,
-    "Ranged|Smashing": 0.0971
+    "AoE|Cold": 0.0104,
+    "AoE|Fire": 0.0162,
+    "AoE|Lethal": 0.0171,
+    "AoE|Psionic": 0.0308,
+    "AoE|Smashing": 0.0016,
+    "Melee|Cold": 0.0249,
+    "Melee|Energy": 0.0901,
+    "Melee|Fire": 0.0199,
+    "Melee|Lethal": 0.0192,
+    "Melee|Psionic": 0.0764,
+    "Melee|Smashing": 0.3027,
+    "Ranged|Cold": 0.0166,
+    "Ranged|Energy": 0.0053,
+    "Ranged|Fire": 0.0013,
+    "Ranged|Lethal": 0.0401,
+    "Ranged|Psionic": 0.2396,
+    "Ranged|Smashing": 0.0876
    },
    "def_debuff": {
     "attack_share": 0.074,
     "percent_per_hit": 5.8,
     "seconds": 8.4
    },
-   "dps_per_critter": 56.9,
+   "def_debuff_pressure": 0.01851,
+   "dps_per_critter": 62.0,
    "mez": [
     "Held",
     "Immobilized",
@@ -346,7 +379,7 @@
     "seconds": 10.0
    },
    "resistances": {
-    "Cold": 6.0,
+    "Cold": 1.7,
     "Energy": 6.0,
     "Fire": 10.6,
     "Lethal": 11.4,
@@ -369,18 +402,21 @@
     "minion": 5
    },
    "damage_mix": {
-    "Melee|Lethal": 0.005,
-    "Melee|Smashing": 0.6598,
-    "Ranged|Cold": 0.0255,
-    "Ranged|Fire": 0.0833,
-    "Ranged|Lethal": 0.2264
+    "AoE|Fire": 0.1453,
+    "AoE|Lethal": 0.1534,
+    "Melee|Lethal": 0.0044,
+    "Melee|Smashing": 0.5782,
+    "Ranged|Cold": 0.0223,
+    "Ranged|Fire": 0.0325,
+    "Ranged|Lethal": 0.0639
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 71.1,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 81.2,
    "mez": [
     "Immobilized",
     "Stunned"
@@ -406,21 +442,28 @@
     "minion": 6
    },
    "damage_mix": {
-    "Melee|Smashing": 0.0335,
-    "Ranged|Cold": 0.121,
-    "Ranged|Energy": 0.3286,
-    "Ranged|Lethal": 0.011,
-    "Ranged|Negative": 0.1452,
-    "Ranged|Psionic": 0.1105,
-    "Ranged|Smashing": 0.2492,
-    "Ranged|Toxic": 0.001
+    "AoE|Cold": 0.0308,
+    "AoE|Energy": 0.0465,
+    "AoE|Lethal": 0.0081,
+    "AoE|Negative": 0.0701,
+    "AoE|Psionic": 0.0219,
+    "AoE|Smashing": 0.0847,
+    "AoE|Toxic": 0.0044,
+    "Melee|Smashing": 0.0262,
+    "Ranged|Cold": 0.0795,
+    "Ranged|Energy": 0.2683,
+    "Ranged|Lethal": 0.003,
+    "Ranged|Negative": 0.1814,
+    "Ranged|Psionic": 0.0647,
+    "Ranged|Smashing": 0.1106
    },
    "def_debuff": {
     "attack_share": 0.118,
     "percent_per_hit": 15.07,
     "seconds": 4.9
    },
-   "dps_per_critter": 45.9,
+   "def_debuff_pressure": 0.03886,
+   "dps_per_critter": 58.6,
    "mez": [
     "Held",
     "Stunned",
@@ -433,6 +476,7 @@
     "seconds": 0.0
    },
    "resistances": {
+    "Psionic": -0.7,
     "Smashing": 1.0
    },
    "tohit_debuff": {
@@ -449,23 +493,30 @@
     "minion": 7
    },
    "damage_mix": {
-    "Melee|Cold": 0.0325,
-    "Melee|Negative": 0.0149,
-    "Melee|Smashing": 0.0301,
-    "Ranged|Cold": 0.1485,
-    "Ranged|Energy": 0.294,
-    "Ranged|Lethal": 0.0099,
-    "Ranged|Negative": 0.1476,
-    "Ranged|Psionic": 0.1004,
-    "Ranged|Smashing": 0.2211,
-    "Ranged|Toxic": 0.0009
+    "AoE|Cold": 0.0575,
+    "AoE|Energy": 0.0432,
+    "AoE|Lethal": 0.0074,
+    "AoE|Negative": 0.0817,
+    "AoE|Psionic": 0.0202,
+    "AoE|Smashing": 0.0765,
+    "AoE|Toxic": 0.004,
+    "Melee|Cold": 0.0259,
+    "Melee|Negative": 0.0119,
+    "Melee|Smashing": 0.024,
+    "Ranged|Cold": 0.0746,
+    "Ranged|Energy": 0.2439,
+    "Ranged|Lethal": 0.0028,
+    "Ranged|Negative": 0.1663,
+    "Ranged|Psionic": 0.0599,
+    "Ranged|Smashing": 0.1
    },
    "def_debuff": {
     "attack_share": 0.126,
     "percent_per_hit": 14.11,
     "seconds": 5.7
    },
-   "dps_per_critter": 46.0,
+   "def_debuff_pressure": 0.04482,
+   "dps_per_critter": 57.6,
    "mez": [
     "Held",
     "Stunned",
@@ -479,7 +530,9 @@
    },
    "resistances": {
     "Cold": 2.5,
+    "Fire": -2.0,
     "Negative": 2.5,
+    "Psionic": -0.6,
     "Smashing": 0.9
    },
    "tohit_debuff": {
@@ -496,9 +549,10 @@
     "minion": 2
    },
    "damage_mix": {
+    "AoE|Lethal": 0.0242,
     "Melee|Lethal": 0.2579,
     "Melee|Smashing": 0.1919,
-    "Ranged|Lethal": 0.0928,
+    "Ranged|Lethal": 0.0686,
     "Ranged|Negative": 0.4574
    },
    "def_debuff": {
@@ -506,6 +560,7 @@
     "percent_per_hit": 10.0,
     "seconds": 7.5
    },
+   "def_debuff_pressure": 0.03184,
    "dps_per_critter": 81.1,
    "mez": [
     "Stunned"
@@ -531,15 +586,17 @@
     "minion": 2
    },
    "damage_mix": {
+    "AoE|Lethal": 0.0484,
     "Melee|Lethal": 0.4422,
     "Melee|Smashing": 0.3835,
-    "Ranged|Lethal": 0.1743
+    "Ranged|Lethal": 0.1259
    },
    "def_debuff": {
     "attack_share": 0.145,
     "percent_per_hit": 10.0,
     "seconds": 7.5
    },
+   "def_debuff_pressure": 0.04799,
    "dps_per_critter": 81.2,
    "mez": [
     "Stunned"
@@ -572,6 +629,7 @@
     "percent_per_hit": 8.78,
     "seconds": 8.1
    },
+   "def_debuff_pressure": 0.23408,
    "dps_per_critter": 91.3,
    "mez": [],
    "rank_accuracy": 1.075,
@@ -595,20 +653,24 @@
     "minion": 2
    },
    "damage_mix": {
-    "Melee|Lethal": 0.264,
-    "Melee|Smashing": 0.2976,
-    "Ranged|Cold": 0.03,
-    "Ranged|Fire": 0.0068,
-    "Ranged|Lethal": 0.0647,
-    "Ranged|Negative": 0.1381,
-    "Ranged|Smashing": 0.1987
+    "AoE|Lethal": 0.0191,
+    "AoE|Negative": 0.0406,
+    "AoE|Smashing": 0.1425,
+    "Melee|Lethal": 0.239,
+    "Melee|Smashing": 0.2488,
+    "Ranged|Cold": 0.0251,
+    "Ranged|Fire": 0.0286,
+    "Ranged|Lethal": 0.0349,
+    "Ranged|Negative": 0.1398,
+    "Ranged|Smashing": 0.0814
    },
    "def_debuff": {
     "attack_share": 0.273,
     "percent_per_hit": 5.18,
     "seconds": 7.2
    },
-   "dps_per_critter": 52.2,
+   "def_debuff_pressure": 0.04823,
+   "dps_per_critter": 62.4,
    "mez": [
     "Held",
     "Immobilized"
@@ -620,6 +682,7 @@
     "seconds": 0.0
    },
    "resistances": {
+    "Energy": -9.1,
     "Lethal": 4.4,
     "Negative": 10.4,
     "Smashing": 4.4
@@ -638,20 +701,24 @@
     "minion": 2
    },
    "damage_mix": {
-    "Melee|Lethal": 0.2314,
-    "Melee|Smashing": 0.3761,
-    "Ranged|Cold": 0.0285,
-    "Ranged|Fire": 0.0065,
-    "Ranged|Lethal": 0.0542,
-    "Ranged|Negative": 0.1201,
-    "Ranged|Smashing": 0.1831
+    "AoE|Lethal": 0.012,
+    "AoE|Negative": 0.034,
+    "AoE|Smashing": 0.1177,
+    "Melee|Lethal": 0.2112,
+    "Melee|Smashing": 0.3116,
+    "Ranged|Cold": 0.0236,
+    "Ranged|Fire": 0.0269,
+    "Ranged|Lethal": 0.0329,
+    "Ranged|Negative": 0.1338,
+    "Ranged|Smashing": 0.0963
    },
    "def_debuff": {
     "attack_share": 0.283,
     "percent_per_hit": 5.11,
     "seconds": 7.1
    },
-   "dps_per_critter": 54.9,
+   "def_debuff_pressure": 0.04904,
+   "dps_per_critter": 66.3,
    "mez": [
     "Held",
     "Immobilized",
@@ -664,6 +731,7 @@
     "seconds": 8.0
    },
    "resistances": {
+    "Energy": -9.0,
     "Lethal": 4.2,
     "Negative": 10.5,
     "Smashing": 4.2
@@ -682,17 +750,19 @@
     "minion": 1
    },
    "damage_mix": {
-    "Melee|Negative": 0.3334,
-    "Melee|Smashing": 0.2267,
-    "Ranged|Negative": 0.382,
-    "Ranged|Smashing": 0.058
+    "AoE|Negative": 0.1521,
+    "AoE|Smashing": 0.1452,
+    "Melee|Negative": 0.2088,
+    "Melee|Smashing": 0.142,
+    "Ranged|Negative": 0.3519
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 71.0,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 113.3,
    "mez": [
     "Immobilized"
    ],
@@ -703,6 +773,7 @@
     "seconds": 0.0
    },
    "resistances": {
+    "Energy": -30.0,
     "Negative": 50.0
    },
    "tohit_debuff": {
@@ -719,26 +790,32 @@
     "minion": 8
    },
    "damage_mix": {
-    "Melee|Energy": 0.0883,
-    "Melee|Fire": 0.0251,
-    "Melee|Lethal": 0.1851,
-    "Melee|Smashing": 0.2207,
-    "Melee|Toxic": 0.0086,
-    "Ranged|Cold": 0.0278,
-    "Ranged|Energy": 0.0598,
-    "Ranged|Fire": 0.0303,
-    "Ranged|Lethal": 0.0901,
-    "Ranged|Negative": 0.1591,
-    "Ranged|Psionic": 0.0521,
-    "Ranged|Smashing": 0.038,
-    "Ranged|Toxic": 0.015
+    "AoE|Cold": 0.0229,
+    "AoE|Energy": 0.043,
+    "AoE|Fire": 0.041,
+    "AoE|Lethal": 0.0789,
+    "AoE|Psionic": 0.028,
+    "AoE|Smashing": 0.0275,
+    "AoE|Toxic": 0.0251,
+    "Melee|Energy": 0.0821,
+    "Melee|Fire": 0.0268,
+    "Melee|Lethal": 0.175,
+    "Melee|Smashing": 0.1981,
+    "Melee|Toxic": 0.0195,
+    "Ranged|Cold": 0.0354,
+    "Ranged|Energy": 0.0117,
+    "Ranged|Negative": 0.1393,
+    "Ranged|Psionic": 0.0206,
+    "Ranged|Smashing": 0.0081,
+    "Ranged|Toxic": 0.017
    },
    "def_debuff": {
     "attack_share": 0.081,
     "percent_per_hit": 10.0,
     "seconds": 8.2
    },
-   "dps_per_critter": 102.5,
+   "def_debuff_pressure": 0.03602,
+   "dps_per_critter": 117.1,
    "mez": [
     "Held",
     "Stunned",
@@ -751,10 +828,11 @@
     "seconds": 5.0
    },
    "resistances": {
-    "Energy": 18.0,
+    "Energy": 16.5,
     "Lethal": 14.2,
     "Psionic": 3.0,
-    "Smashing": 14.2
+    "Smashing": 14.2,
+    "Toxic": -15.5
    },
    "tohit_debuff": {
     "attack_share": 0.0,
@@ -770,16 +848,17 @@
     "minion": 2
    },
    "damage_mix": {
-    "Melee|Lethal": 0.3811,
-    "Ranged|Lethal": 0.0905,
-    "Ranged|Negative": 0.5284
+    "Melee|Lethal": 0.4018,
+    "Ranged|Lethal": 0.0875,
+    "Ranged|Negative": 0.5107
    },
    "def_debuff": {
     "attack_share": 0.121,
     "percent_per_hit": 8.8,
     "seconds": 10.0
    },
-   "dps_per_critter": 78.8,
+   "def_debuff_pressure": 0.04146,
+   "dps_per_critter": 81.5,
    "mez": [
     "Stunned"
    ],
@@ -802,15 +881,18 @@
     "boss": 3
    },
    "damage_mix": {
-    "Ranged|Energy": 0.7856,
-    "Ranged|Smashing": 0.2144
+    "AoE|Energy": 0.2168,
+    "AoE|Smashing": 0.0752,
+    "Ranged|Energy": 0.5253,
+    "Ranged|Smashing": 0.1827
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 66.4,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 78.4,
    "mez": [],
    "rank_accuracy": 1.3,
    "res_debuff": {
@@ -820,8 +902,9 @@
    },
    "resistances": {
     "Cold": 28.7,
-    "Energy": 22.0,
-    "Negative": 6.7,
+    "Energy": 15.3,
+    "Negative": -6.7,
+    "Psionic": -13.3,
     "Toxic": 6.7
    },
    "tohit_debuff": {
@@ -838,23 +921,27 @@
     "minion": 5
    },
    "damage_mix": {
-    "Melee|Energy": 0.0407,
-    "Melee|Fire": 0.0193,
-    "Melee|Lethal": 0.1236,
-    "Melee|Smashing": 0.1367,
-    "Ranged|Energy": 0.0265,
-    "Ranged|Fire": 0.0173,
-    "Ranged|Lethal": 0.0459,
-    "Ranged|Negative": 0.3069,
-    "Ranged|Psionic": 0.1678,
-    "Ranged|Smashing": 0.1153
+    "AoE|Energy": 0.0074,
+    "AoE|Fire": 0.0111,
+    "AoE|Smashing": 0.0428,
+    "Melee|Energy": 0.04,
+    "Melee|Fire": 0.0259,
+    "Melee|Lethal": 0.1213,
+    "Melee|Smashing": 0.1342,
+    "Ranged|Energy": 0.0225,
+    "Ranged|Fire": 0.0133,
+    "Ranged|Lethal": 0.0451,
+    "Ranged|Negative": 0.3013,
+    "Ranged|Psionic": 0.1647,
+    "Ranged|Smashing": 0.0705
    },
    "def_debuff": {
     "attack_share": 0.073,
     "percent_per_hit": 8.0,
     "seconds": 8.0
    },
-   "dps_per_critter": 67.4,
+   "def_debuff_pressure": 0.01634,
+   "dps_per_critter": 68.7,
    "mez": [
     "Held",
     "Immobilized",
@@ -868,6 +955,7 @@
     "seconds": 0.0
    },
    "resistances": {
+    "Lethal": -20.0,
     "Psionic": 20.0,
     "Smashing": 5.4
    },
@@ -885,21 +973,24 @@
     "minion": 2
    },
    "damage_mix": {
-    "Melee|Energy": 0.2846,
-    "Melee|Fire": 0.0031,
-    "Melee|Lethal": 0.11,
-    "Melee|Smashing": 0.16,
-    "Ranged|Energy": 0.3195,
-    "Ranged|Fire": 0.0032,
-    "Ranged|Lethal": 0.0205,
-    "Ranged|Smashing": 0.0991
+    "AoE|Energy": 0.0296,
+    "AoE|Fire": 0.0213,
+    "AoE|Lethal": 0.0239,
+    "AoE|Smashing": 0.0059,
+    "Melee|Energy": 0.2718,
+    "Melee|Fire": 0.0118,
+    "Melee|Lethal": 0.105,
+    "Melee|Smashing": 0.1528,
+    "Ranged|Energy": 0.2892,
+    "Ranged|Smashing": 0.0887
    },
    "def_debuff": {
     "attack_share": 0.051,
     "percent_per_hit": 10.44,
     "seconds": 8.3
    },
-   "dps_per_critter": 53.9,
+   "def_debuff_pressure": 0.01973,
+   "dps_per_critter": 56.5,
    "mez": [
     "Held"
    ],
@@ -914,7 +1005,7 @@
     "Energy": 11.0,
     "Fire": 1.0,
     "Lethal": 1.5,
-    "Negative": 2.5,
+    "Negative": -7.5,
     "Psionic": 13.5,
     "Smashing": 1.5
    },
@@ -932,19 +1023,20 @@
     "minion": 2
    },
    "damage_mix": {
-    "Melee|Lethal": 0.1552,
-    "Melee|Smashing": 0.1621,
-    "Melee|Toxic": 0.0077,
-    "Ranged|Lethal": 0.186,
-    "Ranged|Negative": 0.4765,
-    "Ranged|Toxic": 0.0125
+    "Melee|Lethal": 0.1486,
+    "Melee|Smashing": 0.1552,
+    "Melee|Toxic": 0.0236,
+    "Ranged|Lethal": 0.178,
+    "Ranged|Negative": 0.4562,
+    "Ranged|Toxic": 0.0384
    },
    "def_debuff": {
     "attack_share": 0.034,
     "percent_per_hit": 10.0,
     "seconds": 7.6
    },
-   "dps_per_critter": 87.3,
+   "def_debuff_pressure": 0.01298,
+   "dps_per_critter": 91.2,
    "mez": [
     "Held",
     "Stunned"
@@ -970,28 +1062,35 @@
     "minion": 18
    },
    "damage_mix": {
-    "Melee|Cold": 0.0725,
-    "Melee|Energy": 0.033,
-    "Melee|Fire": 0.0814,
-    "Melee|Lethal": 0.1449,
-    "Melee|Negative": 0.1929,
-    "Melee|Smashing": 0.0824,
-    "Melee|Toxic": 0.0023,
-    "Ranged|Cold": 0.0736,
-    "Ranged|Energy": 0.0334,
-    "Ranged|Fire": 0.0788,
-    "Ranged|Lethal": 0.035,
-    "Ranged|Negative": 0.0286,
-    "Ranged|Psionic": 0.0366,
-    "Ranged|Smashing": 0.1021,
-    "Ranged|Toxic": 0.0025
+    "AoE|Cold": 0.0089,
+    "AoE|Fire": 0.0212,
+    "AoE|Lethal": 0.0242,
+    "AoE|Negative": 0.0238,
+    "AoE|Psionic": 0.0075,
+    "AoE|Smashing": 0.0041,
+    "Melee|Cold": 0.0613,
+    "Melee|Energy": 0.0279,
+    "Melee|Fire": 0.0918,
+    "Melee|Lethal": 0.1224,
+    "Melee|Negative": 0.1631,
+    "Melee|Smashing": 0.0696,
+    "Melee|Toxic": 0.0063,
+    "Ranged|Cold": 0.0713,
+    "Ranged|Energy": 0.0283,
+    "Ranged|Fire": 0.0678,
+    "Ranged|Lethal": 0.0054,
+    "Ranged|Negative": 0.0393,
+    "Ranged|Psionic": 0.0235,
+    "Ranged|Smashing": 0.124,
+    "Ranged|Toxic": 0.0082
    },
    "def_debuff": {
     "attack_share": 0.108,
     "percent_per_hit": 10.99,
     "seconds": 9.9
    },
-   "dps_per_critter": 60.8,
+   "def_debuff_pressure": 0.05258,
+   "dps_per_critter": 72.0,
    "mez": [
     "Held",
     "Immobilized",
@@ -1006,12 +1105,12 @@
     "seconds": 0.0
    },
    "resistances": {
-    "Cold": 10.2,
-    "Energy": 4.3,
-    "Fire": 8.9,
+    "Cold": 8.8,
+    "Energy": 3.2,
+    "Fire": 7.1,
     "Lethal": 9.0,
     "Negative": 21.9,
-    "Psionic": 4.3,
+    "Psionic": -12.9,
     "Smashing": 9.0,
     "Toxic": 7.7
    },
@@ -1029,24 +1128,29 @@
     "minion": 6
    },
    "damage_mix": {
-    "Melee|Cold": 0.0675,
-    "Melee|Fire": 0.1844,
-    "Melee|Lethal": 0.2948,
-    "Melee|Negative": 0.0833,
-    "Melee|Smashing": 0.0093,
-    "Ranged|Cold": 0.0528,
-    "Ranged|Fire": 0.2141,
-    "Ranged|Lethal": 0.0152,
-    "Ranged|Negative": 0.0204,
-    "Ranged|Psionic": 0.0049,
-    "Ranged|Smashing": 0.0534
+    "AoE|Cold": 0.0087,
+    "AoE|Fire": 0.1118,
+    "AoE|Negative": 0.0073,
+    "AoE|Smashing": 0.0146,
+    "Melee|Cold": 0.0568,
+    "Melee|Fire": 0.2081,
+    "Melee|Lethal": 0.2481,
+    "Melee|Negative": 0.0701,
+    "Melee|Smashing": 0.0078,
+    "Ranged|Cold": 0.0433,
+    "Ranged|Fire": 0.1298,
+    "Ranged|Lethal": 0.0128,
+    "Ranged|Negative": 0.0328,
+    "Ranged|Psionic": 0.0041,
+    "Ranged|Smashing": 0.044
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 75.8,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 90.0,
    "mez": [
     "Immobilized",
     "Terrorized"
@@ -1058,8 +1162,8 @@
     "seconds": 0.0
    },
    "resistances": {
-    "Cold": 6.1,
-    "Fire": 10.7,
+    "Cold": -1.9,
+    "Fire": 10.1,
     "Lethal": 8.2,
     "Smashing": 8.2,
     "Toxic": 5.5
@@ -1078,16 +1182,18 @@
     "minion": 3
    },
    "damage_mix": {
-    "Melee|Energy": 0.3096,
-    "Melee|Smashing": 0.3589,
-    "Ranged|Energy": 0.3315
+    "AoE|Energy": 0.0289,
+    "Melee|Energy": 0.3049,
+    "Melee|Smashing": 0.3534,
+    "Ranged|Energy": 0.3128
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 72.5,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 73.6,
    "mez": [
     "Sleep"
    ],
@@ -1098,7 +1204,13 @@
     "seconds": 0.0
    },
    "resistances": {
-    "Lethal": 21.0
+    "Cold": -4.0,
+    "Energy": -4.0,
+    "Fire": -4.0,
+    "Lethal": 21.0,
+    "Negative": -4.0,
+    "Psionic": -34.0,
+    "Smashing": -4.0
    },
    "tohit_debuff": {
     "attack_share": 0.0,
@@ -1114,24 +1226,29 @@
     "minion": 14
    },
    "damage_mix": {
-    "Melee|Energy": 0.0498,
-    "Melee|Lethal": 0.0102,
-    "Melee|Negative": 0.2085,
-    "Melee|Smashing": 0.3151,
-    "Ranged|Cold": 0.0022,
-    "Ranged|Energy": 0.0497,
-    "Ranged|Fire": 0.0234,
-    "Ranged|Lethal": 0.1051,
-    "Ranged|Negative": 0.1606,
-    "Ranged|Psionic": 0.0258,
-    "Ranged|Smashing": 0.0495
+    "AoE|Energy": 0.0039,
+    "AoE|Fire": 0.0213,
+    "AoE|Lethal": 0.0868,
+    "AoE|Negative": 0.0091,
+    "Melee|Energy": 0.0462,
+    "Melee|Lethal": 0.0095,
+    "Melee|Negative": 0.1974,
+    "Melee|Smashing": 0.2922,
+    "Ranged|Cold": 0.002,
+    "Ranged|Energy": 0.0426,
+    "Ranged|Fire": 0.0085,
+    "Ranged|Lethal": 0.0238,
+    "Ranged|Negative": 0.1868,
+    "Ranged|Psionic": 0.0239,
+    "Ranged|Smashing": 0.0459
    },
    "def_debuff": {
     "attack_share": 0.022,
     "percent_per_hit": 8.94,
     "seconds": 6.0
    },
-   "dps_per_critter": 93.1,
+   "def_debuff_pressure": 0.0069,
+   "dps_per_critter": 100.4,
    "mez": [
     "Held",
     "Immobilized",
@@ -1151,7 +1268,7 @@
     "Lethal": 8.7,
     "Negative": 9.8,
     "Psionic": 0.8,
-    "Smashing": 8.0,
+    "Smashing": 7.5,
     "Toxic": 5.0
    },
    "tohit_debuff": {
@@ -1168,19 +1285,22 @@
     "minion": 6
    },
    "damage_mix": {
-    "Melee|Negative": 0.291,
-    "Melee|Smashing": 0.3805,
+    "AoE|Fire": 0.0658,
+    "AoE|Lethal": 0.0216,
+    "Melee|Negative": 0.2856,
+    "Melee|Smashing": 0.3735,
     "Ranged|Cold": 0.0038,
-    "Ranged|Fire": 0.0638,
-    "Ranged|Lethal": 0.0301,
-    "Ranged|Negative": 0.2308
+    "Ranged|Fire": 0.0065,
+    "Ranged|Lethal": 0.0167,
+    "Ranged|Negative": 0.2266
    },
    "def_debuff": {
     "attack_share": 0.03,
     "percent_per_hit": 10.0,
     "seconds": 10.0
    },
-   "dps_per_critter": 128.3,
+   "def_debuff_pressure": 0.01272,
+   "dps_per_critter": 130.7,
    "mez": [
     "Immobilized",
     "Stunned"
@@ -1206,29 +1326,38 @@
     "minion": 15
    },
    "damage_mix": {
-    "Melee|Cold": 0.0237,
-    "Melee|Energy": 0.2069,
-    "Melee|Fire": 0.0162,
-    "Melee|Lethal": 0.0485,
-    "Melee|Negative": 0.0128,
-    "Melee|Psionic": 0.0024,
-    "Melee|Smashing": 0.3341,
-    "Melee|Toxic": 0.0023,
-    "Ranged|Cold": 0.0299,
-    "Ranged|Energy": 0.0778,
-    "Ranged|Fire": 0.0321,
-    "Ranged|Lethal": 0.0626,
-    "Ranged|Negative": 0.1102,
-    "Ranged|Psionic": 0.0089,
-    "Ranged|Smashing": 0.0297,
-    "Ranged|Toxic": 0.0018
+    "AoE|Cold": 0.0098,
+    "AoE|Energy": 0.0086,
+    "AoE|Fire": 0.0148,
+    "AoE|Lethal": 0.0216,
+    "AoE|Negative": 0.001,
+    "AoE|Psionic": 0.0013,
+    "AoE|Smashing": 0.0018,
+    "AoE|Toxic": 0.0048,
+    "Melee|Cold": 0.0293,
+    "Melee|Energy": 0.2078,
+    "Melee|Fire": 0.0232,
+    "Melee|Lethal": 0.0489,
+    "Melee|Negative": 0.013,
+    "Melee|Psionic": 0.0022,
+    "Melee|Smashing": 0.3072,
+    "Melee|Toxic": 0.0055,
+    "Ranged|Cold": 0.0217,
+    "Ranged|Energy": 0.0664,
+    "Ranged|Fire": 0.0183,
+    "Ranged|Lethal": 0.0541,
+    "Ranged|Negative": 0.1032,
+    "Ranged|Psionic": 0.0079,
+    "Ranged|Smashing": 0.0255,
+    "Ranged|Toxic": 0.002
    },
    "def_debuff": {
     "attack_share": 0.15,
     "percent_per_hit": 9.32,
     "seconds": 7.0
    },
-   "dps_per_critter": 86.3,
+   "def_debuff_pressure": 0.05527,
+   "dps_per_critter": 93.9,
    "mez": [
     "Held",
     "Immobilized",
@@ -1266,29 +1395,37 @@
     "minion": 12
    },
    "damage_mix": {
-    "Melee|Cold": 0.0008,
-    "Melee|Energy": 0.1369,
-    "Melee|Fire": 0.059,
-    "Melee|Lethal": 0.1767,
-    "Melee|Negative": 0.0849,
-    "Melee|Psionic": 0.0037,
-    "Melee|Smashing": 0.1325,
-    "Melee|Toxic": 0.0117,
-    "Ranged|Cold": 0.0059,
-    "Ranged|Energy": 0.0973,
-    "Ranged|Fire": 0.08,
-    "Ranged|Lethal": 0.1225,
-    "Ranged|Negative": 0.04,
-    "Ranged|Psionic": 0.0044,
-    "Ranged|Smashing": 0.0344,
-    "Ranged|Toxic": 0.0094
+    "AoE|Energy": 0.0153,
+    "AoE|Fire": 0.0062,
+    "AoE|Lethal": 0.0625,
+    "AoE|Negative": 0.0068,
+    "AoE|Psionic": 0.0017,
+    "AoE|Smashing": 0.0102,
+    "AoE|Toxic": 0.0165,
+    "Melee|Cold": 0.0007,
+    "Melee|Energy": 0.1191,
+    "Melee|Fire": 0.0859,
+    "Melee|Lethal": 0.1706,
+    "Melee|Negative": 0.0812,
+    "Melee|Psionic": 0.0038,
+    "Melee|Smashing": 0.115,
+    "Melee|Toxic": 0.0225,
+    "Ranged|Cold": 0.0067,
+    "Ranged|Energy": 0.0733,
+    "Ranged|Fire": 0.0753,
+    "Ranged|Lethal": 0.0473,
+    "Ranged|Negative": 0.0472,
+    "Ranged|Psionic": 0.0028,
+    "Ranged|Smashing": 0.0203,
+    "Ranged|Toxic": 0.009
    },
    "def_debuff": {
     "attack_share": 0.039,
     "percent_per_hit": 10.23,
     "seconds": 9.2
    },
-   "dps_per_critter": 123.1,
+   "def_debuff_pressure": 0.02834,
+   "dps_per_critter": 142.1,
    "mez": [
     "Held",
     "Immobilized",
@@ -1326,28 +1463,35 @@
     "minion": 12
    },
    "damage_mix": {
-    "Melee|Cold": 0.0009,
-    "Melee|Energy": 0.1372,
-    "Melee|Fire": 0.06,
-    "Melee|Lethal": 0.1765,
-    "Melee|Negative": 0.0859,
-    "Melee|Smashing": 0.1318,
-    "Melee|Toxic": 0.0124,
-    "Ranged|Cold": 0.0067,
-    "Ranged|Energy": 0.0982,
-    "Ranged|Fire": 0.0806,
-    "Ranged|Lethal": 0.1239,
-    "Ranged|Negative": 0.0383,
-    "Ranged|Psionic": 0.0027,
-    "Ranged|Smashing": 0.0349,
-    "Ranged|Toxic": 0.0099
+    "AoE|Energy": 0.0151,
+    "AoE|Fire": 0.0064,
+    "AoE|Lethal": 0.0628,
+    "AoE|Negative": 0.0065,
+    "AoE|Smashing": 0.0106,
+    "AoE|Toxic": 0.0169,
+    "Melee|Cold": 0.0008,
+    "Melee|Energy": 0.1192,
+    "Melee|Fire": 0.0872,
+    "Melee|Lethal": 0.171,
+    "Melee|Negative": 0.0821,
+    "Melee|Smashing": 0.1144,
+    "Melee|Toxic": 0.0235,
+    "Ranged|Cold": 0.0077,
+    "Ranged|Energy": 0.0738,
+    "Ranged|Fire": 0.0755,
+    "Ranged|Lethal": 0.0487,
+    "Ranged|Negative": 0.0451,
+    "Ranged|Psionic": 0.0023,
+    "Ranged|Smashing": 0.0205,
+    "Ranged|Toxic": 0.0095
    },
    "def_debuff": {
     "attack_share": 0.038,
     "percent_per_hit": 9.9,
     "seconds": 9.0
    },
-   "dps_per_critter": 123.2,
+   "def_debuff_pressure": 0.0262,
+   "dps_per_critter": 142.5,
    "mez": [
     "Held",
     "Immobilized",
@@ -1385,18 +1529,21 @@
     "minion": 6
    },
    "damage_mix": {
-    "Melee|Energy": 0.0299,
-    "Melee|Negative": 0.2657,
-    "Melee|Smashing": 0.1576,
-    "Ranged|Energy": 0.2642,
-    "Ranged|Negative": 0.2827
+    "AoE|Energy": 0.0064,
+    "AoE|Negative": 0.0911,
+    "Melee|Energy": 0.0262,
+    "Melee|Negative": 0.2785,
+    "Melee|Smashing": 0.1384,
+    "Ranged|Energy": 0.2255,
+    "Ranged|Negative": 0.2338
    },
    "def_debuff": {
     "attack_share": 0.401,
     "percent_per_hit": 11.62,
     "seconds": 4.1
    },
-   "dps_per_critter": 54.7,
+   "def_debuff_pressure": 0.09354,
+   "dps_per_critter": 62.3,
    "mez": [
     "Immobilized"
    ],
@@ -1426,23 +1573,29 @@
     "minion": 11
    },
    "damage_mix": {
-    "Melee|Cold": 0.006,
-    "Melee|Energy": 0.0038,
-    "Melee|Lethal": 0.0087,
-    "Melee|Smashing": 0.5441,
-    "Melee|Toxic": 0.0012,
-    "Ranged|Cold": 0.0084,
-    "Ranged|Energy": 0.0215,
-    "Ranged|Lethal": 0.2163,
-    "Ranged|Smashing": 0.1451,
-    "Ranged|Toxic": 0.045
+    "AoE|Cold": 0.0047,
+    "AoE|Energy": 0.0142,
+    "AoE|Lethal": 0.1049,
+    "AoE|Smashing": 0.004,
+    "AoE|Toxic": 0.0416,
+    "Melee|Cold": 0.0057,
+    "Melee|Energy": 0.0036,
+    "Melee|Lethal": 0.0095,
+    "Melee|Smashing": 0.5134,
+    "Melee|Toxic": 0.0031,
+    "Ranged|Cold": 0.0071,
+    "Ranged|Energy": 0.0068,
+    "Ranged|Lethal": 0.0992,
+    "Ranged|Smashing": 0.1365,
+    "Ranged|Toxic": 0.0459
    },
    "def_debuff": {
     "attack_share": 0.004,
     "percent_per_hit": 20.0,
     "seconds": 14.7
    },
-   "dps_per_critter": 53.2,
+   "def_debuff_pressure": 0.00334,
+   "dps_per_critter": 56.4,
    "mez": [
     "Held",
     "Immobilized",
@@ -1458,11 +1611,11 @@
    "resistances": {
     "Cold": 0.5,
     "Energy": 13.5,
-    "Fire": 0.5,
-    "Lethal": 11.9,
-    "Negative": 12.6,
+    "Fire": -1.5,
+    "Lethal": 7.0,
+    "Negative": -0.7,
     "Psionic": 0.5,
-    "Smashing": 15.1,
+    "Smashing": 3.0,
     "Toxic": 39.2
    },
    "tohit_debuff": {
@@ -1479,24 +1632,30 @@
     "minion": 9
    },
    "damage_mix": {
-    "Melee|Energy": 0.1293,
-    "Melee|Lethal": 0.0083,
-    "Melee|Psionic": 0.0222,
-    "Melee|Smashing": 0.3131,
-    "Melee|Toxic": 0.0017,
-    "Ranged|Energy": 0.1794,
-    "Ranged|Fire": 0.0098,
-    "Ranged|Lethal": 0.178,
-    "Ranged|Psionic": 0.0606,
-    "Ranged|Smashing": 0.0658,
-    "Ranged|Toxic": 0.0316
+    "AoE|Energy": 0.0161,
+    "AoE|Fire": 0.0024,
+    "AoE|Lethal": 0.0772,
+    "AoE|Psionic": 0.0031,
+    "AoE|Toxic": 0.0183,
+    "Melee|Energy": 0.114,
+    "Melee|Lethal": 0.0073,
+    "Melee|Psionic": 0.0393,
+    "Melee|Smashing": 0.2759,
+    "Melee|Toxic": 0.0132,
+    "Ranged|Energy": 0.1905,
+    "Ranged|Fire": 0.0063,
+    "Ranged|Lethal": 0.0796,
+    "Ranged|Psionic": 0.0648,
+    "Ranged|Smashing": 0.058,
+    "Ranged|Toxic": 0.034
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 47.5,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 54.0,
    "mez": [
     "Held",
     "Immobilized",
@@ -1511,11 +1670,11 @@
    "resistances": {
     "Cold": 7.9,
     "Energy": 10.4,
-    "Fire": 7.9,
-    "Lethal": 11.1,
-    "Negative": 9.9,
+    "Fire": 5.6,
+    "Lethal": 9.5,
+    "Negative": 3.9,
     "Psionic": 11.8,
-    "Smashing": 16.3,
+    "Smashing": 14.3,
     "Toxic": 21.9
    },
    "tohit_debuff": {
@@ -1532,24 +1691,30 @@
     "minion": 9
    },
    "damage_mix": {
-    "Melee|Energy": 0.1279,
-    "Melee|Lethal": 0.0165,
-    "Melee|Psionic": 0.022,
-    "Melee|Smashing": 0.2254,
-    "Melee|Toxic": 0.0033,
-    "Ranged|Energy": 0.1774,
-    "Ranged|Fire": 0.0097,
-    "Ranged|Lethal": 0.211,
-    "Ranged|Psionic": 0.0702,
-    "Ranged|Smashing": 0.0785,
-    "Ranged|Toxic": 0.0582
+    "AoE|Energy": 0.0157,
+    "AoE|Fire": 0.0024,
+    "AoE|Lethal": 0.1266,
+    "AoE|Psionic": 0.0061,
+    "AoE|Toxic": 0.012,
+    "Melee|Energy": 0.1112,
+    "Melee|Lethal": 0.0143,
+    "Melee|Psionic": 0.0384,
+    "Melee|Smashing": 0.196,
+    "Melee|Toxic": 0.0258,
+    "Ranged|Energy": 0.186,
+    "Ranged|Fire": 0.0061,
+    "Ranged|Lethal": 0.057,
+    "Ranged|Psionic": 0.0716,
+    "Ranged|Smashing": 0.0683,
+    "Ranged|Toxic": 0.0627
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 48.1,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 55.3,
    "mez": [
     "Held",
     "Immobilized",
@@ -1564,11 +1729,11 @@
    "resistances": {
     "Cold": 7.9,
     "Energy": 10.4,
-    "Fire": 7.9,
-    "Lethal": 10.6,
-    "Negative": 9.4,
+    "Fire": 5.9,
+    "Lethal": 9.3,
+    "Negative": 3.7,
     "Psionic": 12.2,
-    "Smashing": 15.8,
+    "Smashing": 14.3,
     "Toxic": 20.9
    },
    "tohit_debuff": {
@@ -1585,22 +1750,24 @@
     "minion": 2
    },
    "damage_mix": {
-    "Melee|Cold": 0.0987,
-    "Melee|Lethal": 0.1269,
-    "Melee|Negative": 0.4307,
-    "Melee|Psionic": 0.0437,
-    "Melee|Smashing": 0.0679,
-    "Ranged|Cold": 0.0873,
-    "Ranged|Negative": 0.0576,
-    "Ranged|Psionic": 0.0414,
-    "Ranged|Smashing": 0.0459
+    "AoE|Cold": 0.0513,
+    "AoE|Negative": 0.0517,
+    "Melee|Cold": 0.0885,
+    "Melee|Lethal": 0.1138,
+    "Melee|Negative": 0.4635,
+    "Melee|Psionic": 0.0392,
+    "Melee|Smashing": 0.0609,
+    "Ranged|Cold": 0.0527,
+    "Ranged|Psionic": 0.0372,
+    "Ranged|Smashing": 0.0411
    },
    "def_debuff": {
     "attack_share": 0.085,
     "percent_per_hit": 10.0,
     "seconds": 10.0
    },
-   "dps_per_critter": 57.1,
+   "def_debuff_pressure": 0.02574,
+   "dps_per_critter": 63.6,
    "mez": [
     "Held",
     "Immobilized",
@@ -1614,9 +1781,11 @@
    },
    "resistances": {
     "Cold": 15.8,
-    "Fire": 2.9,
+    "Energy": -20.0,
+    "Fire": -7.1,
     "Lethal": 28.7,
     "Negative": 20.0,
+    "Psionic": -20.0,
     "Smashing": 28.7,
     "Toxic": 25.8
    },
@@ -1634,19 +1803,23 @@
     "minion": 3
    },
    "damage_mix": {
-    "Melee|Energy": 0.1103,
-    "Melee|Negative": 0.0813,
-    "Melee|Smashing": 0.1482,
-    "Ranged|Energy": 0.3875,
-    "Ranged|Negative": 0.1495,
-    "Ranged|Psionic": 0.1232
+    "AoE|Energy": 0.0352,
+    "AoE|Negative": 0.0372,
+    "AoE|Psionic": 0.0296,
+    "Melee|Energy": 0.0903,
+    "Melee|Negative": 0.1375,
+    "Melee|Smashing": 0.1213,
+    "Ranged|Energy": 0.282,
+    "Ranged|Negative": 0.1957,
+    "Ranged|Psionic": 0.0712
    },
    "def_debuff": {
     "attack_share": 0.257,
     "percent_per_hit": 1.03,
     "seconds": 4.4
    },
-   "dps_per_critter": 37.1,
+   "def_debuff_pressure": 0.00507,
+   "dps_per_critter": 45.3,
    "mez": [
     "Confused",
     "Held",
@@ -1660,6 +1833,7 @@
    },
    "resistances": {
     "Lethal": 10.5,
+    "Psionic": -9.0,
     "Smashing": 10.5
    },
    "tohit_debuff": {
@@ -1676,20 +1850,23 @@
     "minion": 7
    },
    "damage_mix": {
-    "Melee|Energy": 0.0327,
-    "Melee|Lethal": 0.4453,
-    "Melee|Smashing": 0.2022,
-    "Ranged|Energy": 0.0611,
-    "Ranged|Fire": 0.0164,
-    "Ranged|Lethal": 0.1665,
-    "Ranged|Negative": 0.0758
+    "AoE|Energy": 0.0087,
+    "AoE|Fire": 0.0145,
+    "AoE|Lethal": 0.0324,
+    "Melee|Energy": 0.029,
+    "Melee|Lethal": 0.4642,
+    "Melee|Smashing": 0.1792,
+    "Ranged|Energy": 0.059,
+    "Ranged|Lethal": 0.1458,
+    "Ranged|Negative": 0.0672
    },
    "def_debuff": {
     "attack_share": 0.046,
     "percent_per_hit": 10.69,
     "seconds": 8.7
    },
-   "dps_per_critter": 67.9,
+   "def_debuff_pressure": 0.01691,
+   "dps_per_critter": 76.6,
    "mez": [
     "Held",
     "Immobilized",
@@ -1704,6 +1881,7 @@
    },
    "resistances": {
     "Cold": 26.8,
+    "Energy": -26.8,
     "Lethal": 2.0,
     "Smashing": 2.0
    },
@@ -1721,15 +1899,16 @@
     "minion": 2
    },
    "damage_mix": {
-    "Melee|Negative": 0.1355,
-    "Ranged|Negative": 0.8645
+    "Melee|Negative": 0.2116,
+    "Ranged|Negative": 0.7884
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 24.6,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 27.0,
    "mez": [
     "Held"
    ],
@@ -1741,6 +1920,7 @@
    },
    "resistances": {
     "Cold": 20.0,
+    "Energy": -20.0,
     "Negative": 20.0,
     "Toxic": 20.0
    },
@@ -1758,19 +1938,23 @@
     "minion": 3
    },
    "damage_mix": {
-    "Melee|Negative": 0.2165,
-    "Melee|Smashing": 0.4296,
-    "Ranged|Energy": 0.1038,
-    "Ranged|Fire": 0.0339,
-    "Ranged|Negative": 0.105,
-    "Ranged|Smashing": 0.1112
+    "AoE|Energy": 0.0236,
+    "AoE|Negative": 0.0078,
+    "AoE|Smashing": 0.046,
+    "Melee|Negative": 0.2189,
+    "Melee|Smashing": 0.4207,
+    "Ranged|Energy": 0.0774,
+    "Ranged|Fire": 0.0489,
+    "Ranged|Negative": 0.0944,
+    "Ranged|Smashing": 0.0623
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 95.0,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 97.6,
    "mez": [
     "Held",
     "Immobilized",
@@ -1783,12 +1967,14 @@
     "seconds": 6.0
    },
    "resistances": {
-    "Energy": 15.5,
+    "Cold": -0.9,
+    "Energy": 7.9,
     "Fire": 1.4,
     "Lethal": 23.1,
     "Negative": 7.6,
-    "Psionic": 7.6,
-    "Smashing": 23.1
+    "Psionic": 7.3,
+    "Smashing": 23.1,
+    "Toxic": -23.0
    },
    "tohit_debuff": {
     "attack_share": 0.0,
@@ -1802,19 +1988,22 @@
     "boss": 12
    },
    "damage_mix": {
-    "Melee|Energy": 0.0125,
-    "Melee|Fire": 0.0176,
-    "Melee|Smashing": 0.8403,
-    "Ranged|Energy": 0.0181,
-    "Ranged|Fire": 0.03,
-    "Ranged|Smashing": 0.0814
+    "AoE|Energy": 0.0058,
+    "AoE|Smashing": 0.0042,
+    "Melee|Energy": 0.0124,
+    "Melee|Fire": 0.0221,
+    "Melee|Smashing": 0.8313,
+    "Ranged|Energy": 0.0121,
+    "Ranged|Fire": 0.0347,
+    "Ranged|Smashing": 0.0774
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 148.8,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 150.4,
    "mez": [
     "Held",
     "Immobilized",
@@ -1850,16 +2039,18 @@
     "minion": 8
    },
    "damage_mix": {
-    "Melee|Smashing": 0.6601,
-    "Ranged|Smashing": 0.037,
-    "Ranged|Toxic": 0.3029
+    "AoE|Smashing": 0.0333,
+    "AoE|Toxic": 0.028,
+    "Melee|Smashing": 0.5927,
+    "Ranged|Toxic": 0.346
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 43.8,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 48.7,
    "mez": [],
    "rank_accuracy": 1.075,
    "res_debuff": {
@@ -1871,6 +2062,8 @@
     "Cold": 35.2,
     "Energy": 21.1,
     "Fire": 21.1,
+    "Lethal": -21.0,
+    "Negative": -14.5,
     "Psionic": 21.1,
     "Smashing": 42.5,
     "Toxic": 54.3
@@ -1889,18 +2082,20 @@
     "minion": 1
    },
    "damage_mix": {
-    "Melee|Fire": 0.5166,
-    "Melee|Lethal": 0.1318,
-    "Melee|Smashing": 0.0539,
-    "Ranged|Fire": 0.2916,
-    "Ranged|Smashing": 0.0061
+    "AoE|Fire": 0.0411,
+    "AoE|Smashing": 0.0054,
+    "Melee|Fire": 0.5542,
+    "Melee|Lethal": 0.1154,
+    "Melee|Smashing": 0.0472,
+    "Ranged|Fire": 0.2368
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 136.9,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 156.4,
    "mez": [],
    "rank_accuracy": 1.075,
    "res_debuff": {
@@ -1909,6 +2104,7 @@
     "seconds": 0.0
    },
    "resistances": {
+    "Cold": -20.0,
     "Fire": 20.0
    },
    "tohit_debuff": {
@@ -1925,17 +2121,19 @@
     "minion": 2
    },
    "damage_mix": {
-    "Melee|Lethal": 0.3108,
-    "Ranged|Lethal": 0.1909,
-    "Ranged|Negative": 0.4974,
-    "Ranged|Toxic": 0.0006
+    "AoE|Lethal": 0.0993,
+    "Melee|Lethal": 0.3074,
+    "Ranged|Lethal": 0.0895,
+    "Ranged|Negative": 0.4919,
+    "Ranged|Toxic": 0.0115
    },
    "def_debuff": {
     "attack_share": 0.463,
     "percent_per_hit": 8.73,
     "seconds": 8.2
    },
-   "dps_per_critter": 83.7,
+   "def_debuff_pressure": 0.13891,
+   "dps_per_critter": 84.6,
    "mez": [
     "Held",
     "Sleep",
@@ -1962,16 +2160,18 @@
     "minion": 1
    },
    "damage_mix": {
-    "Melee|Lethal": 0.6186,
-    "Ranged|Lethal": 0.3799,
-    "Ranged|Toxic": 0.0011
+    "AoE|Lethal": 0.1955,
+    "Melee|Lethal": 0.6053,
+    "Ranged|Lethal": 0.1762,
+    "Ranged|Toxic": 0.0226
    },
    "def_debuff": {
     "attack_share": 0.613,
     "percent_per_hit": 8.73,
     "seconds": 8.2
    },
-   "dps_per_critter": 84.1,
+   "def_debuff_pressure": 0.27773,
+   "dps_per_critter": 85.9,
    "mez": [
     "Held",
     "Sleep",
@@ -1998,18 +2198,22 @@
     "minion": 4
    },
    "damage_mix": {
-    "Melee|Lethal": 0.1691,
-    "Melee|Smashing": 0.5687,
-    "Ranged|Lethal": 0.1839,
-    "Ranged|Smashing": 0.0313,
-    "Ranged|Toxic": 0.047
+    "AoE|Lethal": 0.0491,
+    "AoE|Smashing": 0.0091,
+    "AoE|Toxic": 0.0604,
+    "Melee|Lethal": 0.2761,
+    "Melee|Smashing": 0.4104,
+    "Ranged|Lethal": 0.12,
+    "Ranged|Smashing": 0.0203,
+    "Ranged|Toxic": 0.0547
    },
    "def_debuff": {
     "attack_share": 0.159,
     "percent_per_hit": 8.95,
     "seconds": 9.3
    },
-   "dps_per_critter": 47.5,
+   "def_debuff_pressure": 0.07167,
+   "dps_per_critter": 65.8,
    "mez": [
     "Confused",
     "Held",
@@ -2026,6 +2230,7 @@
    },
    "resistances": {
     "Lethal": 10.5,
+    "Psionic": -10.0,
     "Smashing": 10.5
    },
    "tohit_debuff": {
@@ -2042,24 +2247,33 @@
     "minion": 6
    },
    "damage_mix": {
-    "Melee|Lethal": 0.2017,
-    "Melee|Smashing": 0.1579,
-    "Melee|Toxic": 0.0015,
-    "Ranged|Cold": 0.015,
-    "Ranged|Energy": 0.0379,
-    "Ranged|Fire": 0.0126,
-    "Ranged|Lethal": 0.0719,
-    "Ranged|Negative": 0.4717,
-    "Ranged|Psionic": 0.0075,
-    "Ranged|Smashing": 0.0162,
-    "Ranged|Toxic": 0.0061
+    "AoE|Cold": 0.0045,
+    "AoE|Energy": 0.0247,
+    "AoE|Fire": 0.0157,
+    "AoE|Lethal": 0.0156,
+    "AoE|Negative": 0.0047,
+    "AoE|Psionic": 0.0021,
+    "AoE|Smashing": 0.007,
+    "AoE|Toxic": 0.0046,
+    "Melee|Lethal": 0.1774,
+    "Melee|Smashing": 0.1348,
+    "Melee|Toxic": 0.0057,
+    "Ranged|Cold": 0.0108,
+    "Ranged|Energy": 0.0218,
+    "Ranged|Fire": 0.0058,
+    "Ranged|Lethal": 0.1486,
+    "Ranged|Negative": 0.4,
+    "Ranged|Psionic": 0.0043,
+    "Ranged|Smashing": 0.0075,
+    "Ranged|Toxic": 0.0044
    },
    "def_debuff": {
     "attack_share": 0.487,
     "percent_per_hit": 8.5,
     "seconds": 5.6
    },
-   "dps_per_critter": 59.0,
+   "def_debuff_pressure": 0.08237,
+   "dps_per_critter": 69.1,
    "mez": [
     "Held",
     "Immobilized",
@@ -2096,21 +2310,25 @@
     "minion": 4
    },
    "damage_mix": {
-    "Melee|Energy": 0.0134,
-    "Melee|Smashing": 0.2289,
-    "Ranged|Cold": 0.0234,
-    "Ranged|Energy": 0.0517,
-    "Ranged|Fire": 0.0677,
-    "Ranged|Lethal": 0.1683,
-    "Ranged|Negative": 0.3311,
-    "Ranged|Smashing": 0.1154
+    "AoE|Energy": 0.0164,
+    "AoE|Fire": 0.0465,
+    "AoE|Lethal": 0.1135,
+    "AoE|Smashing": 0.0934,
+    "Melee|Energy": 0.033,
+    "Melee|Smashing": 0.1854,
+    "Ranged|Cold": 0.019,
+    "Ranged|Energy": 0.0419,
+    "Ranged|Fire": 0.033,
+    "Ranged|Lethal": 0.1497,
+    "Ranged|Negative": 0.2682
    },
    "def_debuff": {
     "attack_share": 0.147,
     "percent_per_hit": 8.42,
     "seconds": 5.0
    },
-   "dps_per_critter": 55.7,
+   "def_debuff_pressure": 0.02574,
+   "dps_per_critter": 68.8,
    "mez": [
     "Held",
     "Sleep",
@@ -2145,20 +2363,24 @@
     "minion": 3
    },
    "damage_mix": {
-    "Melee|Energy": 0.0207,
-    "Melee|Smashing": 0.3493,
-    "Ranged|Cold": 0.0343,
-    "Ranged|Energy": 0.0757,
-    "Ranged|Fire": 0.1011,
-    "Ranged|Lethal": 0.2503,
-    "Ranged|Smashing": 0.1687
+    "AoE|Energy": 0.0217,
+    "AoE|Fire": 0.0638,
+    "AoE|Lethal": 0.1526,
+    "AoE|Smashing": 0.1247,
+    "Melee|Energy": 0.0468,
+    "Melee|Smashing": 0.2583,
+    "Ranged|Cold": 0.0253,
+    "Ranged|Energy": 0.0565,
+    "Ranged|Fire": 0.0441,
+    "Ranged|Lethal": 0.2061
    },
    "def_debuff": {
     "attack_share": 0.169,
     "percent_per_hit": 8.4,
     "seconds": 5.0
    },
-   "dps_per_critter": 47.6,
+   "def_debuff_pressure": 0.03395,
+   "dps_per_critter": 64.4,
    "mez": [
     "Held",
     "Sleep",
@@ -2193,17 +2415,18 @@
     "minion": 2
    },
    "damage_mix": {
-    "Melee|Lethal": 0.0083,
-    "Melee|Smashing": 0.4898,
-    "Ranged|Lethal": 0.0189,
-    "Ranged|Negative": 0.4831
+    "Melee|Lethal": 0.0079,
+    "Melee|Smashing": 0.4635,
+    "Ranged|Lethal": 0.0714,
+    "Ranged|Negative": 0.4572
    },
    "def_debuff": {
     "attack_share": 0.164,
     "percent_per_hit": 8.8,
     "seconds": 8.0
    },
-   "dps_per_critter": 86.2,
+   "def_debuff_pressure": 0.04169,
+   "dps_per_critter": 91.0,
    "mez": [
     "Immobilized",
     "Stunned"
@@ -2238,6 +2461,7 @@
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
+   "def_debuff_pressure": 0.0,
    "dps_per_critter": 47.9,
    "mez": [
     "Immobilized",
@@ -2266,21 +2490,25 @@
     "minion": 13
    },
    "damage_mix": {
-    "Melee|Energy": 0.0061,
-    "Melee|Fire": 0.051,
-    "Melee|Lethal": 0.3087,
-    "Melee|Smashing": 0.1564,
-    "Ranged|Energy": 0.0392,
-    "Ranged|Fire": 0.1376,
-    "Ranged|Lethal": 0.1911,
-    "Ranged|Smashing": 0.1099
+    "AoE|Energy": 0.027,
+    "AoE|Fire": 0.1683,
+    "AoE|Lethal": 0.1896,
+    "AoE|Smashing": 0.0735,
+    "Melee|Energy": 0.0051,
+    "Melee|Fire": 0.0429,
+    "Melee|Lethal": 0.2591,
+    "Melee|Smashing": 0.1313,
+    "Ranged|Energy": 0.0108,
+    "Ranged|Lethal": 0.0737,
+    "Ranged|Smashing": 0.0188
    },
    "def_debuff": {
     "attack_share": 0.138,
     "percent_per_hit": 8.14,
     "seconds": 6.6
    },
-   "dps_per_critter": 60.6,
+   "def_debuff_pressure": 0.02734,
+   "dps_per_critter": 72.2,
    "mez": [
     "Stunned"
    ],
@@ -2291,13 +2519,13 @@
     "seconds": 14.4
    },
    "resistances": {
-    "Cold": 0.8,
+    "Cold": -6.4,
     "Energy": 0.8,
     "Fire": 8.0,
     "Lethal": 7.3,
     "Negative": 0.8,
     "Psionic": 11.6,
-    "Smashing": 0.8,
+    "Smashing": -5.7,
     "Toxic": 0.8
    },
    "tohit_debuff": {
@@ -2314,19 +2542,22 @@
     "minion": 6
    },
    "damage_mix": {
-    "Melee|Fire": 0.0477,
-    "Melee|Lethal": 0.3945,
-    "Melee|Smashing": 0.0739,
-    "Ranged|Fire": 0.1325,
-    "Ranged|Lethal": 0.2237,
-    "Ranged|Smashing": 0.1276
+    "AoE|Fire": 0.1616,
+    "AoE|Lethal": 0.1947,
+    "AoE|Smashing": 0.086,
+    "Melee|Fire": 0.0427,
+    "Melee|Lethal": 0.3527,
+    "Melee|Smashing": 0.0661,
+    "Ranged|Lethal": 0.0681,
+    "Ranged|Smashing": 0.028
    },
    "def_debuff": {
     "attack_share": 0.118,
     "percent_per_hit": 8.3,
     "seconds": 6.4
    },
-   "dps_per_critter": 64.9,
+   "def_debuff_pressure": 0.02346,
+   "dps_per_critter": 72.6,
    "mez": [
     "Stunned"
    ],
@@ -2337,9 +2568,11 @@
     "seconds": 15.0
    },
    "resistances": {
+    "Cold": -2.0,
     "Fire": 2.0,
     "Lethal": 1.0,
-    "Psionic": 3.0
+    "Psionic": 3.0,
+    "Smashing": -1.0
    },
    "tohit_debuff": {
     "attack_share": 0.0,
@@ -2355,16 +2588,18 @@
     "minion": 2
    },
    "damage_mix": {
-    "Melee|Energy": 0.3032,
-    "Melee|Smashing": 0.4115,
-    "Ranged|Energy": 0.2853
+    "AoE|Energy": 0.0205,
+    "Melee|Energy": 0.2999,
+    "Melee|Smashing": 0.4071,
+    "Ranged|Energy": 0.2725
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 95.0,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 96.0,
    "mez": [
     "Sleep"
    ],
@@ -2375,6 +2610,7 @@
     "seconds": 0.0
    },
    "resistances": {
+    "Energy": -14.0,
     "Lethal": 17.5,
     "Psionic": 35.0
    },
@@ -2392,25 +2628,31 @@
     "minion": 5
    },
    "damage_mix": {
-    "Melee|Energy": 0.0319,
-    "Melee|Fire": 0.0066,
-    "Melee|Lethal": 0.0527,
-    "Melee|Psionic": 0.0401,
-    "Melee|Smashing": 0.3295,
-    "Melee|Toxic": 0.0072,
-    "Ranged|Energy": 0.4517,
-    "Ranged|Fire": 0.006,
-    "Ranged|Lethal": 0.0168,
-    "Ranged|Psionic": 0.0196,
-    "Ranged|Smashing": 0.0359,
-    "Ranged|Toxic": 0.0021
+    "AoE|Energy": 0.1591,
+    "AoE|Fire": 0.0033,
+    "AoE|Lethal": 0.0065,
+    "AoE|Psionic": 0.0053,
+    "AoE|Toxic": 0.0025,
+    "Melee|Energy": 0.0266,
+    "Melee|Fire": 0.0164,
+    "Melee|Lethal": 0.0573,
+    "Melee|Psionic": 0.0333,
+    "Melee|Smashing": 0.274,
+    "Melee|Toxic": 0.0155,
+    "Ranged|Energy": 0.3279,
+    "Ranged|Fire": 0.0137,
+    "Ranged|Lethal": 0.0075,
+    "Ranged|Psionic": 0.0192,
+    "Ranged|Smashing": 0.0299,
+    "Ranged|Toxic": 0.0023
    },
    "def_debuff": {
     "attack_share": 0.054,
     "percent_per_hit": 5.21,
     "seconds": 6.1
    },
-   "dps_per_critter": 24.6,
+   "def_debuff_pressure": 0.00407,
+   "dps_per_critter": 29.6,
    "mez": [
     "Held",
     "Immobilized",
@@ -2446,18 +2688,21 @@
     "minion": 1
    },
    "damage_mix": {
+    "AoE|Energy": 0.0095,
+    "AoE|Negative": 0.1473,
+    "AoE|Smashing": 0.0015,
     "Melee|Energy": 0.0385,
     "Melee|Negative": 0.0476,
     "Melee|Smashing": 0.0378,
-    "Ranged|Energy": 0.0438,
-    "Ranged|Negative": 0.8309,
-    "Ranged|Smashing": 0.0015
+    "Ranged|Energy": 0.0343,
+    "Ranged|Negative": 0.6836
    },
    "def_debuff": {
     "attack_share": 0.034,
     "percent_per_hit": 11.78,
     "seconds": 5.9
    },
+   "def_debuff_pressure": 0.00783,
    "dps_per_critter": 29.8,
    "mez": [
     "Stunned"
@@ -2469,14 +2714,14 @@
     "seconds": 0.0
    },
    "resistances": {
-    "Cold": 1.1,
-    "Energy": 16.9,
-    "Fire": 1.1,
-    "Lethal": 1.1,
-    "Negative": 16.9,
-    "Psionic": 1.1,
-    "Smashing": 1.1,
-    "Toxic": 1.1
+    "Cold": 0.0,
+    "Energy": 15.8,
+    "Fire": 0.0,
+    "Lethal": 0.0,
+    "Negative": 15.8,
+    "Psionic": 0.0,
+    "Smashing": 0.0,
+    "Toxic": 0.0
    },
    "tohit_debuff": {
     "attack_share": 0.0,
@@ -2492,20 +2737,23 @@
     "minion": 1
    },
    "damage_mix": {
-    "Melee|Lethal": 0.5759,
-    "Melee|Negative": 0.0782,
-    "Ranged|Cold": 0.0166,
-    "Ranged|Fire": 0.0875,
-    "Ranged|Lethal": 0.0535,
-    "Ranged|Negative": 0.1494,
-    "Ranged|Smashing": 0.0388
+    "AoE|Fire": 0.013,
+    "AoE|Negative": 0.0579,
+    "Melee|Lethal": 0.5236,
+    "Melee|Negative": 0.145,
+    "Ranged|Cold": 0.0126,
+    "Ranged|Fire": 0.1108,
+    "Ranged|Lethal": 0.0406,
+    "Ranged|Negative": 0.0673,
+    "Ranged|Smashing": 0.0294
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 42.4,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 55.9,
    "mez": [
     "Held",
     "Terrorized"
@@ -2518,7 +2766,8 @@
    },
    "resistances": {
     "Energy": 10.5,
-    "Negative": 10.5
+    "Negative": 10.5,
+    "Smashing": -9.0
    },
    "tohit_debuff": {
     "attack_share": 0.0,
@@ -2534,20 +2783,23 @@
     "minion": 1
    },
    "damage_mix": {
-    "Melee|Lethal": 0.5759,
-    "Melee|Negative": 0.0782,
-    "Ranged|Cold": 0.0166,
-    "Ranged|Fire": 0.0875,
-    "Ranged|Lethal": 0.0535,
-    "Ranged|Negative": 0.1494,
-    "Ranged|Smashing": 0.0388
+    "AoE|Fire": 0.013,
+    "AoE|Negative": 0.0579,
+    "Melee|Lethal": 0.5236,
+    "Melee|Negative": 0.145,
+    "Ranged|Cold": 0.0126,
+    "Ranged|Fire": 0.1108,
+    "Ranged|Lethal": 0.0406,
+    "Ranged|Negative": 0.0673,
+    "Ranged|Smashing": 0.0294
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 42.4,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 55.9,
    "mez": [
     "Held",
     "Terrorized"
@@ -2560,7 +2812,8 @@
    },
    "resistances": {
     "Energy": 10.5,
-    "Negative": 10.5
+    "Negative": 10.5,
+    "Smashing": -9.0
    },
    "tohit_debuff": {
     "attack_share": 0.0,
@@ -2576,17 +2829,20 @@
     "minion": 2
    },
    "damage_mix": {
+    "AoE|Energy": 0.0287,
+    "AoE|Smashing": 0.0287,
     "Melee|Energy": 0.1214,
     "Melee|Smashing": 0.0809,
-    "Ranged|Energy": 0.2118,
+    "Ranged|Energy": 0.1831,
     "Ranged|Negative": 0.4557,
-    "Ranged|Smashing": 0.1301
+    "Ranged|Smashing": 0.1014
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
+   "def_debuff_pressure": 0.0,
    "dps_per_critter": 91.3,
    "mez": [
     "Stunned"
@@ -2614,16 +2870,18 @@
     "minion": 1
    },
    "damage_mix": {
-    "Melee|Smashing": 0.7517,
-    "Ranged|Fire": 0.122,
-    "Ranged|Lethal": 0.1263
+    "AoE|Fire": 0.1394,
+    "AoE|Lethal": 0.1284,
+    "Melee|Smashing": 0.507,
+    "Ranged|Lethal": 0.2253
    },
    "def_debuff": {
     "attack_share": 0.408,
     "percent_per_hit": 8.82,
     "seconds": 7.1
    },
-   "dps_per_critter": 72.0,
+   "def_debuff_pressure": 0.18201,
+   "dps_per_critter": 106.8,
    "mez": [
     "Immobilized",
     "Stunned"
@@ -2652,19 +2910,22 @@
     "minion": 3
    },
    "damage_mix": {
-    "Melee|Energy": 0.2015,
-    "Melee|Smashing": 0.159,
-    "Ranged|Energy": 0.6142,
-    "Ranged|Fire": 0.015,
-    "Ranged|Lethal": 0.0064,
-    "Ranged|Smashing": 0.0039
+    "AoE|Energy": 0.0819,
+    "AoE|Fire": 0.0146,
+    "AoE|Lethal": 0.0062,
+    "AoE|Smashing": 0.0063,
+    "Melee|Energy": 0.1954,
+    "Melee|Smashing": 0.1542,
+    "Ranged|Energy": 0.5392,
+    "Ranged|Smashing": 0.0022
    },
    "def_debuff": {
     "attack_share": 0.837,
     "percent_per_hit": 11.16,
     "seconds": 5.3
    },
-   "dps_per_critter": 49.3,
+   "def_debuff_pressure": 0.24088,
+   "dps_per_critter": 50.8,
    "mez": [
     "Held"
    ],
@@ -2676,7 +2937,7 @@
    },
    "resistances": {
     "Cold": 5.0,
-    "Energy": 13.8,
+    "Energy": 7.1,
     "Fire": 5.0,
     "Lethal": 9.0,
     "Negative": 13.8,
@@ -2696,26 +2957,30 @@
     "minion": 3
    },
    "damage_mix": {
-    "Melee|Cold": 0.0222,
-    "Melee|Energy": 0.0066,
-    "Melee|Fire": 0.0127,
-    "Melee|Lethal": 0.2873,
-    "Melee|Smashing": 0.0948,
-    "Melee|Toxic": 0.0162,
-    "Ranged|Cold": 0.0125,
-    "Ranged|Energy": 0.0019,
-    "Ranged|Fire": 0.0448,
-    "Ranged|Lethal": 0.0863,
-    "Ranged|Negative": 0.3004,
-    "Ranged|Smashing": 0.0045,
-    "Ranged|Toxic": 0.1098
+    "AoE|Cold": 0.0088,
+    "AoE|Energy": 0.0017,
+    "AoE|Fire": 0.0071,
+    "AoE|Smashing": 0.0017,
+    "Melee|Cold": 0.0258,
+    "Melee|Energy": 0.0059,
+    "Melee|Fire": 0.0141,
+    "Melee|Lethal": 0.2834,
+    "Melee|Smashing": 0.0848,
+    "Melee|Toxic": 0.0464,
+    "Ranged|Cold": 0.0097,
+    "Ranged|Fire": 0.042,
+    "Ranged|Lethal": 0.0772,
+    "Ranged|Negative": 0.2688,
+    "Ranged|Smashing": 0.0023,
+    "Ranged|Toxic": 0.1203
    },
    "def_debuff": {
     "attack_share": 0.013,
     "percent_per_hit": 10.0,
     "seconds": 10.0
    },
-   "dps_per_critter": 76.3,
+   "def_debuff_pressure": 0.00586,
+   "dps_per_critter": 85.3,
    "mez": [
     "Held",
     "Immobilized",
@@ -2746,17 +3011,18 @@
     "minion": 2
    },
    "damage_mix": {
-    "Melee|Energy": 0.1107,
-    "Melee|Smashing": 0.0772,
-    "Ranged|Energy": 0.1472,
-    "Ranged|Negative": 0.6649
+    "Melee|Energy": 0.272,
+    "Melee|Smashing": 0.0632,
+    "Ranged|Energy": 0.1205,
+    "Ranged|Negative": 0.5443
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 62.6,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 76.5,
    "mez": [
     "Held",
     "Sleep",
@@ -2792,15 +3058,17 @@
     "minion": 2
    },
    "damage_mix": {
-    "Melee|Smashing": 0.1474,
-    "Ranged|Energy": 0.8526
+    "AoE|Energy": 0.2289,
+    "Melee|Smashing": 0.1074,
+    "Ranged|Energy": 0.6637
    },
    "def_debuff": {
     "attack_share": 0.126,
     "percent_per_hit": 8.52,
     "seconds": 10.0
    },
-   "dps_per_critter": 25.2,
+   "def_debuff_pressure": 0.02874,
+   "dps_per_critter": 34.5,
    "mez": [
     "Stunned"
    ],
@@ -2825,15 +3093,17 @@
     "minion": 2
    },
    "damage_mix": {
-    "Melee|Smashing": 0.1474,
-    "Ranged|Energy": 0.8526
+    "AoE|Energy": 0.2289,
+    "Melee|Smashing": 0.1074,
+    "Ranged|Energy": 0.6637
    },
    "def_debuff": {
     "attack_share": 0.126,
     "percent_per_hit": 8.52,
     "seconds": 10.0
    },
-   "dps_per_critter": 25.2,
+   "def_debuff_pressure": 0.02874,
+   "dps_per_critter": 34.5,
    "mez": [
     "Stunned"
    ],
@@ -2858,15 +3128,17 @@
     "minion": 2
    },
    "damage_mix": {
-    "Melee|Smashing": 0.1474,
-    "Ranged|Energy": 0.8526
+    "AoE|Energy": 0.2289,
+    "Melee|Smashing": 0.1074,
+    "Ranged|Energy": 0.6637
    },
    "def_debuff": {
     "attack_share": 0.126,
     "percent_per_hit": 8.52,
     "seconds": 10.0
    },
-   "dps_per_critter": 25.2,
+   "def_debuff_pressure": 0.02874,
+   "dps_per_critter": 34.5,
    "mez": [
     "Stunned"
    ],
@@ -2891,18 +3163,20 @@
     "minion": 2
    },
    "damage_mix": {
-    "Melee|Energy": 0.138,
-    "Melee|Lethal": 0.0485,
-    "Melee|Smashing": 0.0971,
-    "Ranged|Energy": 0.7155,
-    "Ranged|Lethal": 0.0008
+    "AoE|Energy": 0.1878,
+    "AoE|Lethal": 0.0065,
+    "Melee|Energy": 0.1217,
+    "Melee|Lethal": 0.0563,
+    "Melee|Smashing": 0.071,
+    "Ranged|Energy": 0.5568
    },
    "def_debuff": {
     "attack_share": 0.154,
     "percent_per_hit": 8.76,
     "seconds": 9.2
    },
-   "dps_per_critter": 30.5,
+   "def_debuff_pressure": 0.03427,
+   "dps_per_critter": 41.8,
    "mez": [
     "Stunned"
    ],
@@ -2927,15 +3201,17 @@
     "minion": 3
    },
    "damage_mix": {
-    "Melee|Smashing": 0.1383,
-    "Ranged|Energy": 0.8617
+    "AoE|Energy": 0.1797,
+    "Melee|Smashing": 0.1001,
+    "Ranged|Energy": 0.7202
    },
    "def_debuff": {
     "attack_share": 0.149,
     "percent_per_hit": 8.39,
     "seconds": 10.0
    },
-   "dps_per_critter": 26.8,
+   "def_debuff_pressure": 0.03707,
+   "dps_per_critter": 37.1,
    "mez": [
     "Stunned"
    ],
@@ -2960,20 +3236,25 @@
     "minion": 7
    },
    "damage_mix": {
-    "Melee|Energy": 0.3182,
-    "Melee|Smashing": 0.1887,
-    "Ranged|Energy": 0.4009,
-    "Ranged|Fire": 0.0413,
-    "Ranged|Lethal": 0.0402,
-    "Ranged|Smashing": 0.0028,
-    "Ranged|Toxic": 0.0078
+    "AoE|Energy": 0.0533,
+    "AoE|Fire": 0.0226,
+    "AoE|Lethal": 0.023,
+    "AoE|Smashing": 0.0026,
+    "AoE|Toxic": 0.0209,
+    "Melee|Energy": 0.2895,
+    "Melee|Smashing": 0.1717,
+    "Ranged|Energy": 0.3548,
+    "Ranged|Fire": 0.0298,
+    "Ranged|Lethal": 0.02,
+    "Ranged|Toxic": 0.012
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 46.1,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 50.6,
    "mez": [
     "Held",
     "Immobilized",
@@ -2986,14 +3267,14 @@
     "seconds": 0.0
    },
    "resistances": {
-    "Cold": 16.5,
-    "Energy": 17.4,
-    "Fire": 16.5,
-    "Lethal": 17.4,
-    "Negative": 17.4,
-    "Psionic": 16.5,
-    "Smashing": 17.4,
-    "Toxic": 17.0
+    "Cold": 15.6,
+    "Energy": 16.5,
+    "Fire": 15.6,
+    "Lethal": 16.5,
+    "Negative": 16.5,
+    "Psionic": 15.6,
+    "Smashing": 16.5,
+    "Toxic": 16.2
    },
    "tohit_debuff": {
     "attack_share": 0.0,
@@ -3009,23 +3290,30 @@
     "minion": 10
    },
    "damage_mix": {
-    "Melee|Energy": 0.2532,
-    "Melee|Lethal": 0.0191,
-    "Melee|Psionic": 0.0327,
-    "Melee|Smashing": 0.1542,
-    "Ranged|Energy": 0.3875,
-    "Ranged|Fire": 0.0277,
-    "Ranged|Lethal": 0.022,
-    "Ranged|Psionic": 0.0662,
-    "Ranged|Smashing": 0.0353,
-    "Ranged|Toxic": 0.0022
+    "AoE|Energy": 0.0434,
+    "AoE|Fire": 0.0058,
+    "AoE|Lethal": 0.008,
+    "AoE|Psionic": 0.0029,
+    "AoE|Smashing": 0.0012,
+    "AoE|Toxic": 0.006,
+    "Melee|Energy": 0.2222,
+    "Melee|Lethal": 0.0255,
+    "Melee|Psionic": 0.0551,
+    "Melee|Smashing": 0.1296,
+    "Ranged|Energy": 0.3587,
+    "Ranged|Fire": 0.0175,
+    "Ranged|Lethal": 0.0131,
+    "Ranged|Psionic": 0.0665,
+    "Ranged|Smashing": 0.0366,
+    "Ranged|Toxic": 0.0079
    },
    "def_debuff": {
     "attack_share": 0.023,
     "percent_per_hit": 13.88,
     "seconds": 9.3
    },
-   "dps_per_critter": 43.1,
+   "def_debuff_pressure": 0.01057,
+   "dps_per_critter": 51.3,
    "mez": [
     "Held",
     "Immobilized",
@@ -3038,14 +3326,14 @@
     "seconds": 6.0
    },
    "resistances": {
-    "Cold": 9.8,
-    "Energy": 10.2,
-    "Fire": 9.8,
-    "Lethal": 10.2,
-    "Negative": 9.8,
-    "Psionic": 13.5,
-    "Smashing": 10.2,
-    "Toxic": 9.6
+    "Cold": 9.2,
+    "Energy": 9.6,
+    "Fire": 9.2,
+    "Lethal": 9.6,
+    "Negative": 9.2,
+    "Psionic": 12.9,
+    "Smashing": 9.6,
+    "Toxic": 9.0
    },
    "tohit_debuff": {
     "attack_share": 0.0,
@@ -3061,23 +3349,29 @@
     "minion": 10
    },
    "damage_mix": {
-    "Melee|Energy": 0.2671,
-    "Melee|Lethal": 0.0181,
-    "Melee|Psionic": 0.0344,
-    "Melee|Smashing": 0.1307,
-    "Ranged|Energy": 0.419,
-    "Ranged|Fire": 0.0277,
-    "Ranged|Lethal": 0.0223,
-    "Ranged|Psionic": 0.0686,
-    "Ranged|Smashing": 0.0099,
-    "Ranged|Toxic": 0.0022
+    "AoE|Energy": 0.049,
+    "AoE|Fire": 0.0058,
+    "AoE|Lethal": 0.0079,
+    "AoE|Psionic": 0.0027,
+    "AoE|Toxic": 0.0061,
+    "Melee|Energy": 0.2322,
+    "Melee|Lethal": 0.024,
+    "Melee|Psionic": 0.0577,
+    "Melee|Smashing": 0.1093,
+    "Ranged|Energy": 0.3895,
+    "Ranged|Fire": 0.0174,
+    "Ranged|Lethal": 0.0133,
+    "Ranged|Psionic": 0.0688,
+    "Ranged|Smashing": 0.0083,
+    "Ranged|Toxic": 0.008
    },
    "def_debuff": {
     "attack_share": 0.013,
     "percent_per_hit": 10.0,
     "seconds": 6.3
    },
-   "dps_per_critter": 41.0,
+   "def_debuff_pressure": 0.00288,
+   "dps_per_critter": 49.0,
    "mez": [
     "Held",
     "Immobilized",
@@ -3090,14 +3384,14 @@
     "seconds": 6.0
    },
    "resistances": {
-    "Cold": 9.8,
-    "Energy": 10.1,
-    "Fire": 9.8,
-    "Lethal": 10.1,
-    "Negative": 9.8,
-    "Psionic": 13.4,
-    "Smashing": 10.1,
-    "Toxic": 9.6
+    "Cold": 9.2,
+    "Energy": 9.4,
+    "Fire": 9.2,
+    "Lethal": 9.4,
+    "Negative": 9.2,
+    "Psionic": 12.8,
+    "Smashing": 9.4,
+    "Toxic": 8.9
    },
    "tohit_debuff": {
     "attack_share": 0.0,
@@ -3113,18 +3407,21 @@
     "minion": 6
    },
    "damage_mix": {
-    "Melee|Energy": 0.0494,
-    "Melee|Smashing": 0.68,
-    "Ranged|Energy": 0.0729,
-    "Ranged|Fire": 0.0034,
-    "Ranged|Lethal": 0.1943
+    "AoE|Energy": 0.0176,
+    "AoE|Fire": 0.0037,
+    "AoE|Lethal": 0.1242,
+    "Melee|Energy": 0.0403,
+    "Melee|Smashing": 0.5546,
+    "Ranged|Energy": 0.0565,
+    "Ranged|Lethal": 0.2031
    },
    "def_debuff": {
     "attack_share": 0.254,
     "percent_per_hit": 3.32,
     "seconds": 6.9
    },
-   "dps_per_critter": 65.7,
+   "def_debuff_pressure": 0.03755,
+   "dps_per_critter": 80.5,
    "mez": [
     "Stunned"
    ],
@@ -3158,16 +3455,18 @@
     "minion": 2
    },
    "damage_mix": {
-    "Melee|Psionic": 0.2879,
-    "Ranged|Psionic": 0.574,
-    "Ranged|Smashing": 0.1381
+    "AoE|Psionic": 0.0321,
+    "Melee|Psionic": 0.4052,
+    "Ranged|Psionic": 0.4659,
+    "Ranged|Smashing": 0.0968
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 29.4,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 41.9,
    "mez": [
     "Held",
     "Immobilized"
@@ -3195,16 +3494,18 @@
     "minion": 2
    },
    "damage_mix": {
-    "Melee|Psionic": 0.2879,
-    "Ranged|Psionic": 0.574,
-    "Ranged|Smashing": 0.1381
+    "AoE|Psionic": 0.0321,
+    "Melee|Psionic": 0.4052,
+    "Ranged|Psionic": 0.4659,
+    "Ranged|Smashing": 0.0968
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 29.4,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 41.9,
    "mez": [
     "Held",
     "Immobilized"
@@ -3232,18 +3533,20 @@
     "minion": 3
    },
    "damage_mix": {
-    "Melee|Energy": 0.1954,
-    "Melee|Lethal": 0.0687,
-    "Melee|Smashing": 0.0611,
-    "Ranged|Energy": 0.6737,
-    "Ranged|Lethal": 0.0011
+    "AoE|Energy": 0.0955,
+    "AoE|Lethal": 0.0084,
+    "Melee|Energy": 0.1583,
+    "Melee|Lethal": 0.0732,
+    "Melee|Smashing": 0.041,
+    "Ranged|Energy": 0.6236
    },
    "def_debuff": {
     "attack_share": 0.035,
     "percent_per_hit": 10.0,
     "seconds": 6.3
    },
-   "dps_per_critter": 27.0,
+   "def_debuff_pressure": 0.00733,
+   "dps_per_critter": 40.2,
    "mez": [
     "Stunned"
    ],
@@ -3254,12 +3557,14 @@
     "seconds": 6.0
    },
    "resistances": {
-    "Cold": 0.5,
-    "Energy": 1.2,
-    "Fire": 0.5,
-    "Lethal": 1.2,
-    "Negative": 0.5,
-    "Smashing": 1.2
+    "Cold": -1.5,
+    "Energy": -0.8,
+    "Fire": -1.5,
+    "Lethal": -0.8,
+    "Negative": -1.5,
+    "Psionic": -2.0,
+    "Smashing": -0.8,
+    "Toxic": -2.0
    },
    "tohit_debuff": {
     "attack_share": 0.0,
@@ -3275,18 +3580,20 @@
     "minion": 3
    },
    "damage_mix": {
-    "Melee|Energy": 0.1318,
-    "Melee|Lethal": 0.0463,
-    "Melee|Smashing": 0.0412,
-    "Ranged|Energy": 0.7799,
-    "Ranged|Lethal": 0.0008
+    "AoE|Energy": 0.1033,
+    "AoE|Lethal": 0.0054,
+    "Melee|Energy": 0.1022,
+    "Melee|Lethal": 0.0472,
+    "Melee|Smashing": 0.0265,
+    "Ranged|Energy": 0.7153
    },
    "def_debuff": {
     "attack_share": 0.02,
     "percent_per_hit": 10.0,
     "seconds": 6.3
    },
-   "dps_per_critter": 22.8,
+   "def_debuff_pressure": 0.00413,
+   "dps_per_critter": 35.6,
    "mez": [
     "Stunned"
    ],
@@ -3297,12 +3604,14 @@
     "seconds": 6.0
    },
    "resistances": {
-    "Cold": 0.3,
-    "Energy": 0.7,
-    "Fire": 0.3,
-    "Lethal": 0.7,
-    "Negative": 0.3,
-    "Smashing": 0.7
+    "Cold": -1.7,
+    "Energy": -1.3,
+    "Fire": -1.7,
+    "Lethal": -1.3,
+    "Negative": -1.7,
+    "Psionic": -2.0,
+    "Smashing": -1.3,
+    "Toxic": -2.0
    },
    "tohit_debuff": {
     "attack_share": 0.0,
@@ -3318,17 +3627,20 @@
     "minion": 3
    },
    "damage_mix": {
-    "Melee|Psionic": 0.012,
-    "Melee|Smashing": 0.5974,
-    "Ranged|Psionic": 0.344,
-    "Ranged|Smashing": 0.0467
+    "AoE|Psionic": 0.0143,
+    "AoE|Smashing": 0.0127,
+    "Melee|Psionic": 0.0118,
+    "Melee|Smashing": 0.5911,
+    "Ranged|Psionic": 0.3366,
+    "Ranged|Smashing": 0.0334
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 77.2,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 78.0,
    "mez": [
     "Held",
     "Immobilized",
@@ -3360,19 +3672,21 @@
     "minion": 1
    },
    "damage_mix": {
-    "Melee|Lethal": 0.0846,
-    "Melee|Negative": 0.2059,
-    "Melee|Psionic": 0.2102,
-    "Melee|Smashing": 0.2275,
-    "Ranged|Lethal": 0.0709,
-    "Ranged|Negative": 0.2009
+    "AoE|Negative": 0.023,
+    "Melee|Lethal": 0.0782,
+    "Melee|Negative": 0.1933,
+    "Melee|Psionic": 0.2456,
+    "Melee|Smashing": 0.2139,
+    "Ranged|Lethal": 0.0655,
+    "Ranged|Negative": 0.1805
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 72.5,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 78.4,
    "mez": [
     "Held",
     "Immobilized",
@@ -3406,17 +3720,20 @@
     "minion": 5
    },
    "damage_mix": {
-    "Melee|Lethal": 0.6485,
-    "Melee|Negative": 0.0695,
-    "Ranged|Fire": 0.0181,
-    "Ranged|Lethal": 0.2633
+    "AoE|Lethal": 0.0142,
+    "Melee|Lethal": 0.6139,
+    "Melee|Negative": 0.0658,
+    "Ranged|Fire": 0.0656,
+    "Ranged|Lethal": 0.2351,
+    "Ranged|Smashing": 0.0055
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 75.6,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 79.9,
    "mez": [],
    "rank_accuracy": 1.075,
    "res_debuff": {
@@ -3425,7 +3742,9 @@
     "seconds": 0.0
    },
    "resistances": {
+    "Fire": -27.5,
     "Lethal": 25.0,
+    "Negative": -17.5,
     "Smashing": 25.0
    },
    "tohit_debuff": {
@@ -3442,28 +3761,29 @@
     "minion": 14
    },
    "damage_mix": {
-    "Melee|Cold": 0.0222,
-    "Melee|Energy": 0.1952,
-    "Melee|Fire": 0.0276,
-    "Melee|Lethal": 0.073,
-    "Melee|Negative": 0.0222,
-    "Melee|Psionic": 0.0222,
-    "Melee|Smashing": 0.1171,
-    "Melee|Toxic": 0.0416,
+    "AoE|Fire": 0.0032,
+    "AoE|Lethal": 0.0023,
+    "AoE|Smashing": 0.0006,
+    "Melee|Cold": 0.0219,
+    "Melee|Energy": 0.1928,
+    "Melee|Fire": 0.039,
+    "Melee|Lethal": 0.0721,
+    "Melee|Negative": 0.0219,
+    "Melee|Psionic": 0.0219,
+    "Melee|Smashing": 0.1157,
+    "Melee|Toxic": 0.0411,
     "Ranged|Cold": 0.0056,
-    "Ranged|Energy": 0.2155,
-    "Ranged|Fire": 0.0027,
-    "Ranged|Lethal": 0.0024,
-    "Ranged|Negative": 0.1078,
-    "Ranged|Psionic": 0.1445,
-    "Ranged|Smashing": 0.0007
+    "Ranged|Energy": 0.2128,
+    "Ranged|Negative": 0.1064,
+    "Ranged|Psionic": 0.1427
    },
    "def_debuff": {
     "attack_share": 0.002,
     "percent_per_hit": 20.0,
     "seconds": 12.0
    },
-   "dps_per_critter": 54.3,
+   "def_debuff_pressure": 0.00168,
+   "dps_per_critter": 55.0,
    "mez": [
     "Held",
     "Sleep",
@@ -3477,13 +3797,13 @@
     "seconds": 0.0
    },
    "resistances": {
-    "Cold": 2.3,
-    "Energy": 9.4,
-    "Fire": 2.3,
+    "Cold": 0.2,
+    "Energy": 7.3,
+    "Fire": 0.2,
     "Lethal": 7.5,
-    "Negative": 1.9,
+    "Negative": -2.4,
     "Psionic": 8.0,
-    "Smashing": 7.5,
+    "Smashing": 3.2,
     "Toxic": 1.9
    },
    "tohit_debuff": {
@@ -3500,22 +3820,27 @@
     "minion": 3
    },
    "damage_mix": {
-    "Melee|Fire": 0.1165,
-    "Melee|Lethal": 0.2875,
-    "Melee|Toxic": 0.0976,
-    "Ranged|Energy": 0.0766,
-    "Ranged|Fire": 0.0379,
-    "Ranged|Lethal": 0.2207,
-    "Ranged|Psionic": 0.0766,
-    "Ranged|Smashing": 0.0089,
-    "Ranged|Toxic": 0.0776
+    "AoE|Energy": 0.0047,
+    "AoE|Fire": 0.0193,
+    "AoE|Lethal": 0.1119,
+    "AoE|Psionic": 0.0073,
+    "AoE|Toxic": 0.0831,
+    "Melee|Fire": 0.117,
+    "Melee|Lethal": 0.1733,
+    "Melee|Toxic": 0.1036,
+    "Ranged|Energy": 0.0415,
+    "Ranged|Fire": 0.1636,
+    "Ranged|Lethal": 0.1237,
+    "Ranged|Psionic": 0.0457,
+    "Ranged|Smashing": 0.0054
    },
    "def_debuff": {
     "attack_share": 0.256,
     "percent_per_hit": 8.09,
     "seconds": 6.4
    },
-   "dps_per_critter": 41.0,
+   "def_debuff_pressure": 0.04901,
+   "dps_per_critter": 68.1,
    "mez": [
     "Held",
     "Stunned"
@@ -3550,22 +3875,26 @@
     "minion": 5
    },
    "damage_mix": {
-    "Melee|Fire": 0.041,
-    "Melee|Lethal": 0.2548,
-    "Melee|Toxic": 0.07,
-    "Ranged|Energy": 0.1898,
-    "Ranged|Fire": 0.0014,
-    "Ranged|Lethal": 0.1829,
-    "Ranged|Psionic": 0.1877,
-    "Ranged|Smashing": 0.0134,
-    "Ranged|Toxic": 0.0589
+    "AoE|Energy": 0.029,
+    "AoE|Fire": 0.0098,
+    "AoE|Lethal": 0.1526,
+    "AoE|Psionic": 0.0183,
+    "AoE|Toxic": 0.0833,
+    "Melee|Fire": 0.0595,
+    "Melee|Lethal": 0.2215,
+    "Melee|Toxic": 0.0935,
+    "Ranged|Energy": 0.1478,
+    "Ranged|Lethal": 0.0191,
+    "Ranged|Psionic": 0.1539,
+    "Ranged|Smashing": 0.0116
    },
    "def_debuff": {
     "attack_share": 0.231,
     "percent_per_hit": 9.18,
     "seconds": 7.4
    },
-   "dps_per_critter": 69.9,
+   "def_debuff_pressure": 0.07451,
+   "dps_per_critter": 80.4,
    "mez": [
     "Held",
     "Sleep",
@@ -3599,23 +3928,29 @@
     "boss": 15
    },
    "damage_mix": {
-    "Melee|Energy": 0.1338,
-    "Melee|Fire": 0.1869,
-    "Melee|Lethal": 0.0527,
-    "Melee|Psionic": 0.006,
-    "Melee|Smashing": 0.1484,
-    "Ranged|Energy": 0.1321,
-    "Ranged|Fire": 0.2072,
-    "Ranged|Lethal": 0.0767,
-    "Ranged|Psionic": 0.0345,
-    "Ranged|Smashing": 0.0218
+    "AoE|Energy": 0.0555,
+    "AoE|Fire": 0.2772,
+    "AoE|Lethal": 0.0487,
+    "AoE|Psionic": 0.0113,
+    "AoE|Smashing": 0.0033,
+    "Melee|Energy": 0.1087,
+    "Melee|Fire": 0.164,
+    "Melee|Lethal": 0.0455,
+    "Melee|Psionic": 0.0047,
+    "Melee|Smashing": 0.1201,
+    "Ranged|Energy": 0.0572,
+    "Ranged|Fire": 0.0559,
+    "Ranged|Lethal": 0.0182,
+    "Ranged|Psionic": 0.0158,
+    "Ranged|Smashing": 0.0139
    },
    "def_debuff": {
     "attack_share": 0.074,
     "percent_per_hit": 12.17,
     "seconds": 8.0
    },
-   "dps_per_critter": 226.5,
+   "def_debuff_pressure": 0.04051,
+   "dps_per_critter": 287.9,
    "mez": [
     "Held",
     "Immobilized",
@@ -3651,19 +3986,20 @@
     "boss": 4
    },
    "damage_mix": {
+    "AoE|Lethal": 0.0453,
+    "AoE|Negative": 0.0067,
+    "AoE|Toxic": 0.0255,
     "Melee|Lethal": 0.268,
     "Melee|Negative": 0.2395,
     "Melee|Smashing": 0.3247,
-    "Ranged|Lethal": 0.0453,
-    "Ranged|Negative": 0.0067,
-    "Ranged|Smashing": 0.0903,
-    "Ranged|Toxic": 0.0255
+    "Ranged|Smashing": 0.0903
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
+   "def_debuff_pressure": 0.0,
    "dps_per_critter": 312.7,
    "mez": [
     "Held",
@@ -3698,18 +4034,21 @@
     "minion": 2
    },
    "damage_mix": {
+    "AoE|Fire": 0.0084,
+    "AoE|Lethal": 0.096,
+    "AoE|Negative": 0.0615,
     "Melee|Lethal": 0.2329,
     "Melee|Negative": 0.2032,
     "Melee|Smashing": 0.2154,
-    "Ranged|Fire": 0.0084,
-    "Ranged|Lethal": 0.2086,
-    "Ranged|Negative": 0.1316
+    "Ranged|Lethal": 0.1126,
+    "Ranged|Negative": 0.07
    },
    "def_debuff": {
     "attack_share": 0.451,
     "percent_per_hit": 9.28,
     "seconds": 7.8
    },
+   "def_debuff_pressure": 0.16107,
    "dps_per_critter": 97.3,
    "mez": [],
    "rank_accuracy": 1.075,
@@ -3738,11 +4077,14 @@
     "minion": 10
    },
    "damage_mix": {
-    "Melee|Lethal": 0.2575,
-    "Melee|Smashing": 0.2534,
-    "Ranged|Energy": 0.2245,
-    "Ranged|Lethal": 0.1198,
-    "Ranged|Psionic": 0.1324,
+    "AoE|Energy": 0.0114,
+    "AoE|Lethal": 0.05,
+    "AoE|Psionic": 0.0284,
+    "Melee|Lethal": 0.257,
+    "Melee|Smashing": 0.2529,
+    "Ranged|Energy": 0.2126,
+    "Ranged|Lethal": 0.0696,
+    "Ranged|Psionic": 0.1058,
     "Ranged|Smashing": 0.0124
    },
    "def_debuff": {
@@ -3750,7 +4092,8 @@
     "percent_per_hit": 17.37,
     "seconds": 6.0
    },
-   "dps_per_critter": 57.6,
+   "def_debuff_pressure": 0.057,
+   "dps_per_critter": 57.7,
    "mez": [
     "Held",
     "Immobilized"
@@ -3763,10 +4106,10 @@
    },
    "resistances": {
     "Energy": 8.6,
-    "Lethal": 6.1,
+    "Lethal": 2.0,
     "Negative": 4.6,
     "Psionic": 4.1,
-    "Smashing": 6.1,
+    "Smashing": 2.0,
     "Toxic": 6.1
    },
    "tohit_debuff": {
@@ -3791,6 +4134,7 @@
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
+   "def_debuff_pressure": 0.0,
    "dps_per_critter": 92.1,
    "mez": [
     "Stunned"
@@ -3825,15 +4169,17 @@
     "minion": 2
    },
    "damage_mix": {
+    "AoE|Energy": 0.1324,
     "Melee|Energy": 0.4544,
     "Melee|Lethal": 0.2226,
-    "Ranged|Energy": 0.323
+    "Ranged|Energy": 0.1905
    },
    "def_debuff": {
     "attack_share": 1.0,
     "percent_per_hit": 12.62,
     "seconds": 7.8
    },
+   "def_debuff_pressure": 0.62382,
    "dps_per_critter": 90.5,
    "mez": [
     "Stunned"
@@ -3846,7 +4192,9 @@
    },
    "resistances": {
     "Cold": 20.0,
-    "Energy": 40.0
+    "Energy": 40.0,
+    "Fire": -20.0,
+    "Negative": -20.0
    },
    "tohit_debuff": {
     "attack_share": 0.0,
@@ -3862,15 +4210,17 @@
     "minion": 1
    },
    "damage_mix": {
+    "AoE|Energy": 0.0294,
     "Melee|Energy": 0.3959,
     "Melee|Lethal": 0.2192,
-    "Ranged|Energy": 0.3849
+    "Ranged|Energy": 0.3554
    },
    "def_debuff": {
     "attack_share": 1.0,
     "percent_per_hit": 9.87,
     "seconds": 4.9
    },
+   "def_debuff_pressure": 0.28653,
    "dps_per_critter": 65.4,
    "mez": [
     "Stunned"
@@ -3883,7 +4233,9 @@
    },
    "resistances": {
     "Cold": 20.0,
-    "Energy": 40.0
+    "Energy": 40.0,
+    "Fire": -20.0,
+    "Negative": -20.0
    },
    "tohit_debuff": {
     "attack_share": 0.0,
@@ -3899,17 +4251,20 @@
     "minion": 2
    },
    "damage_mix": {
+    "AoE|Energy": 0.0287,
+    "AoE|Smashing": 0.0287,
     "Melee|Energy": 0.1214,
     "Melee|Smashing": 0.0809,
-    "Ranged|Energy": 0.2118,
+    "Ranged|Energy": 0.1831,
     "Ranged|Negative": 0.4557,
-    "Ranged|Smashing": 0.1301
+    "Ranged|Smashing": 0.1014
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
+   "def_debuff_pressure": 0.0,
    "dps_per_critter": 91.3,
    "mez": [
     "Stunned"
@@ -3937,17 +4292,20 @@
     "minion": 1
    },
    "damage_mix": {
-    "Melee|Lethal": 0.0893,
-    "Melee|Negative": 0.057,
-    "Ranged|Cold": 0.0195,
-    "Ranged|Negative": 0.8342
+    "AoE|Cold": 0.0042,
+    "AoE|Negative": 0.0041,
+    "Melee|Lethal": 0.0848,
+    "Melee|Negative": 0.0541,
+    "Ranged|Cold": 0.0257,
+    "Ranged|Negative": 0.827
    },
    "def_debuff": {
     "attack_share": 0.162,
     "percent_per_hit": 10.0,
     "seconds": 8.0
    },
-   "dps_per_critter": 79.4,
+   "def_debuff_pressure": 0.03645,
+   "dps_per_critter": 83.6,
    "mez": [
     "Stunned"
    ],
@@ -3959,6 +4317,7 @@
    },
    "resistances": {
     "Cold": 3.0,
+    "Energy": -20.0,
     "Fire": 3.0,
     "Negative": 23.0,
     "Psionic": 3.0
@@ -3977,20 +4336,25 @@
     "minion": 11
    },
    "damage_mix": {
-    "Melee|Lethal": 0.1956,
-    "Melee|Smashing": 0.4215,
-    "Ranged|Energy": 0.1484,
-    "Ranged|Fire": 0.0168,
-    "Ranged|Lethal": 0.0798,
-    "Ranged|Negative": 0.1153,
-    "Ranged|Smashing": 0.0221
+    "AoE|Energy": 0.0076,
+    "AoE|Fire": 0.0521,
+    "AoE|Lethal": 0.0112,
+    "AoE|Smashing": 0.0032,
+    "Melee|Energy": 0.0024,
+    "Melee|Lethal": 0.1743,
+    "Melee|Smashing": 0.3756,
+    "Ranged|Energy": 0.1247,
+    "Ranged|Lethal": 0.1295,
+    "Ranged|Negative": 0.1028,
+    "Ranged|Smashing": 0.0165
    },
    "def_debuff": {
     "attack_share": 0.175,
     "percent_per_hit": 8.34,
     "seconds": 5.1
    },
-   "dps_per_critter": 70.2,
+   "def_debuff_pressure": 0.03973,
+   "dps_per_critter": 78.8,
    "mez": [
     "Held",
     "Stunned"
@@ -4003,7 +4367,8 @@
    },
    "resistances": {
     "Lethal": 1.5,
-    "Psionic": 2.5
+    "Psionic": 2.5,
+    "Smashing": -0.8
    },
    "tohit_debuff": {
     "attack_share": 0.0,
@@ -4019,18 +4384,22 @@
     "minion": 3
    },
    "damage_mix": {
-    "Melee|Lethal": 0.6006,
-    "Melee|Toxic": 0.027,
-    "Ranged|Lethal": 0.1305,
-    "Ranged|Smashing": 0.0242,
-    "Ranged|Toxic": 0.2177
+    "AoE|Lethal": 0.011,
+    "AoE|Smashing": 0.0184,
+    "AoE|Toxic": 0.113,
+    "Melee|Lethal": 0.485,
+    "Melee|Toxic": 0.1189,
+    "Ranged|Lethal": 0.0944,
+    "Ranged|Smashing": 0.0109,
+    "Ranged|Toxic": 0.1485
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 128.7,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 159.3,
    "mez": [
     "Held"
    ],
@@ -4041,6 +4410,7 @@
     "seconds": 0.0
    },
    "resistances": {
+    "Cold": -20.0,
     "Toxic": 50.0
    },
    "tohit_debuff": {
@@ -4057,15 +4427,17 @@
     "minion": 2
    },
    "damage_mix": {
-    "Melee|Smashing": 0.4011,
-    "Ranged|Energy": 0.5989
+    "AoE|Energy": 0.0875,
+    "Melee|Smashing": 0.3611,
+    "Ranged|Energy": 0.5514
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 34.7,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 38.5,
    "mez": [
     "Held",
     "Stunned"
@@ -4077,7 +4449,9 @@
     "seconds": 0.0
    },
    "resistances": {
+    "Cold": -20.0,
     "Lethal": 20.0,
+    "Negative": -20.0,
     "Psionic": 30.0,
     "Smashing": 20.0
    },
@@ -4095,25 +4469,34 @@
     "minion": 5
    },
    "damage_mix": {
-    "Melee|Cold": 0.0031,
-    "Melee|Fire": 0.004,
-    "Melee|Lethal": 0.2706,
-    "Melee|Negative": 0.1922,
-    "Ranged|Cold": 0.0846,
-    "Ranged|Energy": 0.0444,
-    "Ranged|Fire": 0.1236,
-    "Ranged|Lethal": 0.1499,
-    "Ranged|Negative": 0.0694,
-    "Ranged|Psionic": 0.0092,
-    "Ranged|Smashing": 0.0434,
-    "Ranged|Toxic": 0.0057
+    "AoE|Cold": 0.0061,
+    "AoE|Energy": 0.0174,
+    "AoE|Fire": 0.0158,
+    "AoE|Lethal": 0.0401,
+    "AoE|Negative": 0.017,
+    "AoE|Psionic": 0.0025,
+    "AoE|Smashing": 0.0111,
+    "AoE|Toxic": 0.0039,
+    "Melee|Cold": 0.0027,
+    "Melee|Fire": 0.005,
+    "Melee|Lethal": 0.2336,
+    "Melee|Negative": 0.1659,
+    "Ranged|Cold": 0.0697,
+    "Ranged|Energy": 0.0289,
+    "Ranged|Fire": 0.1371,
+    "Ranged|Lethal": 0.1074,
+    "Ranged|Negative": 0.0954,
+    "Ranged|Psionic": 0.0054,
+    "Ranged|Smashing": 0.0263,
+    "Ranged|Toxic": 0.0085
    },
    "def_debuff": {
     "attack_share": 0.054,
     "percent_per_hit": 9.4,
     "seconds": 9.8
    },
-   "dps_per_critter": 56.6,
+   "def_debuff_pressure": 0.02982,
+   "dps_per_critter": 65.5,
    "mez": [
     "Held",
     "Immobilized",
@@ -4134,7 +4517,7 @@
     "Lethal": 11.6,
     "Negative": 14.0,
     "Psionic": 0.4,
-    "Smashing": 1.1,
+    "Smashing": -8.9,
     "Toxic": 0.4
    },
    "tohit_debuff": {
@@ -4151,25 +4534,32 @@
     "minion": 5
    },
    "damage_mix": {
-    "Melee|Cold": 0.0031,
-    "Melee|Fire": 0.004,
-    "Melee|Lethal": 0.2708,
-    "Melee|Negative": 0.1923,
-    "Melee|Smashing": 0.0164,
-    "Ranged|Cold": 0.0846,
-    "Ranged|Energy": 0.0444,
-    "Ranged|Fire": 0.1237,
-    "Ranged|Lethal": 0.1449,
-    "Ranged|Negative": 0.0694,
-    "Ranged|Psionic": 0.0029,
-    "Ranged|Smashing": 0.0434
+    "AoE|Cold": 0.0061,
+    "AoE|Energy": 0.0176,
+    "AoE|Fire": 0.016,
+    "AoE|Lethal": 0.0404,
+    "AoE|Negative": 0.0171,
+    "AoE|Psionic": 0.0025,
+    "AoE|Smashing": 0.0112,
+    "Melee|Cold": 0.0027,
+    "Melee|Fire": 0.005,
+    "Melee|Lethal": 0.2355,
+    "Melee|Negative": 0.1673,
+    "Melee|Smashing": 0.0143,
+    "Ranged|Cold": 0.0702,
+    "Ranged|Energy": 0.0291,
+    "Ranged|Fire": 0.1382,
+    "Ranged|Lethal": 0.1038,
+    "Ranged|Negative": 0.0962,
+    "Ranged|Smashing": 0.0265
    },
    "def_debuff": {
     "attack_share": 0.052,
     "percent_per_hit": 8.74,
     "seconds": 9.7
    },
-   "dps_per_critter": 56.5,
+   "def_debuff_pressure": 0.02628,
+   "dps_per_critter": 65.0,
    "mez": [
     "Held",
     "Immobilized",
@@ -4188,7 +4578,7 @@
     "Fire": 3.5,
     "Lethal": 11.4,
     "Negative": 13.8,
-    "Smashing": 1.3,
+    "Smashing": -8.6,
     "Toxic": 0.2
    },
    "tohit_debuff": {
@@ -4205,22 +4595,27 @@
     "minion": 4
    },
    "damage_mix": {
-    "Melee|Lethal": 0.0085,
-    "Melee|Smashing": 0.3648,
-    "Melee|Toxic": 0.0075,
-    "Ranged|Energy": 0.1628,
-    "Ranged|Fire": 0.0103,
-    "Ranged|Lethal": 0.1371,
-    "Ranged|Negative": 0.2654,
-    "Ranged|Smashing": 0.0377,
-    "Ranged|Toxic": 0.006
+    "AoE|Energy": 0.0784,
+    "AoE|Fire": 0.0102,
+    "AoE|Lethal": 0.0209,
+    "AoE|Smashing": 0.0369,
+    "AoE|Toxic": 0.0023,
+    "Melee|Lethal": 0.0155,
+    "Melee|Smashing": 0.2956,
+    "Melee|Toxic": 0.0182,
+    "Ranged|Energy": 0.0752,
+    "Ranged|Lethal": 0.2047,
+    "Ranged|Negative": 0.215,
+    "Ranged|Smashing": 0.0147,
+    "Ranged|Toxic": 0.0121
    },
    "def_debuff": {
     "attack_share": 0.196,
     "percent_per_hit": 8.15,
     "seconds": 8.8
    },
-   "dps_per_critter": 72.1,
+   "def_debuff_pressure": 0.07327,
+   "dps_per_critter": 88.9,
    "mez": [
     "Confused",
     "Held",
@@ -4258,21 +4653,22 @@
     "minion": 11
    },
    "damage_mix": {
-    "Melee|Energy": 0.2243,
-    "Melee|Lethal": 0.1013,
+    "AoE|Fire": 0.0037,
+    "AoE|Lethal": 0.0022,
+    "AoE|Smashing": 0.0008,
+    "Melee|Energy": 0.2242,
+    "Melee|Lethal": 0.1012,
     "Ranged|Cold": 0.0069,
-    "Ranged|Energy": 0.2728,
-    "Ranged|Fire": 0.0032,
-    "Ranged|Lethal": 0.0022,
-    "Ranged|Negative": 0.243,
-    "Ranged|Psionic": 0.1455,
-    "Ranged|Smashing": 0.0008
+    "Ranged|Energy": 0.2727,
+    "Ranged|Negative": 0.2428,
+    "Ranged|Psionic": 0.1455
    },
    "def_debuff": {
     "attack_share": 0.002,
     "percent_per_hit": 20.0,
     "seconds": 12.0
    },
+   "def_debuff_pressure": 0.00116,
    "dps_per_critter": 47.6,
    "mez": [
     "Held",
@@ -4286,12 +4682,13 @@
     "seconds": 0.0
    },
    "resistances": {
-    "Cold": 0.4,
-    "Energy": 9.8,
-    "Fire": 0.4,
+    "Cold": -2.3,
+    "Energy": 7.0,
+    "Fire": -2.3,
     "Lethal": 9.8,
+    "Negative": -5.5,
     "Psionic": 8.2,
-    "Smashing": 9.8
+    "Smashing": 4.3
    },
    "tohit_debuff": {
     "attack_share": 0.0,
@@ -4307,16 +4704,17 @@
     "minion": 1
    },
    "damage_mix": {
-    "Melee|Smashing": 0.8213,
-    "Ranged|Lethal": 0.0401,
-    "Ranged|Smashing": 0.1386
+    "Melee|Smashing": 0.7604,
+    "Ranged|Lethal": 0.1113,
+    "Ranged|Smashing": 0.1284
    },
    "def_debuff": {
     "attack_share": 0.244,
     "percent_per_hit": 8.0,
     "seconds": 5.0
    },
-   "dps_per_critter": 79.4,
+   "def_debuff_pressure": 0.05989,
+   "dps_per_critter": 85.8,
    "mez": [],
    "rank_accuracy": 1.075,
    "res_debuff": {
@@ -4348,22 +4746,26 @@
     "minion": 5
    },
    "damage_mix": {
-    "Melee|Energy": 0.2817,
-    "Melee|Lethal": 0.0236,
-    "Melee|Smashing": 0.4086,
-    "Ranged|Energy": 0.1244,
-    "Ranged|Lethal": 0.0345,
-    "Ranged|Negative": 0.0702,
-    "Ranged|Psionic": 0.0177,
-    "Ranged|Smashing": 0.0375,
-    "Ranged|Toxic": 0.0018
+    "AoE|Energy": 0.0168,
+    "AoE|Lethal": 0.0107,
+    "AoE|Smashing": 0.0044,
+    "Melee|Energy": 0.2723,
+    "Melee|Lethal": 0.0304,
+    "Melee|Smashing": 0.395,
+    "Ranged|Energy": 0.1053,
+    "Ranged|Lethal": 0.0227,
+    "Ranged|Negative": 0.0679,
+    "Ranged|Psionic": 0.0171,
+    "Ranged|Smashing": 0.0318,
+    "Ranged|Toxic": 0.0256
    },
    "def_debuff": {
     "attack_share": 0.026,
     "percent_per_hit": 10.0,
     "seconds": 8.7
    },
-   "dps_per_critter": 102.6,
+   "def_debuff_pressure": 0.01277,
+   "dps_per_critter": 106.1,
    "mez": [
     "Held",
     "Immobilized",
@@ -4380,7 +4782,7 @@
     "Cold": 0.6,
     "Energy": 0.6,
     "Fire": 0.6,
-    "Lethal": 0.6,
+    "Lethal": -13.4,
     "Negative": 0.6,
     "Psionic": 0.6,
     "Smashing": 14.6,
@@ -4400,20 +4802,24 @@
     "minion": 4
    },
    "damage_mix": {
-    "Melee|Energy": 0.1038,
-    "Melee|Lethal": 0.2021,
-    "Melee|Smashing": 0.3753,
-    "Ranged|Energy": 0.0552,
-    "Ranged|Lethal": 0.213,
-    "Ranged|Smashing": 0.0444,
-    "Ranged|Toxic": 0.0062
+    "AoE|Energy": 0.018,
+    "AoE|Lethal": 0.0105,
+    "AoE|Smashing": 0.0458,
+    "Melee|Energy": 0.0862,
+    "Melee|Lethal": 0.2153,
+    "Melee|Smashing": 0.3206,
+    "Ranged|Energy": 0.0278,
+    "Ranged|Lethal": 0.1758,
+    "Ranged|Smashing": 0.0236,
+    "Ranged|Toxic": 0.0763
    },
    "def_debuff": {
     "attack_share": 0.106,
     "percent_per_hit": 9.13,
     "seconds": 6.9
    },
-   "dps_per_critter": 73.9,
+   "def_debuff_pressure": 0.05002,
+   "dps_per_critter": 88.9,
    "mez": [
     "Immobilized",
     "Stunned"
@@ -4426,6 +4832,7 @@
    },
    "resistances": {
     "Energy": 20.0,
+    "Lethal": -20.0,
     "Smashing": 20.0,
     "Toxic": 30.0
    },
@@ -4443,20 +4850,25 @@
     "minion": 10
    },
    "damage_mix": {
-    "Melee|Energy": 0.2457,
-    "Melee|Smashing": 0.2541,
-    "Ranged|Energy": 0.2477,
-    "Ranged|Fire": 0.0386,
-    "Ranged|Lethal": 0.2025,
-    "Ranged|Smashing": 0.0026,
-    "Ranged|Toxic": 0.0089
+    "AoE|Energy": 0.0452,
+    "AoE|Fire": 0.0269,
+    "AoE|Lethal": 0.092,
+    "AoE|Smashing": 0.0023,
+    "AoE|Toxic": 0.0221,
+    "Melee|Energy": 0.2128,
+    "Melee|Smashing": 0.22,
+    "Ranged|Energy": 0.2069,
+    "Ranged|Fire": 0.026,
+    "Ranged|Lethal": 0.1376,
+    "Ranged|Toxic": 0.0083
    },
    "def_debuff": {
     "attack_share": 0.092,
     "percent_per_hit": 8.66,
     "seconds": 8.1
    },
-   "dps_per_critter": 53.0,
+   "def_debuff_pressure": 0.02849,
+   "dps_per_critter": 61.2,
    "mez": [
     "Held",
     "Immobilized",
@@ -4501,6 +4913,7 @@
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
+   "def_debuff_pressure": 0.0,
    "dps_per_critter": 237.9,
    "mez": [
     "Stunned"
@@ -4533,21 +4946,25 @@
     "minion": 13
    },
    "damage_mix": {
-    "Melee|Lethal": 0.2998,
-    "Melee|Smashing": 0.2866,
-    "Ranged|Cold": 0.0119,
+    "AoE|Fire": 0.0132,
+    "AoE|Lethal": 0.0448,
+    "AoE|Smashing": 0.0754,
+    "Melee|Lethal": 0.2887,
+    "Melee|Smashing": 0.2956,
+    "Ranged|Cold": 0.0115,
     "Ranged|Energy": 0.0006,
-    "Ranged|Fire": 0.022,
-    "Ranged|Lethal": 0.2381,
-    "Ranged|Negative": 0.062,
-    "Ranged|Smashing": 0.079
+    "Ranged|Fire": 0.0133,
+    "Ranged|Lethal": 0.1844,
+    "Ranged|Negative": 0.0597,
+    "Ranged|Smashing": 0.0129
    },
    "def_debuff": {
     "attack_share": 0.11,
     "percent_per_hit": 8.97,
     "seconds": 7.1
    },
-   "dps_per_critter": 94.8,
+   "def_debuff_pressure": 0.0396,
+   "dps_per_critter": 98.5,
    "mez": [
     "Sleep",
     "Stunned"
@@ -4564,7 +4981,7 @@
     "Fire": 21.0,
     "Lethal": 14.3,
     "Negative": 5.5,
-    "Psionic": 5.5,
+    "Psionic": -9.2,
     "Smashing": 14.3,
     "Toxic": 5.5
    },
@@ -4582,7 +4999,7 @@
     "minion": 1
    },
    "damage_mix": {
-    "Ranged|Lethal": 0.6595,
+    "AoE|Lethal": 0.6595,
     "Ranged|Smashing": 0.3405
    },
    "def_debuff": {
@@ -4590,6 +5007,7 @@
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
+   "def_debuff_pressure": 0.0,
    "dps_per_critter": 92.1,
    "mez": [
     "Stunned"
@@ -4624,17 +5042,19 @@
     "minion": 4
    },
    "damage_mix": {
-    "Melee|Cold": 0.3097,
-    "Melee|Smashing": 0.0968,
-    "Ranged|Cold": 0.4453,
-    "Ranged|Smashing": 0.1481
+    "AoE|Cold": 0.1898,
+    "Melee|Cold": 0.2573,
+    "Melee|Smashing": 0.0804,
+    "Ranged|Cold": 0.3494,
+    "Ranged|Smashing": 0.1231
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 47.1,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 56.7,
    "mez": [
     "Held",
     "Immobilized"
@@ -4647,6 +5067,8 @@
    },
    "resistances": {
     "Cold": 20.0,
+    "Energy": -20.0,
+    "Fire": -20.0,
     "Lethal": 20.0
    },
    "tohit_debuff": {
@@ -4663,18 +5085,22 @@
     "minion": 4
    },
    "damage_mix": {
-    "Melee|Smashing": 0.2678,
-    "Ranged|Energy": 0.001,
-    "Ranged|Fire": 0.0517,
-    "Ranged|Lethal": 0.631,
-    "Ranged|Toxic": 0.0485
+    "AoE|Energy": 0.0009,
+    "AoE|Fire": 0.0208,
+    "AoE|Lethal": 0.0659,
+    "AoE|Toxic": 0.0225,
+    "Melee|Smashing": 0.2229,
+    "Ranged|Fire": 0.111,
+    "Ranged|Lethal": 0.4595,
+    "Ranged|Toxic": 0.0965
    },
    "def_debuff": {
     "attack_share": 0.0,
     "percent_per_hit": 0.0,
     "seconds": 0.0
    },
-   "dps_per_critter": 63.8,
+   "def_debuff_pressure": 0.0,
+   "dps_per_critter": 76.6,
    "mez": [
     "Held",
     "Immobilized"
@@ -4701,7 +5127,7 @@
    }
   }
  },
- "method": "Fetch Homecoming critter data from City of Data (cod.uberguy.net) and compile\ndata/critter_groups.json: per enemy group, what its standard level-50\nminions, lieutenants and bosses throw at you.\n\nOwner's ruling (2026-11-12): the matchups source is the game export when on his\nPC, else a public source; City of Data serves the game's own critter records\n(entity defaults + power records, the same fields as the client bins), which is\ncloser to the game than a wiki page. Labelled as such in the output.\n\nPer group (numbers at level 54 = +4 to a level 50, from each critter's own\nclass table):\n  critters             standard critters read, by rank\n  rank_accuracy        the spawn's mean rank accuracy (stated rank mix)\n  dps_per_critter      sustained damage per critter (attacks at their own cycle,\n                       scaled down when the animations overlap)\n  damage_mix           share of that damage by \"Position|Type\" (positions are the\n                       game's own attack_types; untagged attacks count as Ranged)\n  def_debuff / tohit_debuff / res_debuff   share of attacks that land it,\n                       percent per landed hit, seconds it lasts\n  resistances          the group's passive self resistance by type, percent\n  mez                  mez types its attacks carry\nSpawn rank mix (stated): 60% minions, 30% lieutenants, 10% bosses.",
+ "method": "Fetch Homecoming critter data from City of Data (cod.uberguy.net) and compile\ndata/critter_groups.json: per enemy group, what its standard level-50\nminions, lieutenants and bosses throw at you.\n\nOwner's ruling (2026-11-12): the matchups source is the game export when on his\nPC, else a public source; City of Data serves the game's own critter records\n(entity defaults + power records, the same fields as the client bins), which is\ncloser to the game than a wiki page. Labelled as such in the output.\n\nPer group (numbers at level 54 = +4 to a level 50, from each critter's own\nclass table):\n  critters             standard critters read, by rank\n  rank_accuracy        the spawn's mean rank accuracy (stated rank mix)\n  dps_per_critter      sustained damage per critter (attacks at their own cycle,\n                       scaled down when the animations overlap)\n  damage_mix           share of that damage by \"Position|Type\": positions are the\n                       game's own attack_types (its \"Area\" = our AoE); an attack\n                       tagged with several is one cell, \"Ranged+AoE\", defended by\n                       the best of them; untagged attacks count as Ranged.\n                       Damage over time counts every tick.\n  def_debuff / tohit_debuff / res_debuff   share of attacks that land it,\n                       percent per landed hit, seconds it lasts\n  resistances          the group's passive self resistance by type, percent\n                       (negative = a vulnerability; stacked past 100 = immune)\n  mez                  mez types its attacks carry\nSpawn rank mix (stated): 60% minions, 30% lieutenants, 10% bosses.",
  "revision": "homecoming-20251209_7415",
  "source": "City of Data (cod.uberguy.net), the game's own critter records",
  "unread_powers": 0

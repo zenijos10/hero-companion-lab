@@ -13,11 +13,15 @@ class table):
   rank_accuracy        the spawn's mean rank accuracy (stated rank mix)
   dps_per_critter      sustained damage per critter (attacks at their own cycle,
                        scaled down when the animations overlap)
-  damage_mix           share of that damage by "Position|Type" (positions are the
-                       game's own attack_types; untagged attacks count as Ranged)
+  damage_mix           share of that damage by "Position|Type": positions are the
+                       game's own attack_types (its "Area" = our AoE); an attack
+                       tagged with several is one cell, "Ranged+AoE", defended by
+                       the best of them; untagged attacks count as Ranged.
+                       Damage over time counts every tick.
   def_debuff / tohit_debuff / res_debuff   share of attacks that land it,
                        percent per landed hit, seconds it lasts
   resistances          the group's passive self resistance by type, percent
+                       (negative = a vulnerability; stacked past 100 = immune)
   mez                  mez types its attacks carry
 Spawn rank mix (stated): 60% minions, 30% lieutenants, 10% bosses.
 
@@ -46,6 +50,9 @@ TYPES = {"Smashing_Dmg": "Smashing", "Lethal_Dmg": "Lethal", "Fire_Dmg": "Fire",
          "Cold_Dmg": "Cold", "Energy_Dmg": "Energy", "Negative_Energy_Dmg": "Negative",
          "Psionic_Dmg": "Psionic", "Toxic_Dmg": "Toxic"}
 POSITIONS = ("Melee", "Ranged", "AoE")
+# The game's attack_types spell the area position "Area"; ours (and the
+# defense totals) say "AoE". Translate the vocabulary (CLAUDE.md rule 5).
+GAME_POSITIONS = {"Melee": "Melee", "Ranged": "Ranged", "Area": "AoE"}
 # Entity keys that are not standard enemies (pets, objects, events, NPCs, heroes
 # and level/role variants of the same critter).
 SKIP_PREFIX = {"objects", "pets", "event", "npc", "base", "incarnatepets", "miscellaneous",
@@ -70,8 +77,14 @@ SPAWN_RANK_WEIGHTS = {"minion": 0.6, "lieutenant": 0.3, "boss": 0.1}
 RANK_ACCURACY = {"minion": 1.0, "lieutenant": 1.15, "boss": 1.3}
 
 
+class FetchError(RuntimeError):
+    """A record that could not be read (network, timeout, server error):
+    never cached, so the next run tries again instead of remembering a gap."""
+
+
 def _get(path, refresh=False):
-    """JSON at BASE/path, cached on disk; None on a 404/403."""
+    """JSON at BASE/path, cached on disk; None when the host says the record
+    does not exist (404/403, cached as such). Any other failure raises."""
     local = os.path.join(CACHE, path.replace("/", os.sep))
     if not refresh and os.path.exists(local):
         with open(local, encoding="utf-8") as f:
@@ -79,7 +92,7 @@ def _get(path, refresh=False):
         return json.loads(text) if text else None
     req = urllib.request.Request(f"{BASE}/{path}", headers={"User-Agent": UA,
                                                              "Accept-Encoding": "identity"})
-    text = ""
+    text = None
     for attempt in range(4):
         try:
             with urllib.request.urlopen(req, timeout=30) as r:
@@ -90,10 +103,13 @@ def _get(path, refresh=False):
             break
         except urllib.error.HTTPError as e:
             if e.code in (403, 404):
+                text = ""                      # absent: a fact worth caching
                 break
             time.sleep(2 ** attempt)
         except OSError:
             time.sleep(2 ** attempt)
+    if text is None:
+        raise FetchError(f"could not read {path} after 4 attempts")
     os.makedirs(os.path.dirname(local), exist_ok=True)
     with open(local, "w", encoding="utf-8") as f:
         f.write(text)
@@ -144,6 +160,18 @@ def _seconds(text):
     return float(m.group(1)) if m else 0.0
 
 
+def _ticks(t):
+    """How many times a damage template lands: once, or once at application and
+    every application_period through its duration (a burn ticking 1 s for 3.1 s
+    lands 4 times), each tick at its own tick_chance."""
+    period = t.get("application_period") or 0.0
+    chance = t.get("tick_chance")
+    chance = 1.0 if chance is None else chance
+    if period <= 0:
+        return 1.0
+    return (1 + int(_seconds(t.get("duration")) / period + 1e-9)) * chance
+
+
 def _table(tables, name):
     """The class table value at the rating level (54 = +4 to a level 50)."""
     row = (tables or {}).get((name or "").lower())
@@ -170,7 +198,7 @@ def attack_profile(power, tables):
             continue
         for a in attribs:
             if a in TYPES and aspect == "Absolute":
-                damage[TYPES[a]] = damage.get(TYPES[a], 0.0) + mag
+                damage[TYPES[a]] = damage.get(TYPES[a], 0.0) + mag * _ticks(t)
             elif a in _DEBUFF_ATTRIBS and aspect == "Current" and "debuff" in (t.get("table") or "").lower():
                 debuffs.append((_DEBUFF_ATTRIBS[a], mag * 100.0, _seconds(t.get("duration"))))
             elif a in ("Held", "Stunned", "Sleep", "Immobilized", "Terrorized", "Confused"):
@@ -179,7 +207,10 @@ def attack_profile(power, tables):
             debuffs.append(("res_debuff", mag * 100.0, _seconds(t.get("duration"))))
     if not damage:
         return None
-    pos = [p for p in POSITIONS if p in (power.get("attack_types") or [])] or ["Ranged"]
+    # an attack tagged with several positions is defended by the BEST of them
+    # (the game's rule), so it is ONE cell keyed by all of them, e.g. "Ranged+AoE"
+    tags = [GAME_POSITIONS[a] for a in power.get("attack_types") or [] if a in GAME_POSITIONS]
+    pos = "+".join(p for p in POSITIONS if p in tags) or "Ranged"
     act = power.get("activation_time") or 0.0
     return {"damage": damage, "positions": pos, "activation": act,
             "cycle": act + (power.get("recharge_time") or 0.0),
@@ -196,7 +227,7 @@ def self_resistance(power, tables):
             continue
         mag = (t.get("scale") or 0.0) * _table(tables, t.get("table")) * 100.0
         for a in t.get("attribs") or []:
-            if a in TYPES and mag > 0:
+            if a in TYPES and mag:                 # negative = a vulnerability, kept
                 out[TYPES[a]] = out.get(TYPES[a], 0.0) + mag
     return out
 
@@ -214,9 +245,8 @@ def critter(names, powers, tables):
         out["attacks_per_second"] += rate
         for t, d in a["damage"].items():
             out["dps"] += rate * d
-            for p in a["positions"]:
-                key = f"{p}|{t}"
-                out["mix"][key] = out["mix"].get(key, 0.0) + rate * d / len(a["positions"])
+            key = f"{a['positions']}|{t}"
+            out["mix"][key] = out["mix"].get(key, 0.0) + rate * d
         for kind, mag, dur in a["debuffs"]:
             cell = out["debuffs"].setdefault(kind, [0.0, 0.0, 0.0])   # rate, rate*mag, rate*dur
             cell[0] += rate
@@ -226,8 +256,9 @@ def critter(names, powers, tables):
     for n in names:
         for t, v in self_resistance(powers.get(n), tables).items():
             out["res"][t] = out["res"].get(t, 0.0) + v
-    # a critter's stacked resistances past 100% are immunity, not more than immune
-    out["res"] = {t: min(v, 100.0) for t, v in out["res"].items()}
+    # stacked resistance past 100% is immunity, not more than immune; a
+    # vulnerability is kept (it raises the damage a build lands)
+    out["res"] = {t: max(min(v, 100.0), -100.0) for t, v in out["res"].items()}
     return out
 
 
@@ -272,11 +303,21 @@ def compile_groups(members, powers, class_tables):
             "attacks_per_second_per_critter": round(aps, 3),
             "damage_mix": {k: round(v / dps, 4) for k, v in sorted(mix.items()) if v / dps >= 0.0005},
             **debuffs,
+            "def_debuff_pressure": round(
+                aps * debuffs["def_debuff"]["attack_share"]
+                * debuffs["def_debuff"]["percent_per_hit"] / 100.0
+                * debuffs["def_debuff"]["seconds"], 5),
             "resistances": {t: round(avg(lambda c, t=t: c["res"].get(t, 0.0)), 1)
                             for t in sorted(res_types)},
             "mez": sorted({m for _r, c in crits for m in c["mez"]}),
         }
     return out
+
+
+def def_debuff_pressure(group):
+    """One group's -Defense landed per critter per second at a 100% hit chance
+    (attacks/s x share carrying it x fraction per hit x seconds it lasts)."""
+    return group["def_debuff_pressure"]
 
 
 def main():
@@ -288,6 +329,11 @@ def main():
     keys = candidates(names)
     print(f"{len(keys)} candidate entities", flush=True)
     entities = _fetch_all([f"entities/{k}.json" for k in keys], args.refresh)
+    absent = sorted(k for k, e in entities.items() if e is None)
+    print(f"{len(keys) - len(absent)} of {len(keys)} expected entity records read", flush=True)
+    if absent:            # every candidate comes from the host's own entity index
+        print(f"FAIL: {len(absent)} indexed entities are unreadable: {absent[:10]}")
+        return 1
     members = [m for m in (standard(e) for e in entities.values()) if m]
     print(f"{len(members)} standard level-50 enemies", flush=True)
     classes = sorted({k for _g, _r, k, _n in members if k})
@@ -295,24 +341,33 @@ def main():
     class_tables = {k: {n.lower(): v for n, v in ((raw_tables[f"tables/{k}.json"] or {})
                                                   .get("named_tables") or {}).items()}
                     for k in classes}
-    print(f"{sum(1 for v in class_tables.values() if v)} of {len(classes)} expected class tables read")
+    read = sum(1 for v in class_tables.values() if v)
+    print(f"{read} of {len(classes)} expected class tables read")
+    if read < len(classes):
+        print(f"FAIL: class tables unread: {[k for k, v in class_tables.items() if not v]}")
+        return 1
     wanted = sorted({n for _g, _r, _k, ns in members for n in ns})
     fetched = _fetch_all([power_path(n) for n in wanted], args.refresh)
     powers = {n: fetched[power_path(n)] for n in wanted}
     missing = [n for n, p in powers.items() if p is None]
     print(f"{len(wanted) - len(missing)} of {len(wanted)} expected power records read", flush=True)
+    if missing:
+        print(f"FAIL: power records unread: {missing[:10]}")
+        return 1
     groups = compile_groups(members, powers, class_tables)
     vals = list(groups.values())
-    dd = [g for g in vals if g["def_debuff"]["attack_share"] > 0]
-    mean = lambda f: round(sum(f(g) for g in vals) / len(vals), 3) if vals else 0.0  # noqa: E731
-    all_groups = {"enemy_attacks_per_second": mean(lambda g: g["attacks_per_second_per_critter"]),
-                  "def_debuff_attack_share": mean(lambda g: g["def_debuff"]["attack_share"]),
-                  # magnitude and duration: mean over the groups that land -Defense
-                  "def_debuff_per_hit": round(sum(g["def_debuff"]["percent_per_hit"] for g in dd)
-                                              / len(dd) / 100, 4) if dd else 0.0,
-                  "def_debuff_seconds": round(sum(g["def_debuff"]["seconds"] for g in dd)
-                                              / len(dd), 2) if dd else 0.0,
-                  "groups": len(vals), "groups_landing_def_debuff": len(dd)}
+    mean = lambda f: round(sum(f(g) for g in vals) / len(vals), 4) if vals else 0.0  # noqa: E731
+    # The rating cascade's inputs, as the MEAN OF EACH GROUP'S OWN product (a
+    # product of separate means would misstate groups whose share and duration
+    # pull opposite ways):
+    #   def_debuff_pressure  -Defense (fraction x seconds) landed per critter per
+    #                        second at a 100% hit chance = attacks/s x share x per hit x seconds
+    #   def_debuff_hit_rate  attacks/s that carry -Defense, per critter
+    all_groups = {"def_debuff_pressure": mean(def_debuff_pressure),
+                  "def_debuff_hit_rate": mean(lambda g: g["attacks_per_second_per_critter"]
+                                              * g["def_debuff"]["attack_share"]),
+                  "groups": len(vals),
+                  "groups_landing_def_debuff": sum(1 for g in vals if def_debuff_pressure(g) > 0)}
     out = {"source": "City of Data (cod.uberguy.net), the game's own critter records",
            "all_groups_mean": all_groups,
            "revision": revision, "fetched": datetime.date.today().isoformat(),

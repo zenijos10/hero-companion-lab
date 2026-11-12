@@ -336,21 +336,21 @@
   },
   "toughness": {
    "cuts": {
-    "A": 708.2,
-    "B": 502.3,
-    "C": 369.75,
-    "D": 213.25,
-    "S": 1145.2
+    "A": 892.3,
+    "B": 632.85,
+    "C": 458.65,
+    "D": 295.75,
+    "S": 1445.3
    },
    "sample_size": 246
   },
   "toughness_vs_archetype": {
    "cuts": {
-    "A": 11.835,
-    "B": 8.005,
-    "C": 6.045,
-    "D": 4.2,
-    "S": 19.055
+    "A": 14.69,
+    "B": 10.245,
+    "C": 7.705,
+    "D": 5.2,
+    "S": 24.99
    },
    "sample_size": 246
   }
@@ -365,6 +365,6 @@
   "skipped": []
  },
  "scenario": "rating_plus4",
- "scenario_fingerprint": "47bf31ced210",
+ "scenario_fingerprint": "9ff2199bbb62",
  "version": 5
 }

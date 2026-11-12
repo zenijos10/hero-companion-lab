@@ -9896,7 +9896,7 @@ function renderMatchupsHtml(label, groups) {
   if (!Array.isArray(groups) || !groups.length) return "";
   const pct = x => (x == null ? "-" : `${(x * 100).toFixed(1)}%`);
   const rows = groups.map(g => {
-    const ttl = g.time_to_live == null ? "outlasts them" : `${g.time_to_live.toFixed(1)} s`;
+    const ttl = g.outlasts ? "outlasts them" : `${g.time_to_live.toFixed(1)} s`;
     const theirs = (g.their_damage || []).map(t => `${escHtml(t.type)} ${Math.round(t.share * 100)}%`).join(", ");
     const ddr = g.steady_def_debuff_without_ddr > g.steady_def_debuff
       ? ` <span class="muted small">(${pct(g.steady_def_debuff_without_ddr)} with no DDR)</span>` : "";
@@ -9907,7 +9907,9 @@ function renderMatchupsHtml(label, groups) {
   }).join("");
   return `<details class="rt-matchups"><summary>${escHtml(label)}: versus ${groups.length} enemy groups at +4, hardest first</summary>`
     + `<p class="rt-scope keep-whole">The rating spawn refought with each group's own damage types, attack positions, rank accuracy, `
-    + `-Defense and resistances (game data from City of Data). Time to live counts your regeneration, heals and absorb.</p>`
+    + `-Defense and resistances (game data from City of Data). Melee foes chase you: their attacks land unless your `
+    + `roots, knockback, repel or slows keep them away. Time to live counts your regeneration, heals and absorb; `
+    + `outlasting means you are still standing when the fight ends.</p>`
     + `<table class="rating-table"><thead><tr><th>Group</th><th>Time to live</th><th>Damage landing/s</th>`
     + `<th>Their damage</th><th>Your defense lost</th><th>Your damage not resisted</th><th>Mez</th></tr></thead>`
     + `<tbody>${rows}</tbody></table></details>`;

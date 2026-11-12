@@ -125,10 +125,10 @@ ok(html.includes("4.0 %/s"), "rate units render");
 // 5d. enemy-group matchups: hardest first as given, outlasting stated in words, escaped
 html = render({ ok: true, mode: "scorecard", rows: [], notes: [],
   columns: [col("Mine", { matchups: [
-    { group: "Council", name: "Council <x>", time_to_live: 12.34, damage_landing_per_second: 88,
+    { group: "Council", name: "Council <x>", time_to_live: 12.34, outlasts: false, damage_landing_per_second: 88,
       their_damage: [{ type: "Lethal", share: 0.6 }], steady_def_debuff: 0.03,
       steady_def_debuff_without_ddr: 0.09, your_damage_unresisted: 0.9, mez: ["Held"] },
-    { group: "Hellions", name: "Hellions", time_to_live: null, damage_landing_per_second: 10,
+    { group: "Hellions", name: "Hellions", time_to_live: 95.0, outlasts: true, damage_landing_per_second: 10,
       their_damage: [], steady_def_debuff: 0.0, steady_def_debuff_without_ddr: 0.0,
       your_damage_unresisted: 1.0, mez: [] }] })] });
 ok(html.includes("versus 2 enemy groups") && html.includes("Council &lt;x&gt;"), "matchups render, escaped");

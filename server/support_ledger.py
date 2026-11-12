@@ -161,6 +161,7 @@ def _control_rows(rec, slots, ctx, global_recharge):
             uptime = 1.0 if toggle else (min(1.0, duration / enh_rech) if enh_rech > 0 else 1.0)
             best[mez] = {"mez": mez, "kind": c.get("kind"), "magnitude": round(mag, 2),
                          "duration_seconds": round(duration, 2), "uptime": round(uptime, 3),
+                         "cycle_seconds": None if toggle else round(enh_rech, 2),
                          "sustained": toggle or uptime >= SUSTAINED_UPTIME,
                          "affects_in_one_application": [rank for rank, prot in RANK_PROTECTION
                                                         if mag > prot]}

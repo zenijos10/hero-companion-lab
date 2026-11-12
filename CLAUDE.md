@@ -195,8 +195,14 @@ out. Rules going forward:
   gitignored `tools/gamedata/_cod_cache/`, 4 parallel) -> `data/critter_groups.json`: 106 level-50 groups,
   class tables at level 54, allies/events/decoys excluded. `server/matchups.py` refights the rating spawn
   per group; `evaluation.matchups`, scorecard fold, help topic. The rating scenario's cascade constants
-  are now that data's all-groups mean (0.454 att/s, 13.3% carry -Def, 9.75%/hit, 7.73 s), replacing my
-  placeholders. ⚠ CoD revision 2025-12-09 predates our July 2026 client bins: re-run the fetch (or a
+  are now the MEAN OF EACH GROUP'S OWN -Def pressure (0.042) and debuffing hit rate (0.0663; review fix:
+  a product of separate means misstates it). The game names the area position "Area" (ours AoE).
+  **MELEE REACH (owner, 2026-11-12): "Melee npcs will try to enter melee distance ... running out of
+  melee range won't work as the enemy will follow you, so you need a method to keep them at bay
+  (controls or soft controls) or kill them before they get to you."** Range alone never removes melee
+  damage: reach = close + range x (1 - keep_at_bay) x (1 - approach/window), keep_at_bay = best area
+  root/knockback/repel uptime, approach = 60 ft at 30.8 ft/s slowed by -Speed (cap 90%), all stated.
+  Toughness and matchups both read it. ⚠ CoD revision 2025-12-09 predates our July 2026 client bins: re-run the fetch (or a
   client re-export) at PATCH-WATCH. The `environment` hero-companion-lab allows homecoming.wiki + cod.
 - **M5 (2026-11-10): `/build/compare` + the app's 📊 Rate this build (Stats row + Build menu)**
   is read-only: it evaluates the OWNED build (`buildWithAccolades()`, never `buildPayload()`,
