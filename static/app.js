@@ -9888,16 +9888,8 @@ const _RATING_UNITS = {
   percent_per_second: "%/s", support_index_points: "pts", hit_points: "HP",
 };
 
-// Scorecard sections, by category key (first match wins).
-const _RATING_SECTIONS = [
-  [/damage$/, "Damage"], [/^(survival|toughness|defense|resistance|debuff_resist)/, "Survival"],
-  [/^(endurance|recharge)$/, "Resources"], [/^control/, "Control"],
-  [/^(healing|support_index)$/, "Support"], [/^buff_/, "Team buffs"], [/^debuff_/, "Debuffs"],
-];
-function _ratingSection(key) {
-  const hit = _RATING_SECTIONS.find(([rx]) => rx.test(key || ""));
-  return hit ? hit[1] : "";
-}
+// Scorecard sections come from the server (build_ratings.SECTIONS, one per
+// category, in table order), so a section is never split across the table.
 
 // Pure: the /build/compare response in, HTML out (escHtml is the only
 // dependency, so tools/test_rating_view.js runs it under node).
@@ -9925,7 +9917,7 @@ function renderRatingHtml(cmp) {
   let section = "";
   const width = cols.length + 1 + (single ? 0 : 1);
   const rows = (cmp.rows || []).map(r => {
-    const sec = _ratingSection(r.category);
+    const sec = r.section || "";
     const band = sec && sec !== section ? `<tr class="rt-section"><th colspan="${width}">${escHtml(sec)}</th></tr>` : "";
     if (sec) section = sec;
     const best = new Set(r.best || []);

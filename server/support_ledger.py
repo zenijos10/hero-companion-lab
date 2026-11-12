@@ -196,6 +196,7 @@ def power_ledger(power, ctx, global_recharge, scenario, share):
                     # (an attack shares the one animation bar, like timed debuffs)
                     per_cast = row["landing_peak_percent"]["vs_scenario"]
                     bar = share if (rec.get("is_attack") and click) else 1.0
+                    # the peak is already chance-weighted (role_output.row_peak_pct)
                     row["landing_per_second_vs_scenario"] = round(per_cast * bar / cycle, 3)
             rows.append(row)
         if rows:

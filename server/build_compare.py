@@ -54,7 +54,8 @@ def _row(key, label, unit, per_column):
                       "low_sample": cell.get("low_sample", False)})
     graded = [i for i, c in enumerate(cells)
               if c["grade"] in LETTERS and isinstance(c["value"], (int, float))]
-    row = {"category": key, "label": label, "unit": unit, "cells": cells,
+    row = {"category": key, "label": label, "section": build_ratings.SECTIONS.get(key),
+           "unit": unit, "cells": cells,
            "best": None, "meaningful": False, "difference": None}
     if len(graded) >= 2:
         values = [cells[i]["value"] for i in graded]

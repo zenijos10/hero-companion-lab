@@ -179,16 +179,17 @@ CATEGORIES = {
     "control_aoe": ("Control, area", _m("support.control_aoe"), "weighted_mez_seconds_proxy",
                     "capability"),
     "healing": ("Ally healing", _ally_heal, "model_heal_units_per_second", "capability"),
+    # the rarity-weighted support index is graded from the per-type values
+    # (rate()); it sits beside healing so the Support section stays together
+    "support_index": ("Team support (rarity-weighted)", None, "support_index_points",
+                      "capability"),
 }
+SUPPORT_INDEX = "support_index"
 CATEGORIES.update({key: (label, _by_type("buffs_average_percent", effect),
                          _TYPE_UNIT.get(effect, "percent"), "capability")
                    for key, (label, effect) in BUFF_TYPES.items()})
 CATEGORIES.update({key: (label, _by_type(bucket, effect), unit, "capability")
                    for key, (label, bucket, effect, unit) in DEBUFF_TYPES.items()})
-# the rarity-weighted support index is graded from the per-type values (rate())
-SUPPORT_INDEX = "support_index"
-CATEGORIES[SUPPORT_INDEX] = ("Team support (rarity-weighted)", None, "support_index_points",
-                             "capability")
 
 _CATEGORY_FAMILY = dict({"healing": "ally", "control": "control",
                          "control_single_target": "control", "control_aoe": "control",
@@ -198,12 +199,28 @@ _CATEGORY_FAMILY = dict({"healing": "ally", "control": "control",
 _TYPE_EFFECT = dict({k: ("buff", e) for k, (_l, e) in BUFF_TYPES.items()},
                     **{k: ("debuff", e) for k, (_l, _b, e, _u) in DEBUFF_TYPES.items()})
 
-# which range profile (measurements.range_profile.profiles) each category reads
+# which range profile (measurements.range_profile.profiles) each category reads:
+# the profile built from the same powers its value counts
+_BUCKET_PROFILE = {"debuffs_vs_av_percent": "debuff_av", "debuffs_vs_spawn_percent": "debuff_spawn",
+                   "drains_per_second_percent": "drain"}
 _RANGE_KEY = dict({"single_target_damage": "single_target_damage", "aoe_damage": "aoe_damage",
                    "pet_damage": "pet_damage", "control": "control",
                    "control_single_target": "control_single_target", "control_aoe": "control_aoe",
                    "healing": "healing", SUPPORT_INDEX: "support"},
-                  **{k: f"{side}:{effect}" for k, (side, effect) in _TYPE_EFFECT.items()})
+                  **{k: f"buff:{e}" for k, (_l, e) in BUFF_TYPES.items()},
+                  **{k: f"{_BUCKET_PROFILE[b]}:{e}" for k, (_l, b, e, _u) in DEBUFF_TYPES.items()})
+
+# The scorecard's sections, one per category, in CATEGORIES order (the
+# renderer bands rows by this, so a section is never split).
+SECTIONS = dict({k: "Damage" for k in ("single_target_damage", "aoe_damage", "pet_damage")},
+                **{k: "Survival" for k in ("survival", "toughness", "toughness_vs_archetype",
+                                           "defense", "resistance", "debuff_resist_defense",
+                                           "debuff_resist_slow")},
+                **{k: "Resources" for k in ("endurance", "recharge")},
+                **{k: "Control" for k in ("control", "control_single_target", "control_aoe")},
+                **{k: "Support" for k in ("healing", "support_index")},
+                **{k: "Team buffs" for k in BUFF_TYPES},
+                **{k: "Debuffs" for k in DEBUFF_TYPES})
 
 
 def support_index(values, cuts, rarity):
@@ -258,7 +275,9 @@ def _cascade_detail(ev):
     if c.get("model") != "cascade":
         return None
     pct = lambda x: f"{x * 100:.1f}%"  # noqa: E731
-    text = (f"+4 enemies always keep a {pct(c['hit_chance_floor'])} chance to hit; "
+    shift = (ev.get("scenario") or {}).get("enemy_level_shift")
+    who = f"+{shift} enemies" if isinstance(shift, int) and shift > 0 else "Enemies"
+    text = (f"{who} always keep a {pct(c['hit_chance_floor'])} chance to hit; "
             f"their -Defense settles at {pct(c['steady_def_debuff'])}")
     if c["steady_def_debuff_without_ddr"] > c["steady_def_debuff"]:
         text += f" ({pct(c['steady_def_debuff_without_ddr'])} with no DDR)"
@@ -359,7 +378,8 @@ def rate(evaluation, thresholds):
         value = values[key]
         spec = (thresholds.get("categories") or {}).get(key, {})
         cuts = spec.get("cuts")
-        row = {"label": label, "value": value, "unit": unit, "cuts": cuts,
+        row = {"label": label, "section": SECTIONS.get(key), "value": value, "unit": unit,
+               "cuts": cuts,
                "sample_size": spec.get("sample_size"),
                "low_sample": (spec.get("sample_size") or 0) < LOW_SAMPLE}
         if kind == "pets" and summons is None:

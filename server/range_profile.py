@@ -16,6 +16,8 @@ The thresholds are stated constants (game ranges cluster at 7 and 9 feet for
 melee and 40+ for ranged; nothing in the data sits between 20 and 40 except a
 handful of cones).
 """
+import engine
+
 BANDS = ("melee", "midrange", "range")
 MELEE_MAX = 15.0
 MID_MAX = 30.0
@@ -27,8 +29,7 @@ def band(rec):
     radius = rec.get("radius") or 0.0
     if reach <= 0:
         return "midrange" if radius > 0 else None
-    area = radius > 0 or (rec.get("effect_area") or 1) not in (0, 1)
-    if reach <= MELEE_MAX and not area:
+    if reach <= MELEE_MAX and not engine.is_aoe(rec):     # the engine's one area rule
         return "melee"
     return "midrange" if reach <= MID_MAX else "range"
 

@@ -133,6 +133,94 @@ class TypeTests(unittest.TestCase):
         self.assertIsNone(br.support_index({}, cuts, None))
 
 
+class ReviewFixTests(unittest.TestCase):
+    """The /code-review findings on the breakdown, each pinned."""
+
+    def test_sections_are_contiguous_and_complete(self):
+        self.assertEqual(set(br.SECTIONS), set(br.CATEGORIES))
+        seen, last = [], None
+        for key in br.CATEGORIES:
+            if br.SECTIONS[key] != last:
+                self.assertNotIn(br.SECTIONS[key], seen, f"{key} reopens a section")
+                seen.append(br.SECTIONS[key])
+                last = br.SECTIONS[key]
+        self.assertEqual(br.SECTIONS["buff_damage"], "Team buffs")
+        self.assertEqual(br.SECTIONS[br.SUPPORT_INDEX], "Support")
+
+    def test_patch_damage_is_unread_not_dropped(self):
+        ig = "Brute_Melee.Radiation_Melee.Irradiated_Ground"
+        patch = {"full_name": ig, "damage": 30.0, "damage_types": [], "is_aoe": True,
+                 "chain_casts": 0, "cast_time": 0.0, "recharge": 1.0}
+        punch = {"full_name": "Brute_Melee.Super_Strength.Haymaker", "damage": 100.0,
+                 "damage_types": ["Smashing"], "is_aoe": False, "chain_casts": 10}
+        out = rm.damage({"attacks": [patch, punch]}, BY_FULL)
+        types = {t["type"]: t["damage_share"] for t in out["types"]}
+        self.assertIn(rm.UNREAD, types)                       # 120 uses x 30 = 3600 of 4600
+        self.assertLess(types["Smashing"], 0.5)
+        self.assertEqual(out["profiles"]["aoe_damage"]["midrange"], 1.0)   # its patch's radius
+
+    def test_untyped_rows_never_rank(self):
+        split = rm._type_split({"damage_effects": [
+            {"damage_type": "Special", "scale": 1.0}, {"damage_type": "Fire", "scale": 1.0}]}, {})
+        self.assertEqual(split, {"Fire": 1.0})
+        self.assertEqual(rm._type_split(None, {"damage_types": ["Special", "Cold"]}), {"Cold": 1.0})
+
+    def test_self_crash_rows_are_not_a_debuff_offer(self):
+        sets = rm._census(BY_FULL)["debuff"]
+        crash = BY_FULL["Sentinel_Ranged.Electrical_Blast.Zapping_Bolt"]
+        foe_rows = [e for e in crash["debuff_effects"]
+                    if e.get("effect") == "Endurance" and e.get("target") != "Self"]
+        if not foe_rows:
+            self.assertNotIn(crash["powerset_full_name"], sets.get("Endurance", set()))
+
+    def test_area_rule_is_the_engines(self):
+        rec = {"range": 10.0, "radius": 0.0, "effect_area": 8}
+        self.assertEqual(rp.band(rec), "melee" if not __import__("engine").is_aoe(rec) else "midrange")
+        self.assertEqual(rp.band({"range": 10.0, "radius": 0.0, "effect_area": 2}), "midrange")
+
+    def test_drains_are_area_only_and_profiled_apart(self):
+        ledger = {"powers": [
+            {"power": "A", "area": "single_target",
+             "debuffs": [{"effect": "Endurance", "instant": True, "landing_per_second_vs_scenario": 5.0}]},
+            {"power": "B", "area": "aoe",
+             "debuffs": [{"effect": "Endurance", "instant": True, "landing_per_second_vs_scenario": 2.0},
+                         {"effect": "Endurance", "instant": False, "uptime": 1.0,
+                          "landing_peak_percent": {"vs_av": 1.0, "vs_scenario": 3.0}}]}]}
+        out = rm.support_types(ledger, {})
+        self.assertEqual(out["drains_per_second_percent"], {"Endurance": 2.0})
+        self.assertEqual(out["debuffs_vs_spawn_percent"], {"Endurance": 3.0})
+        self.assertEqual(br._RANGE_KEY["debuff_endurance_spawn"], "drain:Endurance")
+        self.assertEqual(br._RANGE_KEY["debuff_resistance_av"], "debuff_av:Resistance")
+        self.assertEqual(br._RANGE_KEY["debuff_defense_spawn"], "debuff_spawn:Defense")
+
+    def test_drain_rate_counts_its_chance_once(self):
+        """The peak is already chance-weighted, so the rate must not weigh it again."""
+        import support_ledger
+        import server as srv
+        ctx = srv._stat_ctx("Class_Defender")
+        rec = dict(BY_FULL["Defender_Ranged.Electrical_Blast.Short_Circuit"])
+        sure = support_ledger.power_ledger({"full_name": rec["full_name"], "slots": []},
+                                           dict(ctx, power_by_full={rec["full_name"]: rec}),
+                                           0.0, SC, 1.0)
+        rows = [dict(d, probability=0.25) if d.get("effect") == "Endurance" else d
+                for d in rec["debuff_effects"]]
+        rec2 = dict(rec, debuff_effects=rows)
+        quarter = support_ledger.power_ledger({"full_name": rec["full_name"], "slots": []},
+                                              dict(ctx, power_by_full={rec["full_name"]: rec2}),
+                                              0.0, SC, 1.0)
+        rate = lambda e: next(d["landing_per_second_vs_scenario"] for d in e["debuffs"]  # noqa: E731
+                              if d["effect"] == "Endurance")
+        self.assertAlmostEqual(rate(quarter), rate(sure) * 0.25, places=2)
+
+    def test_cascade_detail_names_the_scenarios_shift(self):
+        ev = {"scenario": {"enemy_level_shift": 3},
+              "measurements": {"survival": {"defense_cascade": {
+                  "model": "cascade", "hit_chance_floor": 0.07, "steady_def_debuff": 0.02,
+                  "steady_def_debuff_without_ddr": 0.02, "hit_chance_before": 0.07,
+                  "hit_chance_after": 0.08}}}}
+        self.assertTrue(br._cascade_detail(ev).startswith("+3 enemies"))
+
+
 class RouteTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

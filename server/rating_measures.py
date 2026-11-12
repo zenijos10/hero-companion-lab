@@ -10,6 +10,7 @@ the score's control per power, the M3 support ledger) or from the game data.
 """
 import math
 
+import engine
 import range_profile
 import role_output
 
@@ -20,12 +21,20 @@ _NOT_PLAYER = ("Boosts", "Pets", "Villain_Pets", "Mastermind_Pets", "Kheldian_Pe
 
 # ── damage ───────────────────────────────────────────────────────────────────
 
-def _type_split(rec, attack):
+_UNTYPED = ("None", "Special")          # the engine keeps these out of damage_types
+UNREAD = "Unread"                       # damage dealt whose type the data does not name
+
+
+def _type_split(rec, attack, records=None):
     """{damage type: share of the attack's damage}, from the record's PvE rows
-    (scale x magnitude x chance), else an even split of the engine's types."""
+    (scale x magnitude x chance); a patch summoner (no rows of its own) reads its
+    pseudo-pet's rows; else an even split of the engine's types."""
     weights = {}
-    for row in (rec or {}).get("damage_effects") or []:
-        if row.get("pv_mode") == 2:
+    rows = (rec or {}).get("damage_effects") or []
+    if rec and not rows and records:
+        rows = (engine.resolve_patch_pet(rec, records) or {}).get("damage_effects") or []
+    for row in rows:
+        if row.get("pv_mode") == 2 or row.get("damage_type") in _UNTYPED:
             continue
         chance = row.get("probability")
         chance = 1.0 if chance is None else chance        # unset reads 1.0, like the engine
@@ -33,7 +42,7 @@ def _type_split(rec, attack):
         if w > 0 and row.get("damage_type"):
             weights[row["damage_type"]] = weights.get(row["damage_type"], 0.0) + w
     if not weights:
-        types = attack.get("damage_types") or []
+        types = [t for t in attack.get("damage_types") or [] if t not in _UNTYPED]
         weights = {t: 1.0 for t in types}
     whole = sum(weights.values())
     return {t: w / whole for t, w in weights.items()} if whole else {}
@@ -49,12 +58,14 @@ def _uses(attack):
     return 120.0 / cycle if cycle > 0 else 0.0
 
 
-def _ranked(attacks):
+def _ranked(attacks, records):
     """Damage types ranked by share of damage dealt, with share of attacks fired."""
     by_type, casts_by_type = {}, {}
     for rec, attack, uses in attacks:
         dealt = uses * (attack.get("damage") or 0.0)
-        for t, share in _type_split(rec, attack).items():
+        # damage whose type our data cannot name (a patch's proc rolls) is kept
+        # as UNREAD, so the named types' shares are never overstated
+        for t, share in (_type_split(rec, attack, records) or {UNREAD: 1.0}).items():
             by_type[t] = by_type.get(t, 0.0) + dealt * share
             casts_by_type[t] = casts_by_type.get(t, 0.0) + uses * share
     dealt_all, casts_all = sum(by_type.values()), sum(casts_by_type.values())
@@ -64,16 +75,28 @@ def _ranked(attacks):
             for t in sorted(by_type, key=lambda t: (-by_type[t], t))]
 
 
+def _placed(rec, records):
+    """The record that says where a power's damage lands: the power itself, or a
+    patch summoner's pseudo-pet (Irradiated Ground has no reach; its patch has
+    the radius)."""
+    if rec and range_profile.band(rec) is None and not rec.get("damage_effects"):
+        pet = engine.resolve_patch_pet(rec, records)
+        if pet:
+            return pet
+    return rec
+
+
 def damage(offense, records):
     """Damage types ranked by share of damage dealt and of attacks fired (all
     attacks, single-target ones, area ones), plus where each is delivered."""
     st, aoe = [], []
     for a in offense.get("attacks") or []:
         (aoe if a.get("is_aoe") else st).append((records.get(a.get("full_name")), a, _uses(a)))
-    weights = lambda rows: [(rec, uses * (a.get("damage") or 0.0)) for rec, a, uses in rows]  # noqa: E731
-    return {"types": _ranked(st + aoe),
-            "types_single_target": _ranked(st),
-            "types_aoe": _ranked(aoe),
+    weights = lambda rows: [(_placed(rec, records), uses * (a.get("damage") or 0.0))  # noqa: E731
+                            for rec, a, uses in rows]
+    return {"types": _ranked(st + aoe, records),
+            "types_single_target": _ranked(st, records),
+            "types_aoe": _ranked(aoe, records),
             "basis": "attack chain uses (area attacks outside the chain: casts per 120 s on "
                      "cooldown) x damage per hit, split by each attack's own damage rows",
             "profiles": {"single_target_damage": range_profile.profile(weights(st)),
@@ -142,20 +165,25 @@ def support_types(team_support, records):
                 continue
             buffs[b["effect"]] = buffs.get(b["effect"], 0.0) + b["average_percent"]
             weights.setdefault("buff:" + b["effect"], []).append((rec, b["average_percent"]))
+        area = entry.get("area") == "aoe"
         for d in entry.get("debuffs") or []:
             land = d.get("landing_peak_percent") or {}
-            key = "debuff:" + d["effect"]
+            e = d["effect"]
             if d.get("instant"):
+                # spawn-facing like the timed spawn bucket: area powers only
                 rate = d.get("landing_per_second_vs_scenario")
-                if rate:
-                    drain[d["effect"]] = drain.get(d["effect"], 0.0) + rate
-                    weights.setdefault(key, []).append((rec, rate))
+                if rate and area:
+                    drain[e] = drain.get(e, 0.0) + rate
+                    weights.setdefault("drain:" + e, []).append((rec, rate))
                 continue
             up = d.get("uptime") or 0.0
-            av[d["effect"]] = av.get(d["effect"], 0.0) + (land.get("vs_av") or 0.0) * up
-            if entry.get("area") == "aoe":
-                spawn[d["effect"]] = spawn.get(d["effect"], 0.0) + (land.get("vs_scenario") or 0.0) * up
-            weights.setdefault(key, []).append((rec, (land.get("vs_scenario") or 0.0) * up))
+            on_av = (land.get("vs_av") or 0.0) * up
+            av[e] = av.get(e, 0.0) + on_av
+            weights.setdefault("debuff_av:" + e, []).append((rec, on_av))
+            if area:
+                on_spawn = (land.get("vs_scenario") or 0.0) * up
+                spawn[e] = spawn.get(e, 0.0) + on_spawn
+                weights.setdefault("debuff_spawn:" + e, []).append((rec, on_spawn))
         for h in entry.get("heals") or []:
             if h.get("side") == "ally" and h.get("per_second"):
                 weights.setdefault("healing", []).append((rec, h["per_second"]))
@@ -164,7 +192,10 @@ def support_types(team_support, records):
     unit = lambda k: 0.01 if k in ABSOLUTE_TYPES else 1.0  # noqa: E731
     r = lambda d: {k: round(v * unit(k), 2) for k, v in sorted(d.items())}  # noqa: E731
     profiles = {k: range_profile.profile(v) for k, v in sorted(weights.items())}
-    support_all = [w for k, v in weights.items() if k != "healing" for w in v]
+    # one unit per bucket family is not shared (percent vs rate), so the overall
+    # support profile reads the percent buckets: buffs and debuffs, not drains
+    support_all = [w for k, v in weights.items()
+                   if k.split(":")[0] in ("buff", "debuff_av", "debuff_spawn") for w in v]
     profiles["support"] = range_profile.profile(support_all)
     return {"buffs_average_percent": r(buffs), "debuffs_vs_av_percent": r(av),
             "debuffs_vs_spawn_percent": r(spawn), "drains_per_second_percent": r(drain),
@@ -212,7 +243,7 @@ def _census(records):
                     continue
                 sets["buff"].setdefault(e.get("effect"), set()).add(ps)
             for e in rec.get("debuff_effects") or []:
-                if e.get("pv_mode") == 2:
+                if e.get("pv_mode") == 2 or e.get("target") == "Self":   # a self crash
                     continue
                 sets["debuff"].setdefault(e.get("effect"), set()).add(ps)
         _CENSUS[key] = sets

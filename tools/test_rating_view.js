@@ -30,8 +30,7 @@ const escStart = src.indexOf("const escHtml");
 const escEnd = src.slice(escStart).search(/;\r?\n/);
 const escSrc = src.slice(escStart, escStart + escEnd + 1);
 assert.ok(unitsSrc.length > 20 && escSrc.length > 20, "helpers not found");
-const sectionsSrc = src.slice(src.indexOf("const _RATING_SECTIONS"), src.indexOf("];", src.indexOf("const _RATING_SECTIONS")) + 2);
-const make = new Function(`${escSrc}\n${unitsSrc}\n${sectionsSrc}\n${lift("function _ratingSection")}\n${lift("function renderRatingHtml")}\nreturn renderRatingHtml;`);
+const make = new Function(`${escSrc}\n${unitsSrc}\n${lift("function renderRatingHtml")}\nreturn renderRatingHtml;`);
 const render = make();
 
 const col = (label, extra = {}) => Object.assign({
@@ -112,12 +111,14 @@ ok(html.includes("400 × bare"), "the multiple carries its unit");
 
 // 5c. sections and where-it-is-delivered
 html = render({ ok: true, mode: "scorecard", columns: [col("Mine")],
-  rows: [row([{ grade: "B", value: 50, where: "60% melee, 40% midrange" }], { category: "single_target_damage", label: "ST" }),
-         row([{ grade: "C", value: 10 }], { category: "aoe_damage", label: "AoE" }),
-         row([{ grade: "A", value: 4 }], { category: "debuff_hitpoints_av", label: "-HP", unit: "percent_per_second" })],
+  rows: [row([{ grade: "B", value: 50, where: "60% melee, 40% midrange" }], { category: "single_target_damage", label: "ST", section: "Damage" }),
+         row([{ grade: "C", value: 10 }], { category: "aoe_damage", label: "AoE", section: "Damage" }),
+         row([{ grade: "B", value: 30 }], { category: "buff_damage", label: "Team damage buff", section: "Team buffs" }),
+         row([{ grade: "A", value: 4 }], { category: "debuff_endurance_spawn", label: "Drain", unit: "percent_per_second", section: "Debuffs" })],
   notes: [] });
-ok((html.match(/rt-section/g) || []).length === 2, "one section header per section, not per row");
+ok((html.match(/rt-section/g) || []).length === 3, "one section header per section, not per row");
 ok(html.includes(">Damage</th>") && html.includes(">Debuffs</th>"), "sections are named");
+ok(html.indexOf(">Team buffs</th>") < html.indexOf("Team damage buff"), "a team damage buff sits under Team buffs, not Damage");
 ok(html.includes("where: 60% melee, 40% midrange"), "where the output is delivered is shown");
 ok(html.includes("4.0 %/s"), "rate units render");
 
