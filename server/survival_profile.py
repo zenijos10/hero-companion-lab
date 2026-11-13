@@ -101,14 +101,31 @@ def _mean_hit(totals, sc, tohit, weights, debuff):
 def fixed_point(k, ddr, mean_hit):
     """The cascade's steady -Defense: D = k x (1 - DDR) x mean_hit(D), climbed
     from D = 0 (the debuff piles up from nothing). One copy, shared with the
-    enemy-group matchups (server/matchups.py)."""
+    enemy-group matchups (server/matchups.py). mean_hit rises with D and is
+    bounded, so the climb converges on the first stable point; when it is slow
+    (a slope near one), bisection finishes it between the last climb step and
+    the bound, so the value returned is always a fixed point."""
+    step = lambda d: k * (1.0 - ddr) * mean_hit(d)  # noqa: E731
     debuff = 0.0
     for _ in range(500):
-        nxt = k * (1.0 - ddr) * mean_hit(debuff)
+        nxt = step(debuff)
         if abs(nxt - debuff) < 1e-7:
             return nxt
         debuff = nxt
-    return debuff
+    low, high = debuff, max(debuff, step(10.0))   # step(D) <= the bound for every D
+    while step(high) > high:
+        high *= 2.0
+    while high - low > 1e-7:
+        mid = (low + high) / 2.0
+        low, high = (mid, high) if step(mid) > mid else (low, mid)
+    return high
+
+
+def landing_share(weights):
+    """The share of the enemies' attacks that reach you: the weights summed
+    (melee scaled by its reach). A mean over weights divides by this to read
+    as a per-attack chance."""
+    return sum(weights.values()) or 1.0
 
 
 def _steady_debuff(totals, sc, tohit, weights, ddr):
@@ -126,9 +143,12 @@ def cascade(totals, inputs, sc, weights):
     ddr = defense_debuff_resistance(totals)
     debuff = _steady_debuff(totals, sc, tohit, weights, ddr)
     without = _steady_debuff(totals, sc, tohit, weights, 0.0)
-    before = _mean_hit(totals, sc, tohit, weights, 0.0)
-    after = _mean_hit(totals, sc, tohit, weights, debuff)
-    landing = sc["enemies"] * sc["def_debuff_hit_rate"] * after * 60.0
+    # the landing rate counts only attacks that reach you; the hit chances
+    # quoted are per attack that does
+    reaching = landing_share(weights)
+    before = _mean_hit(totals, sc, tohit, weights, 0.0) / reaching
+    after = _mean_hit(totals, sc, tohit, weights, debuff) / reaching
+    landing = sc["enemies"] * sc["def_debuff_hit_rate"] * after * reaching * 60.0
     return {"model": "cascade", "debuff": debuff,
             "defense_debuff_resistance": round(ddr, 3),
             "steady_def_debuff": round(debuff, 4),

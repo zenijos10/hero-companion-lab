@@ -162,6 +162,29 @@ class ArithmeticTests(unittest.TestCase):
                 fetch._get("entities/x.json")
             self.assertFalse(os.path.exists(os.path.join(tmp, "entities", "x.json")))
 
+    def test_a_refused_fetch_is_absent_this_run_and_never_cached(self):
+        import urllib.error
+        import urllib.request
+        from unittest import mock
+        refused = urllib.error.HTTPError("u", 403, "Forbidden", {}, None)
+        with tempfile.TemporaryDirectory() as tmp, \
+                mock.patch.object(fetch, "CACHE", tmp), mock.patch.object(fetch.time, "sleep"), \
+                mock.patch.object(urllib.request, "urlopen", side_effect=refused) as call:
+            self.assertIsNone(fetch._get("entities/x.json"))
+            self.assertEqual(call.call_count, 4)                 # retried, not taken as fact
+            self.assertFalse(os.path.exists(os.path.join(tmp, "entities", "x.json")))
+
+    def test_hit_chance_is_per_attack_that_reaches(self):
+        g = group({"Melee|Smashing": 0.5, "Ranged|Smashing": 0.5}, def_share=0.0)
+        full = matchups.matchup(totals(), INPUTS, SC, g, [], reach=1.0)
+        part = matchups.matchup(totals(), INPUTS, SC, g, [], reach=0.2)
+        self.assertAlmostEqual(full["hit_chance"], part["hit_chance"], places=4)
+        self.assertLess(part["damage_landing_per_second"], full["damage_landing_per_second"])
+
+    def test_spawn_rank_mix_is_one_copy(self):
+        import rating_measures
+        self.assertEqual(rating_measures.SPAWN_RANK_WEIGHTS, fetch.SPAWN_RANK_WEIGHTS)
+
     def test_ddr_and_the_defense_cap(self):
         g = group({"Ranged|Lethal": 1.0}, def_share=0.5)
         bare = matchups.matchup(totals({"Ranged": 30}), INPUTS, SC, g, [])

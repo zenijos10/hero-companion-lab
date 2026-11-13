@@ -115,7 +115,44 @@ class RangeTests(unittest.TestCase):
         self.assertEqual(rm.positioning({"powers": []})["keep_at_bay"], 0.0)
 
 
+    def test_a_root_holds_only_the_ranks_it_beats(self):
+        root = lambda held: {"powers": [{"power": "Root", "area": "aoe",  # noqa: E731
+                                          "cost": {"basis": "toggle/auto"},
+                                          "controls": [{"mez": "Immobilized", "uptime": 1.0,
+                                                        "affects_in_one_application": held}]}]}
+        self.assertEqual(rm.positioning(root(["minion"]))["keep_at_bay"], 0.6)
+        self.assertEqual(rm.positioning(root(["minion", "lieutenant", "boss"]))["keep_at_bay"], 1.0)
+        self.assertEqual(rm.positioning(root([]))["keep_at_bay"], 0.0)
+
+    def test_a_self_centred_click_does_not_keep_them_away(self):
+        clap = {"powers": [{"power": "P.Clap", "area": "aoe", "cost": {"basis": "click cast on cooldown"},
+                            "controls": [{"mez": "Knockback", "cycle_seconds": 6.0}]}]}
+        records = {"P.Clap": {"range": 0.0, "radius": 15.0}}
+        self.assertEqual(rm.positioning(clap, records)["keep_at_bay"], 0.0)
+        aimed = {"P.Clap": {"range": 80.0, "radius": 15.0}}
+        self.assertEqual(rm.positioning(clap, aimed)["keep_at_bay"], 0.5)
+        aura = {"powers": [dict(clap["powers"][0], cost={"basis": "toggle/auto"},
+                                controls=[{"mez": "Repel", "cycle_seconds": None}])]}
+        self.assertEqual(rm.positioning(aura, records)["keep_at_bay"], 1.0)   # an aura pushes them out
+
+
 class CascadeTests(unittest.TestCase):
+    def test_fixed_point_finishes_a_slow_climb(self):
+        # slope 0.9999: 500 climb steps reach ~5% of the way; bisection finishes
+        mean_hit = lambda d: 0.001 + 0.9999 * min(d, 50.0)  # noqa: E731
+        d = surv.fixed_point(1.0, 0.0, mean_hit)
+        self.assertAlmostEqual(d, 10.0, places=4)
+
+    def test_cascade_hit_chance_is_per_attack_that_reaches(self):
+        t = {"defense": {}, "resistance": {}, "bonus_extras": {}}
+        inputs = {"tohit_debuff": 0.0, "def_debuff_in": 0.0}
+        sc = dict(build_evaluation.scenario_params("rating_plus4"))
+        full = surv.cascade(t, inputs, sc, surv.position_weights(1.0))
+        kept = surv.cascade(t, inputs, sc, surv.position_weights(0.1))
+        self.assertAlmostEqual(full["hit_chance_before"], kept["hit_chance_before"], places=4)
+        self.assertLess(kept["landed_def_debuff_hits_per_minute"],
+                        full["landed_def_debuff_hits_per_minute"])
+
     def test_fixed_point_and_ddr(self):
         w = surv.position_weights(1.0)
         t = totals({"Melee": 30, "Ranged": 30, "AoE": 30})

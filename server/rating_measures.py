@@ -275,18 +275,47 @@ def debuff_resistance(totals):
 # positioning, so they are not counted here.
 KEEP_AT_BAY = ("Immobilized", "Knockback", "Knockup", "Repel")
 KNOCK_SECONDS = 3.0         # one knock keeps a foe off its feet ~3 s (role_output's rule)
+# The rating spawn's rank mix (tools/fetch_critter_data.py SPAWN_RANK_WEIGHTS,
+# pinned equal by tools/test_matchups.py): a root holds only the ranks its
+# magnitude beats (support_ledger.RANK_PROTECTION).
+SPAWN_RANK_WEIGHTS = {"minion": 0.6, "lieutenant": 0.3, "boss": 0.1}
 
 
-def positioning(team_support):
+def _holds_at_range(rec, toggle):
+    """A control keeps a closing spawn away only if it lands before they arrive:
+    one aimed at range, or a self-centred toggle (a repel or knock aura pushes
+    them out as they step in). A self-centred click lands only on foes already
+    in melee, after they have swung."""
+    if rec is None:
+        return True
+    centred = (rec.get("range") or 0.0) <= 0 and (rec.get("radius") or 0.0) > 0
+    return toggle or not centred
+
+
+def _ranks_held(control):
+    """Share of the spawn a root holds: the ranks its magnitude beats. Knocks and
+    repels push every rank (rank protection is mez protection, not knockback)."""
+    if control["mez"] != "Immobilized" or "affects_in_one_application" not in control:
+        return 1.0
+    held = control.get("affects_in_one_application") or []
+    return sum(w for rank, w in SPAWN_RANK_WEIGHTS.items() if rank in held)
+
+
+def positioning(team_support, records=None):
     """How much of the fight the build keeps melee foes at bay: the best area
     root, knockback or repel by its uptime (a toggle holds it the whole time; a
-    click root lasts its duration per cycle; a knock buys ~3 s per cast)."""
+    click root lasts its duration per cycle; a knock buys ~3 s per cast), times
+    the share of the spawn it holds, counting only controls that land before the
+    spawn reaches you."""
+    records = records or {}
     best, source = 0.0, None
     for entry in team_support.get("powers") or []:
         if entry.get("area") != "aoe":
             continue
         cost = entry.get("cost") or {}
         toggle = str(cost.get("basis", "")).startswith("toggle")
+        if not _holds_at_range(records.get(entry.get("power")), toggle):
+            continue
         for c in entry.get("controls") or []:
             if c.get("mez") not in KEEP_AT_BAY:
                 continue
@@ -299,9 +328,12 @@ def positioning(team_support):
                 # a knock buys KNOCK_SECONDS per cast, once per recharge cycle
                 cycle = c.get("cycle_seconds") or 0.0
                 up = min(1.0, KNOCK_SECONDS / cycle) if cycle > 0 else 0.0
+            up *= _ranks_held(c)
             if up > best:
                 best, source = up, {"power": entry.get("power"), "mez": c["mez"],
                                     "uptime": round(up, 3)}
     return {"keep_at_bay": round(best, 3), "source": source,
-            "basis": "best area root/knockback/repel by uptime; fear and holds are control, "
-                     "not positioning"}
+            "basis": "best area root/knockback/repel by uptime x the share of the spawn it "
+                     "holds (a root only the ranks its magnitude beats); aimed controls and "
+                     "self-centred toggles only (a self-centred click lands after they "
+                     "arrive); fear and holds are control, not positioning"}

@@ -25,8 +25,9 @@ mez its attacks carry. Rating only: nothing here feeds the champion score.
 import json
 import os
 
-from first_principles import capped_resistance, defense_debuff_resistance, eroded_defense
-from survival_profile import TYPES, _hit, fixed_point, sustain_per_second
+from first_principles import (_def_against, capped_resistance, defense_debuff_resistance,
+                              incoming_hit)
+from survival_profile import TYPES, fixed_point, landing_share, sustain_per_second
 
 DATA = os.path.join(os.path.dirname(__file__), "..", "data", "critter_groups.json")
 _CACHE = {}
@@ -54,23 +55,25 @@ def _cells(group):
 def matchup(totals, inputs, sc, group, damage_types, reach=1.0):
     """One group's matchup against a build (see the module docstring); reach =
     the share of melee attacks that land (survival_profile.melee_reach)."""
-    cells = {(p, t): w * (reach if "Melee" in p.split("+") else 1.0)
-             for (p, t), w in _cells(group).items()}
+    cells = [(w * (reach if "Melee" in p.split("+") else 1.0),
+              _def_against(totals, p.split("+") + [t]), capped_resistance(totals, t), t)
+             for (p, t), w in _cells(group).items()]
     if not cells:
         return None
     sc_g = dict(sc, rank_acc=group.get("rank_accuracy") or sc.get("rank_acc", 1.0))
     tohit = inputs["tohit_debuff"]
-    mean_hit = lambda d: sum(w * _hit(totals, sc_g, tohit, p, t, d)  # noqa: E731
-                             for (p, t), w in cells.items())
+    hit = lambda defense, d: incoming_hit(max(defense - d, 0.0), tohit, sc_g)  # noqa: E731
+    # the -Defense that lands comes only from attacks that reach you (the
+    # weights sum to the landing share); hit_chance is per attack that does
+    mean_hit = lambda d: sum(w * hit(df, d) for w, df, _r, _t in cells)  # noqa: E731
+    reaching = landing_share({i: c[0] for i, c in enumerate(cells)})
     k = sc["enemies"] * (group.get("def_debuff_pressure") or 0.0)
-    ddr = defense_debuff_resistance(totals)
-    debuff = fixed_point(k, ddr, mean_hit)
+    debuff = fixed_point(k, defense_debuff_resistance(totals), mean_hit)
     without = fixed_point(k, 0.0, mean_hit)
     # past the build's best defense there is nothing left to take: what it LOSES
     # is capped there (the uncapped pile-up still drives the hit chance above)
-    most = max([eroded_defense(totals, p.split("+") + [t], 0.0) for (p, t) in cells] or [0.0])
-    taken = sum(w * _hit(totals, sc_g, tohit, p, t, debuff) * (1.0 - capped_resistance(totals, t))
-                for (p, t), w in cells.items())
+    most = max(df for _w, df, _r, _t in cells)
+    taken = sum(w * hit(df, debuff) * (1.0 - r) for w, df, r, _t in cells)
     landing = sc["enemies"] * (group.get("dps_per_critter") or 0.0) * taken
     sustain = sustain_per_second(inputs)
     net = landing - sustain
@@ -83,7 +86,7 @@ def matchup(totals, inputs, sc, group, damage_types, reach=1.0):
     kept = (sum(s * (1.0 - min(res.get(t, 0.0), 90.0) / 100.0) for t, s in shares) / named
             if named else None)
     by_type = {}
-    for (_p, t), w in cells.items():
+    for w, _df, _r, t in cells:
         by_type[t] = by_type.get(t, 0.0) + w
     top = sorted(by_type.items(), key=lambda kv: (-kv[1], kv[0]))[:2]
     return {
@@ -94,7 +97,7 @@ def matchup(totals, inputs, sc, group, damage_types, reach=1.0):
         "sustain_per_second": round(sustain, 1),
         "steady_def_debuff": round(min(debuff, most), 4),
         "steady_def_debuff_without_ddr": round(min(without, most), 4),
-        "hit_chance": round(mean_hit(debuff), 4),
+        "hit_chance": round(mean_hit(debuff) / reaching, 4),
         "your_damage_unresisted": None if kept is None else round(kept, 3),
         "their_damage": [{"type": t, "share": round(s, 3)} for t, s in top],
         "mez": group.get("mez") or [],

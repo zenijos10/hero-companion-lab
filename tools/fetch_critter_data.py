@@ -84,7 +84,9 @@ class FetchError(RuntimeError):
 
 def _get(path, refresh=False):
     """JSON at BASE/path, cached on disk; None when the host says the record
-    does not exist (404/403, cached as such). Any other failure raises."""
+    does not exist (404, cached as such) or keeps refusing it (403 after every
+    retry: None for this run only, never cached, since a proxy or rate-limit
+    refusal is not a fact about the record). Any other failure raises."""
     local = os.path.join(CACHE, path.replace("/", os.sep))
     if not refresh and os.path.exists(local):
         with open(local, encoding="utf-8") as f:
@@ -102,9 +104,11 @@ def _get(path, refresh=False):
             text = raw.decode("utf-8")
             break
         except urllib.error.HTTPError as e:
-            if e.code in (403, 404):
+            if e.code == 404:
                 text = ""                      # absent: a fact worth caching
                 break
+            if e.code == 403 and attempt == 3:
+                return None                    # refused 4 times: absent THIS run, never cached
             time.sleep(2 ** attempt)
         except OSError:
             time.sleep(2 ** attempt)
