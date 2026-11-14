@@ -282,9 +282,10 @@ def main():
           "matches the DEFINITION, not the comment recording that it was deleted")
     # (was "five tabs" — End Game retired 2026-08-04, its surfaces live on
     # Powers & Slots; the moved ids are checked right below)
-    check("four tabs, four panels",
+    # (the Rating tab joined 2026-11-14: the owner's "make it a new tab")
+    check("five tabs, five panels",
           all(f'id="tab-btn-{k}"' in index and f'id="tab-{k}"' in index
-              for k in ("powers", "stats", "leveling", "logging"))
+              for k in ("powers", "stats", "leveling", "logging", "rating"))
           and 'id="tab-btn-endgame"' not in index)
     # (packPowersTab is DEAD — Joel 2026-08-04: column see-saw, not design.
     # The cards live in the structural .pw-cardband; no packer may return.)

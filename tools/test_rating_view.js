@@ -30,7 +30,7 @@ const escStart = src.indexOf("const escHtml");
 const escEnd = src.slice(escStart).search(/;\r?\n/);
 const escSrc = src.slice(escStart, escStart + escEnd + 1);
 assert.ok(unitsSrc.length > 20 && escSrc.length > 20, "helpers not found");
-const make = new Function(`${escSrc}\n${unitsSrc}\n${lift("function meleeReachLine")}\n${lift("function renderMatchupsHtml")}\n${lift("function renderRatingHtml")}\nreturn renderRatingHtml;`);
+const make = new Function(`${escSrc}\n${unitsSrc}\n${lift("function renderStrengthsHtml")}\n${lift("function meleeReachLine")}\n${lift("function renderMatchupsHtml")}\n${lift("function renderRatingHtml")}\nreturn renderRatingHtml;`);
 const render = make();
 
 const col = (label, extra = {}) => Object.assign({
@@ -150,6 +150,22 @@ ok(html.includes("nothing keeps them away"), "no keep-at-bay power is said plain
 ok(!html.includes("<b>Melee reach") || html.includes("<b>Melee reach:</b>"), "reach line renders once, labelled");
 ok(!render({ ok: true, mode: "scorecard", rows: [], notes: [], columns: [col("Y")] }).includes("rt-matchups"),
    "no matchups section without data");
+
+// 5e. strengths, weaknesses and lane: above the grades, escaped, not-rated says why
+html = render({ ok: true, mode: "scorecard", rows: [], notes: [], columns: [col("Mine <b>", { strengths: {
+  rated: true, advice: "Best lane: Tank (A average) <img>", operates: "up close, in melee (45% of its output)",
+  lanes: [{ id: "tank", label: "Tank", grade: "A", does: "soaks", parts: [{ label: "Toughness", grade: "S" }] },
+          { id: "healer", label: "Healer", grade: "F", does: "heals", parts: [] }],
+  strengths: ["Takes Smashing damage well"], weaknesses: ["Weak to Psionic <script>"],
+  strong_categories: [{ label: "Resistance", grade: "S" }], weak_categories: [{ label: "Endurance", grade: "F" }] } })] });
+ok(html.indexOf("rt-strengths") < html.indexOf("rating-table"), "strengths sit above the grades");
+ok(html.includes("Best lane: Tank (A average) &lt;img&gt;") && !html.includes("<script>") && !html.includes("Mine <b>"),
+   "the lane advice, sentences and label are escaped");
+ok(html.includes('rt-chip rt-lane-best') && html.includes("Weak to Psionic") && html.includes("Fights up close"),
+   "the best lane is marked, weaknesses and where it fights are shown");
+html = render({ ok: true, mode: "scorecard", rows: [], notes: [], columns: [col("M", {
+  strengths: { rated: false, reason: "recalibrate the thresholds" } })] });
+ok(html.includes("recalibrate the thresholds") && !html.includes("rt-lanes"), "not rated says why, no lanes");
 
 // 6. a row without cells never throws
 html = render({ ok: true, mode: "scorecard", columns: [col("Y")], rows: [{ label: "Defense", unit: "percent" }], notes: [] });

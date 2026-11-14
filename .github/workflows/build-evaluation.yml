@@ -29,6 +29,8 @@ on:
       - "tools/test_survival_profile.py"
       - "tools/test_rating_breakdown.py"
       - "tools/test_matchups.py"
+      - "tools/test_strike.py"
+      - "tools/test_strengths.py"
       - "tools/fetch_critter_data.py"
       - ".github/workflows/build-evaluation.yml"
   workflow_dispatch:
@@ -74,6 +76,10 @@ jobs:
         run: python tools/test_rating_breakdown.py
       - name: VS enemy group matchups (critter data + arithmetic + route)
         run: python tools/test_matchups.py
+      - name: Max strike (chain search, buff clicks, route + negative control)
+        run: python tools/test_strike.py
+      - name: Strengths, weaknesses and lane (rules + route)
+        run: python tools/test_strengths.py
       - name: S-F ratings (rules + shipped thresholds current)
         run: python tools/test_build_ratings.py
       - name: Build compare route + rules (M5)

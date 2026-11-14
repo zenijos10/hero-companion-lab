@@ -69,8 +69,8 @@ def main():
     tab_ids = set(re.findall(r'id="tab-([a-z]+)"', idx))
     tour_keys = set(re.findall(r'key:\s*["\']([a-z0-9-]+)["\']', tour))
     mock_ids = set(re.findall(r'data-for="([a-zA-Z0-9_-]+)"', tour))
-    ok(tab_ids >= {"powers", "stats", "leveling", "logging"},
-       f"the four tabs exist in index.html ({sorted(tab_ids)})")
+    ok(tab_ids >= {"powers", "stats", "leveling", "logging", "rating"},
+       f"the five tabs exist in index.html ({sorted(tab_ids)})")
 
     faults = problems(data, tab_ids, tour_keys, mock_ids)
     ok(not faults, f"{len(data['topics'])} topics structurally clean: "

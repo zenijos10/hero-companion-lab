@@ -34,6 +34,7 @@ def _column(entry):
         "scenario": (ev.get("scenario") or {}).get("id"),
         "matchups": ((ev.get("matchups") or {}).get("groups")),
         "melee_reach": ((ev.get("measurements") or {}).get("survival") or {}).get("melee_reach"),
+        "strengths": ev.get("strengths"),
     }
 
 

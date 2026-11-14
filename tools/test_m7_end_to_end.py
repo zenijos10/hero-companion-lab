@@ -232,7 +232,7 @@ class D_RepresentativeBuilds(unittest.TestCase):
                 ev = evaluate(build)
                 json.dumps(ev, allow_nan=False)
                 self.assertEqual(ev["ratings"]["status"], "rated")
-                self.assertEqual(len(ev["ratings"]["categories"]), 36)
+                self.assertEqual(len(ev["ratings"]["categories"]), 38)
                 rated += 1
         print(f"{rated} of {len(ats)} playable archetypes rated")
         self.assertEqual(rated, len(ats))

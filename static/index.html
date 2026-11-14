@@ -251,6 +251,7 @@
                  door to the same tab. openEndgame() stays for the ladder gates. -->
             <button role="menuitem" type="button" data-tab="leveling"><b>Leveling Guide</b><i>Your 1-50 as a road</i></button>
             <button role="menuitem" type="button" data-tab="logging"><b>Logging</b><i>What your game sessions earned you</i></button>
+            <button role="menuitem" type="button" data-tab="rating"><b>Rating</b><i>Grades, strengths and weaknesses, your lane</i></button>
             <div class="menu-sep" role="separator"></div>
             <!-- The display TOGGLES left this menu (Joel, 2026-08-04: "they
                  are already on the page they belong to… redundant and
@@ -321,6 +322,9 @@
       aria-selected="false" tabindex="-1">Leveling Guide</button>
     <button class="tab" id="tab-btn-logging" title="Ctrl+4" role="tab" aria-controls="tab-logging"
       aria-selected="false" tabindex="-1">Logging</button>
+    <!-- Rating (owner, 2026-11-14: "make it a new tab not a drop down"). -->
+    <button class="tab" id="tab-btn-rating" title="Ctrl+5" role="tab" aria-controls="tab-rating"
+      aria-selected="false" tabindex="-1">Rating</button>
   </nav>
 
     <!-- BUILD TILE — identity on every tab, Mids-like, blank until loaded. It is
@@ -702,7 +706,7 @@
       <!-- M5: the scorecard. Read-only, like every toggle on this row: it
            evaluates the build as you own it and never solves or saves. -->
       <button id="rate-btn" type="button" class="secondary"
-        title="Grade this build S to F against +4 enemies, category by category, and compare it with another saved character. Read-only: nothing is solved or saved.">📊 Rate this build</button>
+        title="Open the Rating tab: this build graded S to F against +4 enemies, its strengths and weaknesses, and a comparison with another saved character. Read-only: nothing is solved or saved.">📊 Rate this build</button>
       </div>
 
       <!-- warn-but-allow banner: a leveling character previewing endgame content
@@ -791,6 +795,31 @@
         <span id="gl-feed-block"></span>
       </div>
     </section>
+    </section>
+    <!-- RATING (owner, 2026-11-14: "make it a new tab not a drop down", with
+         strengths, weaknesses and a lane). Read-only: /build/compare
+         evaluates, never solves or saves. It rates the build each time the tab
+         opens, so it always describes the build as it is now. -->
+    <section id="tab-rating" class="tabpanel" role="tabpanel"
+      aria-labelledby="tab-btn-rating" hidden>
+      <section id="rating-panel" class="panel">
+        <h2 id="rating-title">📊 Build rating</h2>
+        <p class="tool-lede keep-whole">Each category is graded S to F against +4 enemies,
+          with the exact number beside the grade. The cut points are provisional: they were
+          set from optimized champion builds as a guide, so an ordinary build reads lower
+          than its standing among players would. <strong>Unknown</strong> means the model
+          cannot measure it for this build, <strong>None</strong> means the build has none
+          of it, and <strong>N/A</strong> means it cannot apply. Nothing here solves or
+          saves your build.</p>
+        <div class="rating-controls">
+          <button id="rating-refresh-btn" type="button">📊 Rate this build</button>
+          <label>Compare with <select id="rating-compare-sel"></select></label>
+          <button id="rating-compare-btn" type="button">Compare</button>
+          <button id="frontier-open-btn" type="button">🧭 Alternatives</button>
+          <button id="rating-save-btn" type="button" class="secondary">⬇ Save as file</button>
+        </div>
+        <div id="rating-body" class="rating-body"></div>
+      </section>
     </section>
   </main>
 
@@ -888,31 +917,6 @@
       </div>
       <p id="tier-sub" class="muted small"></p>
       <div id="tier-cards" class="tier-cards"></div>
-    </div>
-  </div>
-
-  <!-- M5 build rating: a scorecard, or this build beside a saved character.
-       Read-only: /build/compare evaluates, never solves or saves. -->
-  <div id="rating-modal" class="modal hidden">
-    <div class="modal-box wide">
-      <div class="modal-head">
-        <strong id="rating-title">Build rating</strong>
-        <button id="rating-close" type="button">✕</button>
-      </div>
-      <p class="tool-lede keep-whole">Each category is graded S to F against +4 enemies,
-        with the exact number beside the grade. The cut points are provisional: they were
-        set from optimized champion builds as a guide, so an ordinary build reads lower
-        than its standing among players would. <strong>Unknown</strong> means the model
-        cannot measure it for this build, <strong>None</strong> means the build has none
-        of it, and <strong>N/A</strong> means it cannot apply. Nothing here solves or
-        saves your build.</p>
-      <div class="rating-controls">
-        <label>Compare with <select id="rating-compare-sel"></select></label>
-        <button id="rating-compare-btn" type="button">Compare</button>
-        <button id="frontier-open-btn" type="button">🧭 Alternatives</button>
-        <button id="rating-save-btn" type="button" class="secondary">⬇ Save as file</button>
-      </div>
-      <div id="rating-body" class="rating-body"></div>
     </div>
   </div>
 

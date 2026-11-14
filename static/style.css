@@ -3610,6 +3610,19 @@ body.layout-mode .lay-target .lay-target .lay-target .lay-target::before { top: 
 /* the comparison's scope line is an explanation, so it reads at the lede size */
 .rt-scope { font-size: 14px; line-height: 1.55; margin: 4px 0 8px; color: var(--muted); }
 .rt-scope-warn { color: var(--warn); font-weight: 600; }
+/* the Rating tab's strengths / weaknesses / lane block (server/strengths.py) */
+.rt-strengths { border: 1px solid var(--border, #444); border-radius: 8px; padding: 10px 14px; margin: 8px 0 14px; }
+.rt-strengths h3 { margin: 0 0 6px; }
+.rt-strengths h4 { margin: 8px 0 4px; }
+.rt-lane { font-size: 15px; line-height: 1.55; font-weight: 600; margin: 4px 0; }
+.rt-lanes { margin: 6px 0; line-height: 2; }
+.rt-chip { display: inline-block; padding: 1px 8px; border: 1px solid var(--border, #444); border-radius: 12px; margin: 0 4px 4px 0; font-size: 13px; }
+.rt-lane-best { border-color: var(--accent); font-weight: 600; }
+.rt-sw { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; }
+.rt-plus li, .rt-minus li { font-size: 14px; line-height: 1.5; margin-bottom: 3px; }
+.rt-plus li::marker { content: "+  "; color: var(--good, #22c55e); }
+.rt-minus li::marker { content: "-  "; color: var(--warn); }
+.rt-cats { margin-top: 4px; }
 .rt-reach { font-size: 14px; line-height: 1.55; margin: 4px 0 8px; }
 .rating-table .rt-section th { text-align: left; padding-top: 10px; font-size: 14px; color: var(--accent); border-bottom: 1px solid var(--border); }
 .rt-low { cursor: help; }

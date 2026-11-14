@@ -158,6 +158,11 @@ CATEGORIES = {
                              "damage_per_second", "offense"),
     "aoe_damage": ("Area damage", _m("offense.scenario_aoe_dps_per_target"),
                    "damage_per_second_per_target", "offense"),
+    # the max strike (server/strike.py): everything lined up, biggest hits first
+    "strike_single_target": ("Max strike, single target",
+                             _m("offense.max_strike.single_target.damage"), "damage", "offense"),
+    "strike_aoe": ("Max strike, area", _m("offense.max_strike.aoe_per_target.damage"),
+                   "damage_per_target", "offense"),
     "pet_damage": ("Pet damage", _m("offense.scenario_pet_dps"), "damage_per_second", "pets"),
     "survival": ("Survival (time to live)", _m("survival.time_to_live"), "seconds", "stat"),
     "toughness": ("Toughness (damage you can take)", _m("survival.toughness"),
@@ -204,6 +209,7 @@ _TYPE_EFFECT = dict({k: ("buff", e) for k, (_l, e) in BUFF_TYPES.items()},
 _BUCKET_PROFILE = {"debuffs_vs_av_percent": "debuff_av", "debuffs_vs_spawn_percent": "debuff_spawn",
                    "drains_per_second_percent": "drain"}
 _RANGE_KEY = dict({"single_target_damage": "single_target_damage", "aoe_damage": "aoe_damage",
+                   "strike_single_target": "strike_single_target", "strike_aoe": "strike_aoe",
                    "pet_damage": "pet_damage", "control": "control",
                    "control_single_target": "control_single_target", "control_aoe": "control_aoe",
                    "healing": "healing", SUPPORT_INDEX: "support"},
@@ -212,7 +218,8 @@ _RANGE_KEY = dict({"single_target_damage": "single_target_damage", "aoe_damage":
 
 # The scorecard's sections, one per category, in CATEGORIES order (the
 # renderer bands rows by this, so a section is never split).
-SECTIONS = dict({k: "Damage" for k in ("single_target_damage", "aoe_damage", "pet_damage")},
+SECTIONS = dict({k: "Damage" for k in ("single_target_damage", "aoe_damage", "strike_single_target",
+                                        "strike_aoe", "pet_damage")},
                 **{k: "Survival" for k in ("survival", "toughness", "toughness_vs_archetype",
                                            "defense", "resistance", "debuff_resist_defense",
                                            "debuff_resist_slow")},
@@ -294,6 +301,27 @@ def _rarity_detail(key):
     return get
 
 
+def _strike_detail(lens):
+    """'Build Up + Aim, 10 s: Blazing Bolt, Blast, Flares (x2.4 your sustained
+    damage over the same 10 s); at range 1,180, midrange 1,420'."""
+    def get(ev):
+        s = _section(ev, "offense").get("max_strike") or {}
+        row = s.get(lens) or {}
+        if not row.get("attacks"):
+            return None
+        buffs = " + ".join(s.get("buffs") or []) or "no damage-buff click"
+        text = f"{buffs}, {s['window_seconds']:g} s: {', '.join(row['attacks'])}"
+        if isinstance(row.get("vs_sustained"), (int, float)):
+            text += f" (x{row['vs_sustained']:g} your sustained damage over the same {s['window_seconds']:g} s)"
+        by = row.get("by_position") or {}
+        parts = [f"{pos} {by[pos]['damage']:,.0f}" for pos in ("range", "midrange")
+                 if by.get(pos) and by[pos]["damage"] != row["damage"]]
+        if parts:
+            text += "; from " + ", ".join(parts)
+        return text
+    return get
+
+
 def _not_read_detail(ev):
     dr = _section(ev, "survival").get("debuff_resistance") or {}
     missing = dr.get("not_read")
@@ -304,6 +332,8 @@ def _not_read_detail(ev):
 _DETAIL = dict({"toughness": _toughness_detail,
                 "single_target_damage": _types_detail("damage_types_single_target"),
                 "aoe_damage": _types_detail("damage_types_aoe"), "debuff_resist_defense": _cascade_detail,
+                "strike_single_target": _strike_detail("single_target"),
+                "strike_aoe": _strike_detail("aoe_per_target"),
                 "debuff_resist_slow": _not_read_detail},
                **{k: _rarity_detail(k) for k in _TYPE_EFFECT})
 

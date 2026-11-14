@@ -862,7 +862,7 @@
     "accelerators"
    ],
    "stage": "reference",
-   "what": "Every major menu action has a key combo: Ctrl+S saves the character, Ctrl+I opens Import, Ctrl+E exports to Mids Reborn, Ctrl+K opens this help search, Ctrl+Z undoes the last edit, and Ctrl+1 through Ctrl+4 switch to Powers and Slots, Stats, the Leveling Guide and Logging.",
+   "what": "Every major menu action has a key combo: Ctrl+S saves the character, Ctrl+I opens Import, Ctrl+E exports to Mids Reborn, Ctrl+K opens this help search, Ctrl+Z undoes the last edit, and Ctrl+1 through Ctrl+5 switch to Powers and Slots, Stats, the Leveling Guide, Logging and Rating.",
    "how": "Each combo presses the same control the menu does, so they always agree. Combos are ignored while you are typing in a text box, and while the guided tour is running the tour owns the keys. Ctrl+Z asks before it acts, naming what it will take back; everything else acts immediately. The combos are shown on the menu items themselves, and hovering a tab shows its number.",
    "why": "A menu you use daily should not need the mouse. The combos follow Windows conventions where one exists.",
    "where": "Everywhere, all the time - they are the fast lane through the whole loop.",
@@ -880,15 +880,40 @@
     "S to F"
    ],
    "stage": "reference",
-   "what": "Grades your build S to F in 36 categories against +4 enemies, grouped as damage (single target, area, pets), survival (time to live, two toughness grades, defense, resistance, debuff resistance), resources, control (single target and area), support (healing and a rarity-weighted team support score), every team buff type and every debuff type. Each grade shows its exact number, and the scorecard says where the build has to stand to deliver it.",
+   "what": "Grades your build S to F in 38 categories, sums up its strengths and weaknesses and suggests a lane, against +4 enemies, grouped as damage (single target, area, your max strike, pets), survival (time to live, two toughness grades, defense, resistance, debuff resistance), resources, control (single target and area), support (healing and a rarity-weighted team support score), every team buff type and every debuff type. Each grade shows its exact number, and the scorecard says where the build has to stand to deliver it.",
    "how": "It measures the build exactly as you own it (booster previews and other people's buffs are left out, defense is read in combat) and compares each number with fixed cut points. Pick a saved character in the same window to see the two side by side, with the gap in every category where the grades differ or one is at least 10% ahead. It never names an overall winner: builds trade categories against each other.",
    "why": "To see what a build is good and bad at before you change it, and to compare two characters without running the optimizer. Nothing here solves or saves anything.",
-   "where": "Stats tab, the 📊 Rate this build button, or Build → 📊 Rate this build. The grades are provisional: the cut points were set from optimized champion builds as a guide, so an ordinary build reads lower than its standing among players would. Unknown means the model cannot measure it for this build, None means the build has none of it, N/A means it cannot apply.",
+   "where": "The Rating tab (Ctrl+5); the 📊 Rate this build button on Stats and Build → 📊 Rate this build open it. The grades are provisional: the cut points were set from optimized champion builds as a guide, so an ordinary build reads lower than its standing among players would. Unknown means the model cannot measure it for this build, None means the build has none of it, N/A means it cannot apply.",
    "example": "A Super Strength / Invulnerability Brute reads A for survival and resistance and F for endurance; beside a Force Field Defender, the Defender leads on recharge, defense and control.",
    "go": [
     [
-     "tab:stats",
-     "Open Stats"
+     "tab:rating",
+     "Open Rating"
+    ]
+   ]
+  },
+  {
+   "term": "Strengths, weaknesses and your lane",
+   "aliases": [
+    "strengths",
+    "weaknesses",
+    "lane",
+    "pick a lane",
+    "role",
+    "what is my build good at",
+    "weak to",
+    "strong against"
+   ],
+   "stage": "reference",
+   "what": "The top of the Rating tab says, in plain sentences, what your build is good and bad at, and suggests the lane it fits best: alpha striker, area damage, single-target damage, tank, controller, support or healer.",
+   "how": "Each lane is a handful of graded categories (tank: toughness, resistance, defense and defense debuff resistance; alpha striker: the two max strike grades; and so on), and its grade is their average. The sentences come from numbers the scorecard already shows: the damage types and attack positions you take best and worst (25% above or below your typical one), whether your defense holds up against -Defense, the damage types you deal and the enemy groups that resist them, and how many of the 106 enemy groups you outlast. The best lane also names its weakest part, which is what to improve to lean further into it.",
+   "why": "A team wants to know what you bring, and a build is easier to improve once you know which job it is doing. It is a suggestion from the grades, not a rule: many builds do two jobs well.",
+   "where": "The Rating tab, above the grades. When you compare two characters, each gets its own block.",
+   "example": "A generated Fire/Fire Blaster reads 'Best lane: Alpha striker (A average)', takes Lethal and Smashing well, is weak to Negative, Psionic and Energy, and loses up to half its Fire damage to Praetor Duncan and the Void Hunters.",
+   "go": [
+    [
+     "tab:rating",
+     "Open Rating"
     ]
    ]
   },
@@ -906,12 +931,12 @@
    "what": "Two survival grades on the rating scorecard. Toughness is how much incoming damage per second your build can take and still be standing at the end of a fight, for an even mix of all eight damage types from melee, ranged and area attacks. Toughness for its archetype is the same number divided by a bare character of your archetype (its base hit points and regeneration, nothing else), so 2.0x means twice as tough as a bare one.",
    "how": "Each of the 24 type and position cells uses the game's hit chance against +4 enemies with your defense (the better of the position and the damage type) after enemy -Defense has piled up, your resistance up to its cap, and your regeneration, self heals and absorb shields. Melee, ranged and area attacks count a third each, but melee enemies chase you: fighting from range only spares you their attacks while your roots, knockback or repel keep them away, or while your slows keep them from closing the distance. The scorecard names your weakest spots (every type and position tied at the lowest value).",
    "why": "The first grade says how tough the build is in absolute terms, so a Tanker and a Blaster can be compared honestly. The second says how much the build adds on top of what its archetype starts with, so a squishy that is built well can still read high.",
-   "where": "Stats tab, 📊 Rate this build: the two Toughness rows. The full grid travels in the saved rating file under measurements.survival.toughness. The method follows the community Survivability Tool (Homecoming forums); the numbers are this app's own model.",
+   "where": "The Rating tab: the two Toughness rows. The full grid travels in the saved rating file under measurements.survival.toughness. The method follows the community Survivability Tool (Homecoming forums); the numbers are this app's own model.",
    "example": "A generated Fire/Fire Blaster takes about 80 damage per second for a 30-second fight, 1.3x a bare Blaster, weakest against Cold, Fire, Negative and Psionic; an Invulnerability/Super Strength Tanker takes about 200, 2.1x a bare Tanker, weakest against Psionic.",
    "go": [
     [
-     "tab:stats",
-     "Open Stats"
+     "tab:rating",
+     "Open Rating"
     ]
    ]
   },
@@ -930,12 +955,12 @@
    "what": "Every graded output on the scorecard says where the build delivers it: the share in melee, at midrange and from full range. Melee is a single-target power that reaches 15 feet or less. Midrange is anything around you (a PBAoE or an aura), a cone, or an area that reaches 30 feet or less. Full range is everything that reaches farther.",
    "how": "Each power's share is weighted by what it does: damage by how often the attack chain fires it, control by its control score, buffs and debuffs by their strength and uptime. Distance matters most for damage, so your overall position counts damage for half and control and support for a quarter each; Toughness uses it.",
    "why": "Two builds with the same numbers can play very differently: one has to stand in the middle of the spawn, the other attacks from 80 feet. Range alone does not keep you safe: melee enemies run to you, so a ranged build needs roots, knockback, repel or slows to keep them at bay, or has to kill them before they arrive.",
-   "where": "Stats tab, 📊 Rate this build: the 'where:' line under each grade.",
+   "where": "The Rating tab: the 'where:' line under each grade.",
    "example": "A generated Fire/Radiation Corruptor deals all of its single-target damage from full range but lays its area control from midrange; a Super Strength Brute fights mostly in melee.",
    "go": [
     [
-     "tab:stats",
-     "Open Stats"
+     "tab:rating",
+     "Open Rating"
     ]
    ]
   },
@@ -954,12 +979,12 @@
    "what": "Enemies always keep at least a 5% chance to hit you (more against +4 enemies), and many of their attacks lower your defense. Each debuffing hit that lands makes the next hit more likely, so defense can collapse in a long fight. Defense debuff resistance (DDR) shrinks every one of those debuffs. The scorecard grades your DDR and your resistance to slows and -Recharge, and shows where your defense settles.",
    "how": "The rating finds the point where the -Defense piling up and the hits landing balance out, with your DDR and without it. The enemy numbers come from the game's own critter records across 106 level-50 enemy groups: on average a critter attacks about every 2.2 seconds, about one attack in eight carries -Defense, and each landed one takes about 9.75% for 7.7 seconds. Toughness uses the defense that is left.",
    "why": "High defense with no DDR is one of the most common reasons a build that looks unhittable on paper goes down: the first few lucky hits strip the defense and the rest follow.",
-   "where": "Stats tab, 📊 Rate this build: Defense debuff resistance and Slow and -Recharge resistance under Survival. Resistance to -ToHit, endurance drain, -Regeneration and -Recovery is not in our data yet and is listed as such, never counted as zero.",
+   "where": "The Rating tab: Defense debuff resistance and Slow and -Recharge resistance under Survival. Resistance to -ToHit, endurance drain, -Regeneration and -Recovery is not in our data yet and is listed as such, never counted as zero.",
    "example": "A softcapped build with no DDR still loses a little defense at +4; a build at 25% defense loses far more, because more hits land. The enemy-group matchups show the same cascade with each group's own numbers.",
    "go": [
     [
-     "tab:stats",
-     "Open Stats"
+     "tab:rating",
+     "Open Rating"
     ]
    ]
   },
@@ -979,12 +1004,12 @@
    "what": "How your build fares against each of 106 level-50 enemy groups at +4: how long you last in a spawn of them, how much of their damage lands, how much defense their -Defense strips, how much of your damage they do not resist, and which mez they bring. Listed hardest first.",
    "how": "The rating spawn is refought with each group's own make-up, read from the game's critter records (City of Data): its damage types and attack positions (an area attack is defended by your AoE defense) against your defense and resistance, its rank mix's accuracy, its real -Defense against your DDR, and its own resistances (and vulnerabilities) against your damage types. Its melee attacks land unless your build keeps them away. Your regeneration, heals and absorb count toward how long you last, and you outlast a group when you are still standing at the end of the fight.",
    "why": "A build that is tough on average can still fold to the one group whose damage type is its hole. The list names that group before you meet it.",
-   "where": "Stats tab, 📊 Rate this build: the 'versus enemy groups' fold under the grades. A spawn you outlast reads 'outlasts them'.",
+   "where": "The Rating tab: the 'versus enemy groups' fold under the grades. A spawn you outlast reads 'outlasts them'.",
    "example": "A generated Fire/Fire Blaster lasts about 4 to 6 seconds against its hardest groups (Void Hunters first); an Invulnerability/Super Strength Tanker outlasts nearly all 106 groups.",
    "go": [
     [
-     "tab:stats",
-     "Open Stats"
+     "tab:rating",
+     "Open Rating"
     ]
    ]
   },
@@ -1004,12 +1029,12 @@
    "what": "Every team buff type (defense, resistance, damage, to-hit, recharge, recovery, regeneration, max HP) and every debuff type (-Resistance, -Regeneration and -Max HP against an AV; -Defense, -ToHit, -Damage, slows, -Recharge, -Recovery, lowering enemies' defense debuff resistance, and endurance drain against a spawn) gets its own grade. Regeneration is a buff, not healing. A rarity-weighted Team support score adds them up.",
    "how": "Rarity is counted from the game data: how many player powersets offer each type. The most common type weighs 1; a type only four powersets offer (-Max HP, or lowering an enemy's defense debuff resistance) weighs about 5. -Defense itself is one of the commonest debuffs (156 powersets, weight 1). The support score adds each type you have, divided by that type's typical value, times its rarity weight.",
    "why": "A build that brings what few others can is worth more to a team than one more source of the common debuffs.",
-   "where": "Stats tab, 📊 Rate this build: Team buffs, Debuffs and Support. Each row says how many powersets offer the type.",
+   "where": "The Rating tab: Team buffs, Debuffs and Support. Each row says how many powersets offer the type.",
    "example": "-Resistance is offered by 131 player powersets and weighs about 1.1; -Max HP is offered by 4 and weighs about 5.3.",
    "go": [
     [
-     "tab:stats",
-     "Open Stats"
+     "tab:rating",
+     "Open Rating"
     ]
    ]
   },
@@ -1025,12 +1050,39 @@
    "what": "The damage grades say which damage types your build deals, ranked by how much of your damage each type makes up, so you know what enemies that resist it will do to you.",
    "how": "Each attack's damage is split by its own damage rows and weighted by how often your attack chain fires it; area attacks outside the chain count at their recharge.",
    "why": "Resistant enemies (robots against Lethal, fire demons against Fire) cut a single-type build much harder than a mixed one.",
-   "where": "Stats tab, 📊 Rate this build: the line under Single-target damage and Area damage.",
+   "where": "The Rating tab: the line under Single-target damage and Area damage.",
    "example": "A generated Fire/Radiation Corruptor reads 'mostly Fire (96%), then Energy (3%), Cold (1%)'.",
    "go": [
     [
-     "tab:stats",
-     "Open Stats"
+     "tab:rating",
+     "Open Rating"
+    ]
+   ]
+  },
+  {
+   "term": "Max strike and sustained damage",
+   "aliases": [
+    "max strike",
+    "strike",
+    "burst",
+    "alpha",
+    "alpha strike",
+    "opening strike",
+    "build up",
+    "aim",
+    "nuke",
+    "sustained damage"
+   ],
+   "stage": "reference",
+   "what": "Two ways to read the same build's damage. Sustained damage is what you keep dealing over a whole fight. The max strike is the hardest you can hit when you line everything up on purpose: every click that buffs your damage (Build Up, Aim, Tidal Forces and the like) fired at once, then your hardest-hitting attacks, biggest first, until those buffs run out. Both are graded, for one target and for an area.",
+   "how": "The strike switches your damage-buff clicks on at full strength and fires whichever ready attack hits hardest, again once it recharges, while it still finishes inside 10 seconds, the length of Build Up and Aim (a longer buff such as Rage is simply up the whole time). It uses the same hit chance and level penalty against +4 enemies as the sustained grades. The line under each grade names the buffs and attacks, says how many times your sustained damage the strike delivers over the same seconds, and what you can still do from range or midrange. Damage auras, patches already laid and your pets keep dealing their sustained damage throughout (pets count on the single target: our data does not split their area damage). Defiance's per-attack bonus and attacks that need Momentum are left out; Power Boost is not a damage buff in our data (it strengthens mez, defense, heals, absorb and speed).",
+   "why": "Neither number is the better one; it depends on the fight. A huge strike deletes a spawn or a boss before it can act, which suits fast teams, alpha-striking and fights with travel between spawns. Sustained damage wins long fights, AVs and anywhere the opening is gone after the first seconds. A build can be ordinary in one and outstanding in the other.",
+   "where": "The Rating tab: Max strike, single target and Max strike, area, under Damage. How often a fight gives you the opening is not modelled; that depends on how you play.",
+   "example": "A generated Fire/Fire Blaster fires Aim and Build Up, then Fire Sword, Blaze and Fire Blast twice each, Blazing Bolt and Fire Ball: about 1,780 damage on one target in 10 seconds, about twice its sustained damage over the same time. A Mastermind's strike counts its henchmen, which keep attacking throughout.",
+   "go": [
+    [
+     "tab:rating",
+     "Open Rating"
     ]
    ]
   },
@@ -1049,12 +1101,12 @@
    "what": "Several other slottings of the powers you picked, each one better than the rest somewhere, so you can see what a build could trade for what. Your powers never change; only the enhancements move.",
    "how": "Tick the categories you care about and press Find alternatives. The optimizer re-slots your build along its own directions (damage, tank, defense, resistance, recharge, endurance, support roles), checks every result is legal, measures it against +4 enemies, and keeps every result that no other result beats in all the ticked categories. Your own build competes too. Sorting and minimum standards only change what is shown; nothing is removed from the list.",
    "why": "There is rarely one best build: more defense usually costs damage or recharge. Seeing the trade-offs side by side, with the gain or loss against your build in every column, lets you pick the one that fits how you play instead of trusting one score.",
-   "where": "In the 📊 Rate this build dialog, the 🧭 Alternatives button. It takes about half a minute. Use this build applies that slotting as an ordinary edit, so Undo (Ctrl+Z) takes it back; export it from the Build menu as usual. These are the alternatives the search found, not a proof that nothing better exists.",
+   "where": "On the Rating tab, the 🧭 Alternatives button. It takes about half a minute. Use this build applies that slotting as an ordinary edit, so Undo (Ctrl+Z) takes it back; export it from the Build menu as usual. These are the alternatives the search found, not a proof that nothing better exists.",
    "example": "On a Super Strength / Invulnerability Brute, the 45% defense target reaches 29% defense but lives far shorter against +4 enemies, while the hard-target damage preset gains 15 single-target DPS: both stay on the list because neither beats the other everywhere.",
    "go": [
     [
-     "tab:stats",
-     "Open Stats"
+     "tab:rating",
+     "Open Rating"
     ]
    ]
   }
