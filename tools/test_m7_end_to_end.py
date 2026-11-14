@@ -191,10 +191,12 @@ class C_ReproducibleAndVersioned(unittest.TestCase):
         real = srv._evaluate_build
         calls = []
         with patch.object(srv, "_evaluate_build",
-                          lambda b, s: calls.append(1) or real(b, s)):
+                          lambda b, s, **kw: calls.append(kw) or real(b, s, **kw)):
             fr = C.post("/build/frontier", json={"build": build, "max_evaluations": 1}).get_json()
         self.assertEqual(fr["search"]["evaluations"], 1)      # only the start was offered
         self.assertEqual(len(calls), 1)                       # and it was evaluated once
+        # a frontier reads measurements only: it never pays for the matchups
+        self.assertEqual(calls[0].get("include_matchups"), False)
 
     def test_artifacts_carry_versions_scenario_and_request(self):
         build = brute()

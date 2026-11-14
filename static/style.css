@@ -3610,5 +3610,6 @@ body.layout-mode .lay-target .lay-target .lay-target .lay-target::before { top: 
 /* the comparison's scope line is an explanation, so it reads at the lede size */
 .rt-scope { font-size: 14px; line-height: 1.55; margin: 4px 0 8px; color: var(--muted); }
 .rt-scope-warn { color: var(--warn); font-weight: 600; }
+.rt-reach { font-size: 14px; line-height: 1.55; margin: 4px 0 8px; }
 .rating-table .rt-section th { text-align: left; padding-top: 10px; font-size: 14px; color: var(--accent); border-bottom: 1px solid var(--border); }
 .rt-low { cursor: help; }

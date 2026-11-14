@@ -16,6 +16,7 @@ import engine
 import build_ratings
 import first_principles
 import role_output
+import matchups
 import range_profile
 import rating_measures
 import support_ledger
@@ -30,13 +31,13 @@ DEFAULT_SCENARIO = "rating_plus4"
 # fingerprint below always describes the numbers actually used.
 RATING_SCENARIOS = {
     # +4 version of the general solo encounter; nothing else changed.
-    # The defense cascade's constants (survival_profile): stated assumptions,
-    # provisional until critter data (the same data enemy-group matchups need)
-    # replaces them: each enemy attacks every 2 s, one attack in four carries
-    # -Defense, 5% per landed hit, for 10 s.
-    "rating_plus4": ("general", {"shift": 4, "enemy_attacks_per_second": 0.5,
-                                 "def_debuff_attack_share": 0.25, "def_debuff_per_hit": 0.05,
-                                 "def_debuff_seconds": 10.0}),
+    # The defense cascade's constants (survival_profile), from the game's critter
+    # records: data/critter_groups.json "all_groups_mean", the mean of each of
+    # the 106 level-50 groups' own -Defense pressure and debuffing hit rate
+    # (tools/fetch_critter_data.py). Copied here so a data refresh is a visible
+    # scenario change (new fingerprint, recalibrate), never a silent one.
+    "rating_plus4": ("general", {"shift": 4, "def_debuff_pressure": 0.042,
+                                 "def_debuff_hit_rate": 0.0663}),
 }
 
 
@@ -366,7 +367,7 @@ def _confidence(powers, unsupported):
 
 def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
              db_name, db_version, app_version, prepare=None,
-             powers_by_set=None, power_help=None, thresholds=None):
+             powers_by_set=None, power_help=None, thresholds=None, include_matchups=True):
     """Evaluate a build without optimization, rating or modifying player state.
 
     scenario must be a rating or registered scenario name. Context and game
@@ -438,9 +439,15 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
                                     range_profile.OVERALL_WEIGHTS)
     profiles = dict(damage_mix["profiles"], **control_split["profiles"],
                     **support_types["profiles"], pet_damage=pet_profile, overall=operating)
+    # keeping melee at bay: the best area root/knock/repel, and -Speed slowing
+    # the approach (survival_profile.melee_reach)
+    position_control = rating_measures.positioning(team_support, power_records,
+                                                    (matchups.load() or {}).get("spawn_rank_weights"))
+    slow = (support_types["debuffs_vs_spawn_percent"].get("Slow") or 0.0) / 100.0
     toughness = survival_profile.profile(
         totals, encounter["survival_inputs"], sc,
-        archetype_record.get("hitpoints") or 1000, sc["length"], operating)
+        archetype_record.get("hitpoints") or 1000, sc["length"], operating,
+        keep_at_bay=position_control["keep_at_bay"], slow=slow)
     emergency = _emergency_ledger(build_copy, totals, power_records, ctx, set_bonuses,
                                   res_cap, global_recharge, power_help)
     unsupported, modeled_elsewhere = _unsupported_powers(
@@ -523,6 +530,8 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
                     f"toughness / a bare {archetype}'s ({toughness['bare_archetype']}: base hit "
                     "points and regeneration, no defense, resistance or heals)"),
                 "defense_cascade": toughness["defense_cascade"],
+                "melee_reach": dict(toughness["melee_reach"], **position_control,
+                                    slow_percent=round(slow * 100.0, 1)),
                 "debuff_resistance": rating_measures.debuff_resistance(totals),
                 "availability": _measurement(encounter.get("availability"), "fraction",
                                              "scenario survival and control-pressure model"),
@@ -578,6 +587,13 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
                                   "unit": "model_heal_units_per_second"},
             },
         },
+        # VS enemy group (server/matchups.py): the rating spawn refought with each
+        # group's own make-up, hardest first; None when no critter data is installed
+        # (a frontier search reads only measurements, so it skips them)
+        "matchups": (matchups.all_matchups(totals, encounter["survival_inputs"], sc,
+                                           damage_mix["types"],
+                                           reach=toughness["melee_reach"]["reach"])
+                     if include_matchups else None),
         "range_profile": {
             "bands": {"melee": f"single target, reach up to {range_profile.MELEE_MAX:g} ft",
                       "midrange": f"around you (PBAoE, auras), cones and areas up to "

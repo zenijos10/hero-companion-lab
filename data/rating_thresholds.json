@@ -336,26 +336,26 @@
   },
   "toughness": {
    "cuts": {
-    "A": 679.85,
-    "B": 464.2,
-    "C": 322.95,
-    "D": 184.8,
-    "S": 1101.55
+    "A": 892.3,
+    "B": 632.85,
+    "C": 458.65,
+    "D": 295.75,
+    "S": 1445.3
    },
    "sample_size": 246
   },
   "toughness_vs_archetype": {
    "cuts": {
-    "A": 11.12,
-    "B": 7.385,
-    "C": 5.41,
-    "D": 3.635,
-    "S": 18.165
+    "A": 14.69,
+    "B": 10.195,
+    "C": 7.705,
+    "D": 5.2,
+    "S": 24.72
    },
    "sample_size": 246
   }
  },
- "created": "2026-11-12",
+ "created": "2026-11-13",
  "database_version": "2026.1.1242",
  "method": "PROVISIONAL fixed numbers (owner, 2026-11-10). Cut points = quantiles of an archetype-stratified sample of shipped itrial champions, rebuilt as served and evaluated at the rating scenario: S>=p90 A>=p70 B>=p50 C>=p30 D>=p10, else F. Champions are a guideline, NOT the comparison population. Capability categories are cut from champions that have the capability. Edit by hand and bump version as builds come in.",
  "model_version": 58,
@@ -365,6 +365,6 @@
   "skipped": []
  },
  "scenario": "rating_plus4",
- "scenario_fingerprint": "1d56c5e30087",
- "version": 4
+ "scenario_fingerprint": "9ff2199bbb62",
+ "version": 5
 }

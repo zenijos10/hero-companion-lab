@@ -32,6 +32,8 @@ def _column(entry):
                         for u in (ev.get("unsupported") or {}).get("powers") or []],
         "versions": ev.get("versions"),
         "scenario": (ev.get("scenario") or {}).get("id"),
+        "matchups": ((ev.get("matchups") or {}).get("groups")),
+        "melee_reach": ((ev.get("measurements") or {}).get("survival") or {}).get("melee_reach"),
     }
 
 

@@ -25,7 +25,7 @@ starting build competes as a candidate. Nothing is saved.
       "keep_sets": false
     }
 
-- `objectives`: any of the 18 rating category keys (`build_ratings.CATEGORIES`).
+- `objectives`: any of the 36 rating category keys (`build_ratings.CATEGORIES`).
   Default = the seven core ones (single-target, area, survival, defense,
   resistance, endurance, recharge). The values compared are the **unrounded
   measurements** (`build_ratings.measure`), never grades.

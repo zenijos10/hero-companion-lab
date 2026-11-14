@@ -2959,9 +2959,10 @@ def build_evaluate():
     return jsonify(result)
 
 
-def _evaluate_build(build, scenario):
+def _evaluate_build(build, scenario, include_matchups=True):
     """(evaluation, None) or (None, the reason it was refused): the ONE copy of
-    the evaluation call that /build/evaluate and /build/compare share."""
+    the evaluation call that /build/evaluate and /build/compare share (the
+    frontier search passes include_matchups=False: it reads measurements only)."""
     at = ARCH_BY_NAME.get(build.get("archetype")) if isinstance(build.get("archetype"), str) else None
     if not at or not at.get("playable"):
         return None, "Unknown playable archetype."
@@ -2974,7 +2975,7 @@ def _evaluate_build(build, scenario):
             db_name=DB_NAME, db_version=DB_VERSION, app_version=APP_VERSION,
             prepare=lambda b: _prepare_incarnate_fields(b, ctx, res_cap),
             powers_by_set=POWERS, power_help=POWER_HELP,
-            thresholds=RATING_THRESHOLDS), None
+            thresholds=RATING_THRESHOLDS, include_matchups=include_matchups), None
     except ValueError as exc:
         return None, str(exc)
 
@@ -3028,7 +3029,8 @@ def build_frontier():
         objectives, floors, budget, seconds, size = frontier_search.parse_request(body)
     except ValueError as exc:
         return jsonify({"ok": False, "error": str(exc)}), 400
-    start_eval, refused = _evaluate_build(copy.deepcopy(build), build_evaluation.DEFAULT_SCENARIO)
+    start_eval, refused = _evaluate_build(copy.deepcopy(build), build_evaluation.DEFAULT_SCENARIO,
+                                          include_matchups=False)
     if refused:
         return jsonify({"ok": False, "error": refused}), 400
     start_fp = frontier_search.fingerprint(build.get("powers") or [])
@@ -3037,7 +3039,8 @@ def build_frontier():
         # the starting build was just evaluated to vet the request: reuse it
         if frontier_search.fingerprint(candidate.get("powers") or []) == start_fp:
             return copy.deepcopy(start_eval), None
-        return _evaluate_build(copy.deepcopy(candidate), build_evaluation.DEFAULT_SCENARIO)
+        return _evaluate_build(copy.deepcopy(candidate), build_evaluation.DEFAULT_SCENARIO,
+                               include_matchups=False)
 
     result = frontier_search.search(
         copy.deepcopy(build), objectives=objectives, floors=floors,
