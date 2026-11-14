@@ -17,6 +17,7 @@ import build_ratings
 import first_principles
 import role_output
 import matchups
+import strike
 import range_profile
 import rating_measures
 import support_ledger
@@ -441,6 +442,20 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
                     **support_types["profiles"], pet_damage=pet_profile, overall=operating)
     # keeping melee at bay: the best area root/knock/repel, and -Speed slowing
     # the approach (survival_profile.melee_reach)
+    # the max strike: every damage-buff click fired, then the hardest hitters
+    # (server/strike.py), beside the sustained damage it does not replace
+    max_strike = strike.strike(
+        build_copy["powers"], totals, sc, power_records,
+        lambda powers: engine.calculate_build(dict(build_copy, powers=powers), set_bonuses,
+                                              res_cap=res_cap, ctx=dict(ctx)))
+    _sustained = {"single_target": encounter.get("st_dps_scenario"),
+                  "aoe_per_target": encounter.get("aoe_dps_scenario_per_target")}
+    for _lens, _dps in _sustained.items():
+        _over = (_dps or 0.0) * max_strike["window_seconds"]
+        max_strike[_lens]["vs_sustained"] = (round(max_strike[_lens]["damage"] / _over, 2)
+                                             if _over > 0 else None)
+    profiles.update(strike_single_target=max_strike["single_target"]["where"],
+                    strike_aoe=max_strike["aoe_per_target"]["where"])
     position_control = rating_measures.positioning(team_support, power_records,
                                                     (matchups.load() or {}).get("spawn_rank_weights"))
     slow = (support_types["debuffs_vs_spawn_percent"].get("Slow") or 0.0) / 100.0
@@ -506,6 +521,7 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
                 "scenario_personal_dps": _measurement(
                     encounter.get("my_dps"), "damage_per_second_equivalent",
                     "scenario-weighted ST/AoE plus pets, hit chance, level, endurance and uptime"),
+                "max_strike": max_strike,
                 "damage_types": damage_mix["types"],
                 "damage_types_single_target": damage_mix["types_single_target"],
                 "damage_types_aoe": damage_mix["types_aoe"],

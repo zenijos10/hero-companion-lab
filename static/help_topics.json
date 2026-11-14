@@ -880,7 +880,7 @@
     "S to F"
    ],
    "stage": "reference",
-   "what": "Grades your build S to F in 36 categories against +4 enemies, grouped as damage (single target, area, pets), survival (time to live, two toughness grades, defense, resistance, debuff resistance), resources, control (single target and area), support (healing and a rarity-weighted team support score), every team buff type and every debuff type. Each grade shows its exact number, and the scorecard says where the build has to stand to deliver it.",
+   "what": "Grades your build S to F in 38 categories against +4 enemies, grouped as damage (single target, area, your max strike, pets), survival (time to live, two toughness grades, defense, resistance, debuff resistance), resources, control (single target and area), support (healing and a rarity-weighted team support score), every team buff type and every debuff type. Each grade shows its exact number, and the scorecard says where the build has to stand to deliver it.",
    "how": "It measures the build exactly as you own it (booster previews and other people's buffs are left out, defense is read in combat) and compares each number with fixed cut points. Pick a saved character in the same window to see the two side by side, with the gap in every category where the grades differ or one is at least 10% ahead. It never names an overall winner: builds trade categories against each other.",
    "why": "To see what a build is good and bad at before you change it, and to compare two characters without running the optimizer. Nothing here solves or saves anything.",
    "where": "Stats tab, the 📊 Rate this build button, or Build → 📊 Rate this build. The grades are provisional: the cut points were set from optimized champion builds as a guide, so an ordinary build reads lower than its standing among players would. Unknown means the model cannot measure it for this build, None means the build has none of it, N/A means it cannot apply.",
@@ -1027,6 +1027,33 @@
    "why": "Resistant enemies (robots against Lethal, fire demons against Fire) cut a single-type build much harder than a mixed one.",
    "where": "Stats tab, 📊 Rate this build: the line under Single-target damage and Area damage.",
    "example": "A generated Fire/Radiation Corruptor reads 'mostly Fire (96%), then Energy (3%), Cold (1%)'.",
+   "go": [
+    [
+     "tab:stats",
+     "Open Stats"
+    ]
+   ]
+  },
+  {
+   "term": "Max strike and sustained damage",
+   "aliases": [
+    "max strike",
+    "strike",
+    "burst",
+    "alpha",
+    "alpha strike",
+    "opening strike",
+    "build up",
+    "aim",
+    "nuke",
+    "sustained damage"
+   ],
+   "stage": "reference",
+   "what": "Two ways to read the same build's damage. Sustained damage is what you keep dealing over a whole fight. The max strike is the hardest you can hit when you line everything up on purpose: every click that buffs your damage (Build Up, Aim, Tidal Forces and the like) fired at once, then your hardest-hitting attacks, biggest first, until those buffs run out. Both are graded, for one target and for an area.",
+   "how": "The strike switches your damage-buff clicks on at full strength and fires whichever ready attack hits hardest, again once it recharges, while it still finishes inside 10 seconds, the length of Build Up and Aim (a longer buff such as Rage is simply up the whole time). It uses the same hit chance and level penalty against +4 enemies as the sustained grades. The line under each grade names the buffs and attacks, says how many times your sustained damage the strike delivers over the same seconds, and what you can still do from range or midrange. Defiance's per-attack bonus and attacks that need Momentum are left out; Power Boost is not a damage buff in our data (it strengthens mez, defense, heals, absorb and speed).",
+   "why": "Neither number is the better one; it depends on the fight. A huge strike deletes a spawn or a boss before it can act, which suits fast teams, alpha-striking and fights with travel between spawns. Sustained damage wins long fights, AVs and anywhere the opening is gone after the first seconds. A build can be ordinary in one and outstanding in the other.",
+   "where": "Stats tab, 📊 Rate this build: Max strike, single target and Max strike, area, under Damage. How often a fight gives you the opening is not modelled; that depends on how you play.",
+   "example": "A generated Fire/Fire Blaster fires Aim and Build Up, then Blaze twice, Blazing Bolt, Fire Sword, Fire Ball, Fire Sword Circle and Fire Blast: about 1,500 damage on one target in 10 seconds, over twice its sustained damage for the same time.",
    "go": [
     [
      "tab:stats",

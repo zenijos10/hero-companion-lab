@@ -103,7 +103,7 @@ T("/build/compare")
 _cmp = j(C.post("/build/compare", json={"builds": [{"label": "A", "build": BUILD},
                                                     {"label": "PvP", "build": dict(BUILD, pvp=True)}]}))
 check("/build/compare returns a comparison with a refused column",
-      _cmp.get("mode") == "comparison" and len(_cmp.get("rows") or []) == 36
+      _cmp.get("mode") == "comparison" and len(_cmp.get("rows") or []) == 38
       and (_cmp.get("columns") or [{}, {}])[1].get("ok") is False, _cmp.get("mode"))
 check("/build/compare rejects an empty request",
       C.post("/build/compare", json={"builds": []}).status_code == 400)

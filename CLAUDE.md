@@ -177,7 +177,7 @@ out. Rules going forward:
   same grid + rank/level mix; blocked on critter data (damage types/positions per group) that our
   data does not carry. ⚠ Noted, not changed: enemy damage does not scale with level in the scenario
   model (only accuracy does); the spreadsheet scales it (1.44 at +4). Uniform factor, a model change.
-- **RATING BREAKDOWN (owner, 2026-11-11)** — 36 categories. Range bands (`server/range_profile.py`,
+- **RATING BREAKDOWN (owner, 2026-11-11)** — 36 categories (38 with the max strike, 2026-11-14). Range bands (`server/range_profile.py`,
   melee ≤15 ft single target / midrange = around you, cones, ≤30 ft / range) on every graded row
   (`where`), toughness weighted by where the build operates (overall = damage 1/2, control 1/4,
   support 1/4: owner, distance matters most for damage); -Def is COMMON (156 sets), the rare one
@@ -206,6 +206,14 @@ out. Rules going forward:
   a self-centred click lands after they arrive; an unreadable record is NOT credited), approach = 60 ft at 30.8 ft/s slowed by -Speed (cap 90%), all stated.
   Toughness and matchups both read it. ⚠ CoD revision 2025-12-09 predates our July 2026 client bins: re-run the fetch (or a
   client re-export) at PATCH-WATCH. The `environment` hero-companion-lab allows homecoming.wiki + cod.
+- **MAX STRIKE (owner, 2026-11-14): sustained damage and the max strike are two LENSES, neither replaces the other** ("there
+  are reasons you might want somebody with massive single target or massive AOE max strikes and other times ... sustained").
+  `server/strike.py`: damage-buff clicks fired at full strength, then an EXACT search for the best 10 s attack order (refires
+  on recharge); graded `strike_single_target` / `strike_aoe`, per position. Spawn-to-spawn time is NOT modelled (his ruling:
+  "depends"). ⚠ Defiance's per-cast row rides 7 click records on a flat `*_Ones` table (Whirlpool, Dark Pit...): not a
+  buff click. ⚠ The window is FIXED at 10 s: Rage lasts 120 s and stretched the first version into a 2-minute "strike".
+  ⚠ Power Boost (our data) amplifies mez/defense/heal/absorb/speed, NOT damage; Water's Tidal Power stacks are absent from
+  our data (client export needed); the field report (his Water/Energy Blaster wipes spawns, rates C) is that gap.
 - **M5 (2026-11-10): `/build/compare` + the app's 📊 Rate this build (Stats row + Build menu)**
   is read-only: it evaluates the OWNED build (`buildWithAccolades()`, never `buildPayload()`,
   whose slots carry booster previews), never solves or saves, and never names an overall winner.

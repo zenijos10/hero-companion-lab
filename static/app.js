@@ -9886,6 +9886,7 @@ const _RATING_UNITS = {
   weighted_mez_seconds_proxy: "control pts", model_heal_units_per_second: "heal/s",
   incoming_damage_per_second: "dmg/s taken", multiple_of_bare_archetype: "× bare",
   percent_per_second: "%/s", support_index_points: "pts", hit_points: "HP",
+  damage: "dmg", damage_per_target: "dmg/target",
 };
 
 // Scorecard sections come from the server (build_ratings.SECTIONS, one per
