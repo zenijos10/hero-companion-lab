@@ -106,13 +106,17 @@ class RangeTests(unittest.TestCase):
              "controls": [{"mez": "Held", "uptime": 1.0}]},
             {"power": "SingleRoot", "area": "single_target", "cost": {"basis": "toggle/auto"},
              "controls": [{"mez": "Immobilized", "uptime": 1.0}]}]}
-        out = rm.positioning(ledger)
+        aimed = {"range": 60.0, "radius": 15.0}
+        records = dict.fromkeys(("Root", "Knock", "Hold", "SingleRoot", "Repel"), aimed)
+        out = rm.positioning(ledger, records)
         self.assertEqual(out["keep_at_bay"], 0.75)           # a knock buys 3 s of every 4
         self.assertEqual(out["source"]["power"], "Knock")
         repel = {"powers": [{"power": "Repel", "area": "aoe", "cost": {"basis": "toggle/auto"},
                              "controls": [{"mez": "Repel", "uptime": 1.0}]}]}
-        self.assertEqual(rm.positioning(repel)["keep_at_bay"], 1.0)
-        self.assertEqual(rm.positioning({"powers": []})["keep_at_bay"], 0.0)
+        self.assertEqual(rm.positioning(repel, records)["keep_at_bay"], 1.0)
+        self.assertEqual(rm.positioning({"powers": []}, records)["keep_at_bay"], 0.0)
+        # a power whose record cannot be read is not credited (its geometry is unknown)
+        self.assertEqual(rm.positioning(repel, {})["keep_at_bay"], 0.0)
 
 
     def test_a_root_holds_only_the_ranks_it_beats(self):
@@ -120,9 +124,13 @@ class RangeTests(unittest.TestCase):
                                           "cost": {"basis": "toggle/auto"},
                                           "controls": [{"mez": "Immobilized", "uptime": 1.0,
                                                         "affects_in_one_application": held}]}]}
-        self.assertEqual(rm.positioning(root(["minion"]))["keep_at_bay"], 0.6)
-        self.assertEqual(rm.positioning(root(["minion", "lieutenant", "boss"]))["keep_at_bay"], 1.0)
-        self.assertEqual(rm.positioning(root([]))["keep_at_bay"], 0.0)
+        records = {"Root": {"range": 60.0, "radius": 15.0}}
+        mix = {"minion": 0.6, "lieutenant": 0.3, "boss": 0.1}
+        held = lambda ranks, w=mix: rm.positioning(root(ranks), records, w)["keep_at_bay"]  # noqa: E731
+        self.assertEqual(held(["minion"]), 0.6)
+        self.assertEqual(held(["minion", "lieutenant", "boss"]), 1.0)
+        self.assertEqual(held([]), 0.0)
+        self.assertEqual(held(["minion"], {"minion": 0.5, "lieutenant": 0.5}), 0.5)   # the mix is read, not assumed
 
     def test_a_self_centred_click_does_not_keep_them_away(self):
         clap = {"powers": [{"power": "P.Clap", "area": "aoe", "cost": {"basis": "click cast on cooldown"},
@@ -137,6 +145,12 @@ class RangeTests(unittest.TestCase):
 
 
 class CascadeTests(unittest.TestCase):
+    def test_fixed_point_is_the_least_one(self):
+        # a slow climb (slope 0.9999) toward 0.9, then a jump with a second fixed
+        # point at 6: bisecting [last climb step, bound] lands on 6; the least is 0.9
+        step = lambda d: (0.00009 + 0.9999 * d) if d < 1.0 else min(d + 0.1, 6.0)  # noqa: E731
+        self.assertAlmostEqual(surv.fixed_point(1.0, 0.0, step), 0.9, places=3)
+
     def test_fixed_point_finishes_a_slow_climb(self):
         # slope 0.9999: 500 climb steps reach ~5% of the way; bisection finishes
         mean_hit = lambda d: 0.001 + 0.9999 * min(d, 50.0)  # noqa: E731

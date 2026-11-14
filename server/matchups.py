@@ -26,8 +26,8 @@ import json
 import os
 
 from first_principles import (_def_against, capped_resistance, defense_debuff_resistance,
-                              incoming_hit)
-from survival_profile import TYPES, fixed_point, landing_share, sustain_per_second
+                              erode, incoming_hit)
+from survival_profile import TYPES, fixed_point, sustain_per_second
 
 DATA = os.path.join(os.path.dirname(__file__), "..", "data", "critter_groups.json")
 _CACHE = {}
@@ -62,11 +62,12 @@ def matchup(totals, inputs, sc, group, damage_types, reach=1.0):
         return None
     sc_g = dict(sc, rank_acc=group.get("rank_accuracy") or sc.get("rank_acc", 1.0))
     tohit = inputs["tohit_debuff"]
-    hit = lambda defense, d: incoming_hit(max(defense - d, 0.0), tohit, sc_g)  # noqa: E731
+    hit = lambda defense, d: incoming_hit(erode(defense, d), tohit, sc_g)  # noqa: E731
     # the -Defense that lands comes only from attacks that reach you (the
-    # weights sum to the landing share); hit_chance is per attack that does
+    # weights sum to the landing share); hit_chance is per attack that does,
+    # and None when none does (there is no attack to have a chance)
     mean_hit = lambda d: sum(w * hit(df, d) for w, df, _r, _t in cells)  # noqa: E731
-    reaching = landing_share({i: c[0] for i, c in enumerate(cells)})
+    reaching = sum(c[0] for c in cells)
     k = sc["enemies"] * (group.get("def_debuff_pressure") or 0.0)
     debuff = fixed_point(k, defense_debuff_resistance(totals), mean_hit)
     without = fixed_point(k, 0.0, mean_hit)
@@ -97,7 +98,7 @@ def matchup(totals, inputs, sc, group, damage_types, reach=1.0):
         "sustain_per_second": round(sustain, 1),
         "steady_def_debuff": round(min(debuff, most), 4),
         "steady_def_debuff_without_ddr": round(min(without, most), 4),
-        "hit_chance": round(mean_hit(debuff) / reaching, 4),
+        "hit_chance": round(mean_hit(debuff) / reaching, 4) if reaching > 0 else None,
         "your_damage_unresisted": None if kept is None else round(kept, 3),
         "their_damage": [{"type": t, "share": round(s, 3)} for t, s in top],
         "mez": group.get("mez") or [],

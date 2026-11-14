@@ -30,7 +30,7 @@ const escStart = src.indexOf("const escHtml");
 const escEnd = src.slice(escStart).search(/;\r?\n/);
 const escSrc = src.slice(escStart, escStart + escEnd + 1);
 assert.ok(unitsSrc.length > 20 && escSrc.length > 20, "helpers not found");
-const make = new Function(`${escSrc}\n${unitsSrc}\n${lift("function renderMatchupsHtml")}\n${lift("function renderRatingHtml")}\nreturn renderRatingHtml;`);
+const make = new Function(`${escSrc}\n${unitsSrc}\n${lift("function meleeReachLine")}\n${lift("function renderMatchupsHtml")}\n${lift("function renderRatingHtml")}\nreturn renderRatingHtml;`);
 const render = make();
 
 const col = (label, extra = {}) => Object.assign({
@@ -135,6 +135,19 @@ ok(html.includes("versus 2 enemy groups") && html.includes("Council &lt;x&gt;"),
 ok(html.indexOf("Council &lt;x&gt;") < html.indexOf("Hellions"), "hardest first, in the order the server ranked");
 ok(html.includes("12.3 s") && html.includes("outlasts them"), "time to live, and outlasting said in words");
 ok(html.includes("9.0% with no DDR"), "the DDR difference is shown");
+// melee reach is stated in words, with the power holding them off (escaped)
+const groupsOnly = [{ group: "G", name: "G", time_to_live: 5, outlasts: false, damage_landing_per_second: 1,
+  their_damage: [], steady_def_debuff: 0, steady_def_debuff_without_ddr: 0, your_damage_unresisted: 1, mez: [] }];
+html = render({ ok: true, mode: "scorecard", rows: [], notes: [], columns: [col("M", { matchups: groupsOnly,
+  melee_reach: { reach: 0.1045, keep_at_bay: 0.9, range_share: 0.8, approach_seconds: 19.48, slow_percent: 90,
+                 source: { power: "C.Earth_Control.Stone_<b>Cages", mez: "Immobilized" } } })] });
+ok(html.includes("10% of melee attacks reach you") && html.includes("Stone &lt;b&gt;Cages (Immobilized)")
+   && html.includes("90% of the time") && html.includes("19.5 s to close 60 ft, slowed 90%"),
+   "melee reach says how much lands, what keeps them away and how long they take");
+html = render({ ok: true, mode: "scorecard", rows: [], notes: [], columns: [col("M", { matchups: groupsOnly,
+  melee_reach: { reach: 0.86, keep_at_bay: 0, range_share: 0.2, approach_seconds: 1.95, source: null } })] });
+ok(html.includes("nothing keeps them away"), "no keep-at-bay power is said plainly");
+ok(!html.includes("<b>Melee reach") || html.includes("<b>Melee reach:</b>"), "reach line renders once, labelled");
 ok(!render({ ok: true, mode: "scorecard", rows: [], notes: [], columns: [col("Y")] }).includes("rt-matchups"),
    "no matchups section without data");
 

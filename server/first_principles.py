@@ -504,9 +504,14 @@ def incoming_def_debuff(totals, sc):
     return sc.get("def_debuff_in", 0.0) * (1.0 - defense_debuff_resistance(totals))
 
 
+def erode(defense, def_debuff_in):
+    """A defense after incoming -Defense, never below zero (the one rule)."""
+    return max(defense - def_debuff_in, 0.0)
+
+
 def eroded_defense(totals, kind_keys, def_debuff_in):
     """The best applicable defense after incoming -Defense, never below zero."""
-    return max(_def_against(totals, kind_keys) - def_debuff_in, 0.0)
+    return erode(_def_against(totals, kind_keys), def_debuff_in)
 
 
 def capped_resistance(totals, dtype):

@@ -376,7 +376,8 @@ def main():
            "all_groups_mean": all_groups,
            "revision": revision, "fetched": datetime.date.today().isoformat(),
            "method": __doc__.split("Polite by design")[0].strip(),
-           "groups": groups, "unread_powers": len(missing)}
+           "groups": groups, "unread_powers": len(missing),
+           "spawn_rank_weights": SPAWN_RANK_WEIGHTS}
     data = (json.dumps(out, indent=1, sort_keys=True) + "\n").encode("utf-8")
     with open(OUT, "wb") as f:
         f.write(data)

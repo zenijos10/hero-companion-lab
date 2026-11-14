@@ -441,7 +441,8 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
                     **support_types["profiles"], pet_damage=pet_profile, overall=operating)
     # keeping melee at bay: the best area root/knock/repel, and -Speed slowing
     # the approach (survival_profile.melee_reach)
-    position_control = rating_measures.positioning(team_support, power_records)
+    position_control = rating_measures.positioning(team_support, power_records,
+                                                    (matchups.load() or {}).get("spawn_rank_weights"))
     slow = (support_types["debuffs_vs_spawn_percent"].get("Slow") or 0.0) / 100.0
     toughness = survival_profile.profile(
         totals, encounter["survival_inputs"], sc,

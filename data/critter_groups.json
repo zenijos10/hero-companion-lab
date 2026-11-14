@@ -5130,5 +5130,10 @@
  "method": "Fetch Homecoming critter data from City of Data (cod.uberguy.net) and compile\ndata/critter_groups.json: per enemy group, what its standard level-50\nminions, lieutenants and bosses throw at you.\n\nOwner's ruling (2026-11-12): the matchups source is the game export when on his\nPC, else a public source; City of Data serves the game's own critter records\n(entity defaults + power records, the same fields as the client bins), which is\ncloser to the game than a wiki page. Labelled as such in the output.\n\nPer group (numbers at level 54 = +4 to a level 50, from each critter's own\nclass table):\n  critters             standard critters read, by rank\n  rank_accuracy        the spawn's mean rank accuracy (stated rank mix)\n  dps_per_critter      sustained damage per critter (attacks at their own cycle,\n                       scaled down when the animations overlap)\n  damage_mix           share of that damage by \"Position|Type\": positions are the\n                       game's own attack_types (its \"Area\" = our AoE); an attack\n                       tagged with several is one cell, \"Ranged+AoE\", defended by\n                       the best of them; untagged attacks count as Ranged.\n                       Damage over time counts every tick.\n  def_debuff / tohit_debuff / res_debuff   share of attacks that land it,\n                       percent per landed hit, seconds it lasts\n  resistances          the group's passive self resistance by type, percent\n                       (negative = a vulnerability; stacked past 100 = immune)\n  mez                  mez types its attacks carry\nSpawn rank mix (stated): 60% minions, 30% lieutenants, 10% bosses.",
  "revision": "homecoming-20251209_7415",
  "source": "City of Data (cod.uberguy.net), the game's own critter records",
+ "spawn_rank_weights": {
+  "boss": 0.1,
+  "lieutenant": 0.3,
+  "minion": 0.6
+ },
  "unread_powers": 0
 }

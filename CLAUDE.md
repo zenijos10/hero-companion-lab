@@ -201,8 +201,9 @@ out. Rules going forward:
   melee range won't work as the enemy will follow you, so you need a method to keep them at bay
   (controls or soft controls) or kill them before they get to you."** Range alone never removes melee
   damage: reach = close + range x (1 - keep_at_bay) x (1 - approach/window), keep_at_bay = best area
-  root/knockback/repel uptime x the spawn share it holds (a root: the ranks its magnitude beats; aimed
-  controls + self-centred toggles only, a self-centred click lands after they arrive), approach = 60 ft at 30.8 ft/s slowed by -Speed (cap 90%), all stated.
+  root/knockback/repel uptime x the spawn share it holds (a root: the ranks its magnitude beats, rank mix
+  read from critter_groups.json `spawn_rank_weights`, the one copy; aimed controls + self-centred toggles only,
+  a self-centred click lands after they arrive; an unreadable record is NOT credited), approach = 60 ft at 30.8 ft/s slowed by -Speed (cap 90%), all stated.
   Toughness and matchups both read it. ⚠ CoD revision 2025-12-09 predates our July 2026 client bins: re-run the fetch (or a
   client re-export) at PATCH-WATCH. The `environment` hero-companion-lab allows homecoming.wiki + cod.
 - **M5 (2026-11-10): `/build/compare` + the app's 📊 Rate this build (Stats row + Build menu)**

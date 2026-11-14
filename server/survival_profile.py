@@ -98,13 +98,18 @@ def _mean_hit(totals, sc, tohit, weights, debuff):
                for p, w in weights.items() for t in TYPES)
 
 
+SCAN_STEP = 1e-4      # the fallback scan's stride (defense fractions)
+
+
 def fixed_point(k, ddr, mean_hit):
     """The cascade's steady -Defense: D = k x (1 - DDR) x mean_hit(D), climbed
     from D = 0 (the debuff piles up from nothing). One copy, shared with the
     enemy-group matchups (server/matchups.py). mean_hit rises with D and is
-    bounded, so the climb converges on the first stable point; when it is slow
-    (a slope near one), bisection finishes it between the last climb step and
-    the bound, so the value returned is always a fixed point."""
+    bounded, so the climb converges on the FIRST (least) stable point. When the
+    climb is slow (a slope near one) a scan finishes it: every D below the least
+    fixed point still climbs (step(D) > D), so the first scan point that stops
+    climbing brackets it, and bisection inside that bracket returns it. A
+    second, higher fixed point is never reached."""
     step = lambda d: k * (1.0 - ddr) * mean_hit(d)  # noqa: E731
     debuff = 0.0
     for _ in range(500):
@@ -112,9 +117,12 @@ def fixed_point(k, ddr, mean_hit):
         if abs(nxt - debuff) < 1e-7:
             return nxt
         debuff = nxt
-    low, high = debuff, max(debuff, step(10.0))   # step(D) <= the bound for every D
-    while step(high) > high:
-        high *= 2.0
+    top = max(debuff, step(10.0))          # step(D) <= the bound for every D
+    scan = SCAN_STEP
+    x = debuff
+    while x < top and step(x) > x:
+        x += scan
+    low, high = max(debuff, x - scan), min(x, top)
     while high - low > 1e-7:
         mid = (low + high) / 2.0
         low, high = (mid, high) if step(mid) > mid else (low, mid)

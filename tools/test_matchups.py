@@ -182,8 +182,14 @@ class ArithmeticTests(unittest.TestCase):
         self.assertLess(part["damage_landing_per_second"], full["damage_landing_per_second"])
 
     def test_spawn_rank_mix_is_one_copy(self):
+        # the fetch tool writes the mix into the data; the server reads it there
+        self.assertEqual(matchups.load()["spawn_rank_weights"], fetch.SPAWN_RANK_WEIGHTS)
         import rating_measures
-        self.assertEqual(rating_measures.SPAWN_RANK_WEIGHTS, fetch.SPAWN_RANK_WEIGHTS)
+        self.assertFalse(hasattr(rating_measures, "SPAWN_RANK_WEIGHTS"), "a second copy came back")
+
+    def test_no_reaching_attack_has_no_hit_chance(self):
+        m = matchups.matchup(totals(), INPUTS, SC, group({"Melee|Smashing": 1.0}), [], reach=0.0)
+        self.assertIsNone(m["hit_chance"])                  # not 0%: nothing reached to be hit by
 
     def test_ddr_and_the_defense_cap(self):
         g = group({"Ranged|Lethal": 1.0}, def_share=0.5)
