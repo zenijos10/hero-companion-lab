@@ -123,6 +123,7 @@ const TOUR_MOCK_HTML = `
     <button class="tab" data-tm-tabbtn="stats" data-for="tab-btn-stats" type="button">Stats</button>
     <button class="tab" data-tm-tabbtn="leveling" data-for="tab-btn-leveling" type="button">Leveling Guide</button>
     <button class="tab" data-tm-tabbtn="logging" data-for="tab-btn-logging" type="button">Logging</button>
+    <button class="tab" data-tm-tabbtn="rating" data-for="tab-btn-rating" type="button">Rating</button>
   </nav>
 
   <section class="build-tile tm-tile" data-for="build-tile" data-tm="tile">

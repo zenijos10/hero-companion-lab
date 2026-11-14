@@ -134,6 +134,27 @@ class RouteTests(unittest.TestCase):
         full = self.ev["measurements"]["offense"]["max_strike"]["single_target"]["damage"]
         self.assertLess(s["single_target"]["damage"], full)
 
+    def test_pets_and_running_damage_count(self):
+        # a Mastermind's henchmen and a damage aura keep hitting during the strike
+        at, pri, sec = "Class_Mastermind", "Mastermind_Summon.Robotics", "Mastermind_Buff.Force_Field"
+        ap = self.c.post("/build/autopick", json={"archetype": at, "primary": pri, "secondary": sec,
+                                                 "content": "general"}).get_json()
+        sol = self.c.post("/build/solve", json={"archetype": at, "primary": pri, "secondary": sec,
+                                                "content": "general", "tier": "premium",
+                                                "preserve": False, "powers": ap["powers"]}).get_json()
+        ev = self.c.post("/build/evaluate", json={"build": {"archetype": at, "primary": pri,
+                                                           "secondary": sec, "powers": sol["powers"]}}).get_json()
+        st = ev["measurements"]["offense"]["max_strike"]["single_target"]
+        pet_dps = ev["measurements"]["offense"]["scenario_pet_dps"]["value"]
+        self.assertGreater(pet_dps, 0)
+        self.assertGreaterEqual(st["running_damage"], round(pet_dps * strike.STRIKE_SECONDS, 1) - 0.1)
+
+    def test_running_rows_never_enter_the_chain(self):
+        aura = dict(attack("Aura", 20, 1.0, 0.0), host_type=2, dps_spam=10.0)
+        patch = dict(attack("Patch", 5, 1.0, 1.0), cast_time=0.0, dpa=None, dps_spam=5.0)
+        self.assertTrue(strike._running(aura) and strike._running(patch))
+        self.assertFalse(strike._usable(aura, {"X.Aura": {}}))
+
     def test_graded_beside_sustained_with_its_reason(self):
         cats = self.ev["ratings"]["categories"]
         for key in ("strike_single_target", "strike_aoe"):

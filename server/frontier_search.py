@@ -31,6 +31,7 @@ DEFAULT_MAX_EVALUATIONS = 12
 MAX_EVALUATIONS = 40
 
 _ALL_DAMAGE = ("single_target_damage", "aoe_damage", "pet_damage")
+_STRIKE = ("strike_single_target", "strike_aoe")
 _SUPPORT = ("buff_defense", "buff_damage", "buff_recharge")
 _DEBUFF = ("debuff_resistance_av", "debuff_regeneration_av", "debuff_defense_spawn",
            "debuff_tohit_spawn", "debuff_damage_spawn")
@@ -48,9 +49,10 @@ DIRECTIONS = (
     _direction("balanced", "Balanced (general content, split role)",
                {"content": "general", "role": "mixed"}, build_ratings.CATEGORIES),
     _direction("damage", "Damage dealer preset",
-               {"content": "general", "role": "damage"}, _ALL_DAMAGE + ("recharge",)),
+               {"content": "general", "role": "damage"}, _ALL_DAMAGE + _STRIKE + ("recharge",)),
     _direction("hard_targets", "Hard targets (EB/AV) damage preset",
-               {"content": "av", "role": "damage"}, ("single_target_damage", "survival")),
+               {"content": "av", "role": "damage"},
+               ("single_target_damage", "strike_single_target", "survival")),
     _direction("tank", "Tank / survivor preset",
                {"content": "general", "role": "tank"}, ("survival", "resistance", "defense")),
     _direction("defense_softcap", "Target: 45% melee/ranged/AoE defense",

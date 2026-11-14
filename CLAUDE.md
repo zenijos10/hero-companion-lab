@@ -214,7 +214,12 @@ out. Rules going forward:
   buff click. ⚠ The window is FIXED at 10 s: Rage lasts 120 s and stretched the first version into a 2-minute "strike".
   ⚠ Power Boost (our data) amplifies mez/defense/heal/absorb/speed, NOT damage; Water's Tidal Power stacks are absent from
   our data (client export needed); the field report (his Water/Energy Blaster wipes spawns, rates C) is that gap.
-- **M5 (2026-11-10): `/build/compare` + the app's 📊 Rate this build (Stats row + Build menu)**
+- **THE RATING IS A TAB (owner, 2026-11-14: "make it a new tab not a drop down")**: `#tab-rating`, fifth tab, Ctrl+5;
+  the Stats-row button and Build menu item open it, and opening it RATES the build as it is now (`activateTab`).
+  Its top block is STRENGTHS / WEAKNESSES / LANE (`server/strengths.py`, "help to pick a lane"): lanes = mean grade of
+  their categories, sentences built only from numbers the scorecard shows. Max strike counts running damage (auras,
+  laid patches, pets at their sustained rate; pets single-target only) and `vs_sustained` is on the strike's own basis.
+- **M5 (2026-11-10): `/build/compare` + the app's 📊 Rate this build (now the Rating tab)**
   is read-only: it evaluates the OWNED build (`buildWithAccolades()`, never `buildPayload()`,
   whose slots carry booster previews), never solves or saves, and never names an overall winner.
 - **M6 (2026-11-11): `POST /build/frontier` = the DISCOVERED Pareto frontier** of legal

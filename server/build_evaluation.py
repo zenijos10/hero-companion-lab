@@ -17,6 +17,7 @@ import build_ratings
 import first_principles
 import role_output
 import matchups
+import strengths
 import strike
 import range_profile
 import rating_measures
@@ -447,13 +448,8 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
     max_strike = strike.strike(
         build_copy["powers"], totals, sc, power_records,
         lambda powers: engine.calculate_build(dict(build_copy, powers=powers), set_bonuses,
-                                              res_cap=res_cap, ctx=dict(ctx)))
-    _sustained = {"single_target": encounter.get("st_dps_scenario"),
-                  "aoe_per_target": encounter.get("aoe_dps_scenario_per_target")}
-    for _lens, _dps in _sustained.items():
-        _over = (_dps or 0.0) * max_strike["window_seconds"]
-        max_strike[_lens]["vs_sustained"] = (round(max_strike[_lens]["damage"] / _over, 2)
-                                             if _over > 0 else None)
+                                              res_cap=res_cap, ctx=dict(ctx)),
+        pet_dps=encounter.get("pet_dps_scenario") or 0.0)
     profiles.update(strike_single_target=max_strike["single_target"]["where"],
                     strike_aoe=max_strike["aoe_per_target"]["where"])
     position_control = rating_measures.positioning(team_support, power_records,
@@ -640,4 +636,7 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
     }
     # M4: grades sit beside the measurements they read; not_rated says why
     result["ratings"] = build_ratings.rate(result, thresholds)
+    # strengths, weaknesses and a suggested lane, read from the grades and
+    # measurements above (server/strengths.py)
+    result["strengths"] = strengths.summary(result)
     return result

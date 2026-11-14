@@ -25,15 +25,22 @@ replacing the other; how often a fight gives you the opening is not modelled.
             position with more attacks to choose from never strikes lower.
             Momentum-gated attacks are left out (they cannot open a fight), and
             so is Defiance's per-attack stacking (an understatement, stated).
+  running   what keeps dealing damage while you attack: damage auras and
+            toggles, patches already laid (Whirlpool, Irradiated Ground) and
+            your pets, each at its sustained rate for the whole window. A patch
+            is counted as down when the strike opens; pets as already summoned.
   fight     the rating scenario's hit chance (with the buffs' +ToHit) and
             purple patch, the same factors the sustained grades use.
   position  standing at range only range attacks reach; at midrange, midrange
             and range ones; in melee, everything. The graded value is the strike
             from wherever the build's attacks reach (everything); the positions
             ride beside it.
-Single target counts every attack (an area attack hits the main target too);
-area counts area attacks only, per target. Rating only: nothing here feeds the
-champion score.
+Single target counts every attack (an area attack hits the main target too)
+plus your pets; area counts area attacks and area auras/patches only, per
+target. vs_sustained compares the strike with the build's own sustained damage
+over the same seconds on the SAME basis (the chain, pets, hit chance and level
+penalty; Hasten, slows, the inherent meter and endurance left out of both).
+Rating only: nothing here feeds the champion score.
 """
 import copy
 
@@ -143,14 +150,20 @@ def chain(attacks, window):
     return picked, sum(a["cast_time"] for a in picked), nodes[0] <= SEARCH_NODES
 
 
+def _running(attack):
+    """A row that deals damage without being clicked into the chain: an aura or
+    toggle (host type 1/2), or a patch summoner's pulse (no animation of its own)."""
+    return attack.get("host_type") in (1, 2) or attack.get("dpa") is None
+
+
 def _usable(attack, records):
-    return ((attack.get("cast_time") or 0) > 0 and attack.get("dpa") is not None
+    return ((attack.get("cast_time") or 0) > 0 and not _running(attack)
             and attack.get("name") not in engine.MOMENTUM_GATED_DISPLAY
             and records.get(attack.get("full_name")) is not None)
 
 
-def _summary(picked, used, exact, factor, records):
-    damage = sum((a.get("damage") or 0.0) for a in picked) * factor
+def _summary(picked, used, exact, factor, records, running=0.0):
+    damage = sum((a.get("damage") or 0.0) for a in picked) * factor + running
     names = []
     for a in picked:                    # 'Blaze x2' for a refired attack, first-cast order
         n = a.get("name")
@@ -158,14 +171,23 @@ def _summary(picked, used, exact, factor, records):
             names.append(n)
     counts = {n: sum(1 for a in picked if a.get("name") == n) for n in names}
     return {"damage": round(damage, 1), "seconds_used": round(used, 2), "exact": exact,
+            "running_damage": round(running, 1),
             "attacks": [n if counts[n] == 1 else f"{n} x{counts[n]}" for n in names],
             "where": range_profile.profile([(records.get(a.get("full_name")),
                                              (a.get("damage") or 0.0)) for a in picked])}
 
 
-def strike(build_powers, totals, sc, records, recalculate):
+def _factor(totals, sc):
+    hit = first_principles.outgoing_hit(first_principles._pct(totals, "tohit"),
+                                        first_principles._pct(totals, "accuracy"), sc)
+    return hit, hit * first_principles.player_effect_strength(sc.get("shift", 0))
+
+
+def strike(build_powers, totals, sc, records, recalculate, pet_dps=0.0):
     """The max strike (see the module docstring). recalculate(powers) returns
-    engine totals for a power list (the evaluation's own calculate_build)."""
+    engine totals for a power list (the evaluation's own calculate_build);
+    pet_dps = the pets' damage per second in the rating fight (already after
+    their own hit chance and level penalty)."""
     fired = buff_clicks(build_powers, records)
     if fired:
         powers = copy.deepcopy(build_powers)
@@ -175,23 +197,33 @@ def strike(build_powers, totals, sc, records, recalculate):
     else:
         buffed = totals
     window = STRIKE_SECONDS
-    attacks = [a for a in (buffed.get("offense") or {}).get("attacks") or []
-               if _usable(a, records)]
-    hit = first_principles.outgoing_hit(first_principles._pct(buffed, "tohit"),
-                                        first_principles._pct(buffed, "accuracy"), sc)
-    factor = hit * first_principles.player_effect_strength(sc.get("shift", 0))
+    rows = (buffed.get("offense") or {}).get("attacks") or []
+    attacks = [a for a in rows if _usable(a, records)]
+    hit, factor = _factor(buffed, sc)
+    pets = (pet_dps or 0.0) * window
+    run_st = sum((a.get("dps_spam") or 0.0) for a in rows if _running(a)) * window * factor
+    run_aoe = sum((a.get("dps_spam") or 0.0) for a in rows
+                  if _running(a) and a.get("is_aoe")) * window * factor
     band = {a.get("full_name"): range_profile.band(records[a["full_name"]]) or "midrange"
             for a in attacks}
 
-    def lens(pool):
+    def lens(pool, running):
         out = {}
         for pos in POSITIONS:
             reach = [a for a in pool if band[a.get("full_name")] in REACHES_FROM[pos]]
-            out[pos] = _summary(*chain(reach, window), factor, records)
+            out[pos] = _summary(*chain(reach, window), factor, records, running)
         return out
 
-    single = lens(attacks)
-    area = lens([a for a in attacks if a.get("is_aoe")])
+    single = lens(attacks, run_st + pets)
+    area = lens([a for a in attacks if a.get("is_aoe")], run_aoe)
+    # the sustained side of vs_sustained, on the strike's own basis
+    off = totals.get("offense") or {}
+    _hit0, factor0 = _factor(totals, sc)
+    sustained = {"single_target": ((off.get("st_dps") or 0.0) * factor0 + (pet_dps or 0.0)) * window,
+                 "aoe_per_target": (off.get("aoe_dps") or 0.0) * factor0 * window}
+    for lens_key, row in (("single_target", single["melee"]), ("aoe_per_target", area["melee"])):
+        row["vs_sustained"] = (round(row["damage"] / sustained[lens_key], 2)
+                               if sustained[lens_key] > 0 else None)
     return {
         "window_seconds": window,
         "buffs": [r.get("display_name") or r.get("full_name") for _i, r, _s in fired],
@@ -200,6 +232,7 @@ def strike(build_powers, totals, sc, records, recalculate):
         "aoe_per_target": dict(area["melee"], by_position=area),
         "basis": "every damage-buff click fired at full strength, then the order of "
                  "attacks that deals the most damage in 10 seconds (exact search; "
-                 "refires once recharged); the rating fight's hit chance and level penalty; Defiance stacking "
-                 "and momentum-gated attacks left out (server/strike.py)",
+                 "refires once recharged), plus auras, patches already laid and pets at their "
+                 "sustained rate; the rating fight's hit chance and level penalty; Defiance "
+                 "stacking and momentum-gated attacks left out (server/strike.py)",
     }

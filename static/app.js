@@ -3873,10 +3873,10 @@ async function init() {
   $("modal-close").addEventListener("click", closeModal);
   $("tier-close").addEventListener("click", () => $("tier-modal").classList.add("hidden"));
   $("about-close").addEventListener("click", () => $("about-modal").classList.add("hidden"));
-  $("rate-btn").addEventListener("click", openRating);
-  $("rating-close").addEventListener("click", () => $("rating-modal").classList.add("hidden"));
-  $("rating-modal").addEventListener("click", (e) => {
-    if (e.target === $("rating-modal")) $("rating-modal").classList.add("hidden"); });
+  // the Rating tab (owner, 2026-11-14): the Stats-row button and the Build
+  // menu item open it; opening the tab rates the build as it is now
+  $("rate-btn").addEventListener("click", () => activateTab("rating"));
+  $("rating-refresh-btn").addEventListener("click", openRating);
   $("rating-compare-btn").addEventListener("click", compareRating);
   $("rating-save-btn").addEventListener("click", saveRatingFile);
   $("frontier-open-btn").addEventListener("click", openFrontier);
@@ -7078,6 +7078,7 @@ const _KBD = {
   "2": () => typeof activateTab === "function" && activateTab("stats"),
   "3": () => typeof activateTab === "function" && activateTab("leveling"),
   "4": () => typeof activateTab === "function" && activateTab("logging"),
+  "5": () => typeof activateTab === "function" && activateTab("rating"),
 };
 document.addEventListener("keydown", (e) => {
   if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.altKey) return;
@@ -8073,7 +8074,7 @@ function initMenus() {
 // would turn every one of those writes into a silent no-op.
 // "endgame" retired 2026-08-04 (Joel): its tools live ON Powers & Slots now.
 // showTab falls back to powers for any stale remembered "endgame" key.
-const _TABS = ["powers", "stats", "leveling", "logging"];
+const _TABS = ["powers", "stats", "leveling", "logging", "rating"];
 let _openingJourney = false;
 
 function activateTab(key, moveFocus) {
@@ -8108,6 +8109,8 @@ function activateTab(key, moveFocus) {
     _openingJourney = true;
     try { openJourneyView(); } finally { _openingJourney = false; }
   }
+  // The Rating tab grades the build as it is NOW, so opening it rates it.
+  if (key === "rating" && typeof openRating === "function") openRating();
   // A panel that was hidden had zero geometry, so its fit is unsolved until now.
   scheduleFit();
 }
@@ -9936,6 +9939,34 @@ function renderMatchupsHtml(label, groups, reach) {
     + `<tbody>${rows}</tbody></table></details>`;
 }
 
+// Pure: one build's strengths, weaknesses and suggested lane
+// (server/strengths.py), every sentence escaped (labels are save names).
+function renderStrengthsHtml(label, s) {
+  if (!s) return "";
+  const head = `<h3>${escHtml(label)}: strengths, weaknesses and lane</h3>`;
+  if (!s.rated) {
+    return `<section class="rt-strengths">${head}<p class="muted keep-whole">`
+      + `${escHtml(s.reason || "This build is not rated, so no lane is suggested.")}</p></section>`;
+  }
+  const list = (items, cls) => (items || []).length
+    ? `<ul class="${cls}">${items.map(t => `<li>${escHtml(t)}</li>`).join("")}</ul>`
+    : `<p class="muted small">Nothing stands out.</p>`;
+  const cats = (rows) => (rows || []).slice(0, 6).map(c =>
+    `<span class="rt-chip"><span class="rt-g rt-g-${escHtml(c.grade)}">${escHtml(c.grade)}</span> ${escHtml(c.label)}</span>`).join(" ");
+  const lanes = (s.lanes || []).map((l, i) =>
+    `<span class="rt-chip${i === 0 ? " rt-lane-best" : ""}" title="${escHtml(l.does)}: `
+    + `${escHtml((l.parts || []).map(p => `${p.label} ${p.grade}`).join(", "))}">`
+    + `<span class="rt-g rt-g-${escHtml(l.grade)}">${escHtml(l.grade)}</span> ${escHtml(l.label)}</span>`).join(" ");
+  return `<section class="rt-strengths">${head}`
+    + (s.advice ? `<p class="rt-lane keep-whole">${escHtml(s.advice)}</p>` : "")
+    + (s.operates ? `<p class="muted keep-whole">Fights ${escHtml(s.operates)}.</p>` : "")
+    + `<div class="rt-lanes"><span class="muted small">Lanes, best first:</span> ${lanes}</div>`
+    + `<div class="rt-sw"><div><h4>Strengths</h4>${list(s.strengths, "rt-plus")}`
+    + `<div class="rt-cats">${cats(s.strong_categories)}</div></div>`
+    + `<div><h4>Weaknesses</h4>${list(s.weaknesses, "rt-minus")}`
+    + `<div class="rt-cats">${cats(s.weak_categories)}</div></div></div></section>`;
+}
+
 // Pure: the /build/compare response in, HTML out (escHtml is the only
 // dependency, so tools/test_rating_view.js runs it under node).
 function renderRatingHtml(cmp) {
@@ -9989,7 +10020,8 @@ function renderRatingHtml(cmp) {
   const notes = (cmp.notes || []).map(n => `<li>${escHtml(n)}</li>`).join("");
   const scope = cmp.scope_note ? `<p class="rt-scope${cmp.scope === "cross_archetype" ? " rt-scope-warn" : ""} keep-whole">`
     + `Comparing ${escHtml(cmp.scope_note)}.</p>` : "";
-  return `${scope}<table class="rating-table"><thead><tr><th></th>${head}`
+  const strengths = cols.filter(c => c.ok).map(c => renderStrengthsHtml(c.label, c.strengths)).join("");
+  return `${scope}${strengths}<table class="rating-table"><thead><tr><th></th>${head}`
     + `${single ? "" : "<th>Gap</th>"}</tr></thead><tbody>${rows}</tbody></table>`
     + `${matchups}${unsupported}<ul class="muted small keep-whole">${notes}</ul>`;
 }
@@ -10038,7 +10070,6 @@ function _hasBuildToRate() {
 }
 
 async function openRating() {
-  $("rating-modal").classList.remove("hidden");
   _LAST_RATING = null;
   if (!_hasBuildToRate()) {
     _RATING_SEQ++;                         // drop any rating still in flight
@@ -10226,9 +10257,9 @@ function useFrontierMember(fp) {
   if (!m || !m.build || !Array.isArray(m.build.powers)) return;
   recordEdit();                           // Undo takes the whole re-slot back
   build.powers = JSON.parse(JSON.stringify(m.build.powers));
-  $("rating-modal").classList.add("hidden");
   renderPowers();
   recompute();
+  openRating();                           // the tab now grades the build you chose
 }
 
 async function exportMids() {
