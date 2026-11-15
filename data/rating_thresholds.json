@@ -2,11 +2,11 @@
  "categories": {
   "aoe_damage": {
    "cuts": {
-    "A": 57.22,
-    "B": 39.6,
+    "A": 57.36,
+    "B": 40.0,
     "C": 17.06,
-    "D": 0.46,
-    "S": 82.78
+    "D": 0.6,
+    "S": 83.02
    },
    "sample_size": 237
   },
@@ -256,10 +256,10 @@
   },
   "endurance": {
    "cuts": {
-    "A": -2.95,
-    "B": -3.585,
-    "C": -4.155,
-    "D": -4.97,
+    "A": -3.045,
+    "B": -3.64,
+    "C": -4.215,
+    "D": -5.04,
     "S": 0.165
    },
    "sample_size": 246
@@ -276,11 +276,11 @@
   },
   "pet_damage": {
    "cuts": {
-    "A": 33.56,
-    "B": 24.6,
-    "C": 17.06,
-    "D": 8.3,
-    "S": 66.12
+    "A": 33.48,
+    "B": 24.3,
+    "C": 16.72,
+    "D": 7.66,
+    "S": 60.46
    },
    "sample_size": 93
   },
@@ -307,8 +307,8 @@
   "single_target_damage": {
    "cuts": {
     "A": 74.12,
-    "B": 60.3,
-    "C": 43.08,
+    "B": 60.1,
+    "C": 42.94,
     "D": 15.78,
     "S": 110.94
    },
@@ -316,10 +316,10 @@
   },
   "strike_aoe": {
    "cuts": {
-    "A": 632.56,
-    "B": 431.0,
-    "C": 192.76,
-    "D": 15.26,
+    "A": 640.9,
+    "B": 436.1,
+    "C": 195.16,
+    "D": 20.6,
     "S": 919.78
    },
    "sample_size": 237
@@ -327,7 +327,7 @@
   "strike_single_target": {
    "cuts": {
     "A": 1015.84,
-    "B": 770.1,
+    "B": 776.5,
     "C": 597.96,
     "D": 361.46,
     "S": 1474.12
@@ -375,10 +375,10 @@
    "sample_size": 246
   }
  },
- "created": "2026-11-14",
+ "created": "2026-11-15",
  "database_version": "2026.1.1242",
  "method": "PROVISIONAL fixed numbers (owner, 2026-11-10). Cut points = quantiles of an archetype-stratified sample of shipped itrial champions, rebuilt as served and evaluated at the rating scenario: S>=p90 A>=p70 B>=p50 C>=p30 D>=p10, else F. Champions are a guideline, NOT the comparison population. Capability categories are cut from champions that have the capability. Edit by hand and bump version as builds come in.",
- "model_version": 58,
+ "model_version": 59,
  "sample": {
   "contexts": 246,
   "per_archetype": 20,
@@ -386,5 +386,5 @@
  },
  "scenario": "rating_plus4",
  "scenario_fingerprint": "9ff2199bbb62",
- "version": 6
+ "version": 7
 }
