@@ -8,6 +8,7 @@ so callers do not lose their slotting or acquire transient calculation fields.
 import copy
 import hashlib
 import json
+import os
 import math
 import re
 
@@ -75,6 +76,59 @@ _SHARED_PREFIXES = ("Pool.", "Epic.", "Inherent.", "Incarnate.")
 def _picked_powersets(powers):
     return sorted({p["full_name"].rsplit(".", 1)[0] for p in powers
                    if "." in p["full_name"] and not p["full_name"].startswith(_SHARED_PREFIXES)})
+
+
+_POWERSET_NAMES = {}
+
+
+def _powerset_catalogue():
+    """data/powersets.json once: {archetype: {primary/secondary/epic: [full names]}}
+    and {full name: display name} (the names the player sees, never internal)."""
+    if not _POWERSET_NAMES:
+        path = os.path.join(os.path.dirname(__file__), "..", "data", "powersets.json")
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+        names = {ps["full_name"]: ps.get("display_name") for ps in data.get("pools") or []}
+        groups = {}
+        for at, by_kind in (data.get("by_archetype") or {}).items():
+            groups[at] = {}
+            for kind, sets in by_kind.items():
+                groups[at][kind] = [ps["full_name"] for ps in sets]
+                names.update({ps["full_name"]: ps.get("display_name") for ps in sets})
+        _POWERSET_NAMES.update(names=names, groups=groups)
+    return _POWERSET_NAMES
+
+
+def _set_ref(full, names):
+    """{full_name, display_name}; an unknown set shows its last name part, spaced
+    (a visible last resort, never presented as the game's name)."""
+    if not full:
+        return None
+    return {"full_name": full,
+            "display_name": names.get(full) or full.rsplit(".", 1)[-1].replace("_", " ")}
+
+
+def _identity(build, powers, archetype_record):
+    """Which character this is (owner, 2026-11-14: "at the top we need to see the
+    AT, the primary and secondary power sets, the pools and epic set if
+    applicable"): the request's primary/secondary, else the picked sets of that
+    kind; pools and the epic from the picks, in pick order."""
+    cat = _powerset_catalogue()
+    names, groups = cat["names"], cat["groups"].get(build.get("archetype")) or {}
+    picked = []
+    for p in powers:
+        ps = p["full_name"].rsplit(".", 1)[0] if "." in p["full_name"] else None
+        if ps and ps not in picked:
+            picked.append(ps)
+
+    def first_of(kind):
+        return next((ps for ps in picked if ps in (groups.get(kind) or [])), None)
+    return {"archetype": (archetype_record or {}).get("display_name")
+            or str(build.get("archetype") or "").replace("Class_", ""),
+            "primary": _set_ref(build.get("primary") or first_of("primary"), names),
+            "secondary": _set_ref(build.get("secondary") or first_of("secondary"), names),
+            "pools": [_set_ref(ps, names) for ps in picked if ps.startswith("Pool.")],
+            "epic": _set_ref(next((ps for ps in picked if ps.startswith("Epic.")), None), names)}
 
 
 def _validate(build):
@@ -477,6 +531,7 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
                      "scenario_fingerprint": _fingerprint(sc)},
         "inputs_normalized": normalized,
         "build": {"archetype": archetype, "primary": build.get("primary"),
+                  "identity": _identity(build, build_copy["powers"], archetype_record),
                   "secondary": build.get("secondary"),
                   "power_count": len(build_copy["powers"]),
                   # picked powers that summon an entity (pets, pseudo-pets): from

@@ -9939,6 +9939,23 @@ function renderMatchupsHtml(label, groups, reach) {
     + `<tbody>${rows}</tbody></table></details>`;
 }
 
+// Pure: which character this is (owner, 2026-11-14: "at the top we need to
+// see the AT, the primary and secondary power sets, the pools and epic set if
+// applicable"), from the server's identity block, every name escaped.
+function renderIdentityHtml(col) {
+  const id = (col && col.identity) || null;
+  if (!id) return "";
+  const name = s => (s && s.display_name) ? escHtml(s.display_name) : "";
+  const row = (label, value) => value ? `<div class="rt-id-row"><span class="muted">${label}</span> ${value}</div>` : "";
+  const pools = (id.pools || []).map(name).filter(Boolean).join(", ");
+  return `<div class="rt-id"><div class="rt-id-name">${escHtml(col.label)}</div>`
+    + row("Archetype", escHtml(id.archetype || ""))
+    + row("Primary", name(id.primary)) + row("Secondary", name(id.secondary))
+    + row("Pools", pools || `<span class="muted">none</span>`)
+    + row("Epic", name(id.epic) || `<span class="muted">none</span>`)
+    + `</div>`;
+}
+
 // Pure: one build's strengths, weaknesses and suggested lane
 // (server/strengths.py), every sentence escaped (labels are save names).
 function renderStrengthsHtml(label, s) {
@@ -9981,8 +9998,11 @@ function renderRatingHtml(cmp) {
   };
   const head = cols.map(c => {
     if (!c.ok) return `<th>${escHtml(c.label)}<div class="rt-refused">${escHtml(c.error)}</div></th>`;
-    const sets = [c.primary, c.secondary].filter(Boolean)
-      .map(x => String(x).split(".").pop().replace(/_/g, " ")).join(" / ");
+    // display names from the server's identity block, never internal names
+    const id = c.identity || {};
+    const sets = [id.primary, id.secondary].filter(Boolean).map(s => s.display_name).join(" / ")
+      || [c.primary, c.secondary].filter(Boolean)
+        .map(x => String(x).split(".").pop().replace(/_/g, " ")).join(" / ");
     const flags = [];
     if (!c.rated) flags.push(`Not rated: ${escHtml(c.not_rated_reason || "")}`);
     if (c.offense_complete === false) flags.push("Offense incomplete: a picked power deals damage the model does not read");
@@ -10021,7 +10041,8 @@ function renderRatingHtml(cmp) {
   const scope = cmp.scope_note ? `<p class="rt-scope${cmp.scope === "cross_archetype" ? " rt-scope-warn" : ""} keep-whole">`
     + `Comparing ${escHtml(cmp.scope_note)}.</p>` : "";
   const strengths = cols.filter(c => c.ok).map(c => renderStrengthsHtml(c.label, c.strengths)).join("");
-  return `${scope}${strengths}<table class="rating-table"><thead><tr><th></th>${head}`
+  const ids = cols.filter(c => c.ok && c.identity).map(renderIdentityHtml).join("");
+  return `${ids ? `<div class="rt-ids">${ids}</div>` : ""}${scope}${strengths}<table class="rating-table"><thead><tr><th></th>${head}`
     + `${single ? "" : "<th>Gap</th>"}</tr></thead><tbody>${rows}</tbody></table>`
     + `${matchups}${unsupported}<ul class="muted small keep-whole">${notes}</ul>`;
 }

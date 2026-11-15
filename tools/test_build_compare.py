@@ -100,6 +100,26 @@ class CompareRuleTests(unittest.TestCase):
         self.assertTrue(any("No overall winner" in n for n in result["notes"]))
 
 
+class IdentityTests(unittest.TestCase):
+    """Which character is rated (owner, 2026-11-14): archetype, primary,
+    secondary, pools and epic, by the names the player sees."""
+
+    def test_identity_from_the_picks(self):
+        import build_evaluation as be
+        powers = [{"full_name": f} for f in (
+            "Blaster_Ranged.Fire_Blast.Flares", "Blaster_Support.Radiation_Manipulation.Electron_Shackles",
+            "Pool.Invisibility.Stealth", "Pool.Speed.Hasten", "Pool.Speed.Super_Speed",
+            "Epic.Blaster_Mace_Mastery.Body_Armor", "Inherent.Inherent.Sprint")]
+        ident = be._identity({"archetype": "Class_Blaster"}, powers, {"display_name": "Blaster"})
+        self.assertEqual(ident["archetype"], "Blaster")
+        self.assertEqual(ident["primary"]["display_name"], "Fire Blast")          # inferred from the picks
+        self.assertEqual(ident["secondary"]["display_name"], "Atomic Manipulation")  # never the internal name
+        self.assertEqual([p["display_name"] for p in ident["pools"]], ["Concealment", "Speed"])
+        self.assertEqual(ident["epic"]["display_name"], "Mace Mastery")
+        bare = be._identity({"archetype": "Class_Blaster"}, powers[:2], {"display_name": "Blaster"})
+        self.assertEqual((bare["pools"], bare["epic"]), ([], None))
+
+
 class CompareRouteTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
