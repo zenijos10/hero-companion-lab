@@ -181,6 +181,15 @@ ok(html.includes("Atomic Manipulation") && !html.includes("Radiation Manipulatio
 ok(html.includes("Concealment, Speed") && html.includes("Mace Mastery") && (html.match(/rt-id-name/g) || []).length === 2,
    "pools and epic are listed, one card per build");
 ok(html.includes('<span class="muted">Epic</span> <span class="muted">none</span>'), "no epic says none");
+html = render({ ok: true, mode: "scorecard", rows: [], notes: [], columns: [col("V", { identity: {
+  archetype: "Arachnos Soldier", primary: { display_name: "Arachnos Soldier" },
+  primary_also: [{ display_name: "Crab Spider Soldier" }], secondary: { display_name: "Training and Gadgets" },
+  secondary_also: [{ display_name: "Crab Spider Training" }], pools: [], epic: null } })] });
+ok(html.includes("Arachnos Soldier + Crab Spider Soldier") && html.includes("Training and Gadgets + Crab Spider Training"),
+   "a VEAT's base set and branch are both named");
+html = render({ ok: true, mode: "scorecard", rows: [], notes: [], columns: [col("No id",
+  { primary: "Blaster_Support.Radiation_Manipulation" })] });
+ok(!html.includes("Radiation Manipulation"), "with no identity the header never falls back to internal names");
 
 // 6. a row without cells never throws
 html = render({ ok: true, mode: "scorecard", columns: [col("Y")], rows: [{ label: "Defense", unit: "percent" }], notes: [] });

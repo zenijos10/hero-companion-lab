@@ -877,13 +877,15 @@
     "grades",
     "compare builds",
     "rating",
-    "S to F"
+    "S to F",
+    "which character",
+    "character card"
    ],
    "stage": "reference",
    "what": "Grades your build S to F in 38 categories, sums up its strengths and weaknesses and suggests a lane, against +4 enemies, grouped as damage (single target, area, your max strike, pets), survival (time to live, two toughness grades, defense, resistance, debuff resistance), resources, control (single target and area), support (healing and a rarity-weighted team support score), every team buff type and every debuff type. Each grade shows its exact number, and the scorecard says where the build has to stand to deliver it.",
    "how": "It measures the build exactly as you own it (booster previews and other people's buffs are left out, defense is read in combat) and compares each number with fixed cut points. Pick a saved character in the same window to see the two side by side, with the gap in every category where the grades differ or one is at least 10% ahead. It never names an overall winner: builds trade categories against each other.",
    "why": "To see what a build is good and bad at before you change it, and to compare two characters without running the optimizer. Nothing here solves or saves anything.",
-   "where": "The Rating tab (Ctrl+5); the 📊 Rate this build button on Stats and Build → 📊 Rate this build open it. The grades are provisional: the cut points were set from optimized champion builds as a guide, so an ordinary build reads lower than its standing among players would. Unknown means the model cannot measure it for this build, None means the build has none of it, N/A means it cannot apply.",
+   "where": "The Rating tab (Ctrl+5), which opens with a card naming the character: its archetype, primary and secondary sets (a VEAT's base set and branch both), power pools and epic; the 📊 Rate this build button on Stats and Build → 📊 Rate this build open it. The grades are provisional: the cut points were set from optimized champion builds as a guide, so an ordinary build reads lower than its standing among players would. Unknown means the model cannot measure it for this build, None means the build has none of it, N/A means it cannot apply.",
    "example": "A Super Strength / Invulnerability Brute reads A for survival and resistance and F for endurance; beside a Force Field Defender, the Defender leads on recharge, defense and control.",
    "go": [
     [

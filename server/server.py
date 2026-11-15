@@ -2975,7 +2975,8 @@ def _evaluate_build(build, scenario, include_matchups=True):
             db_name=DB_NAME, db_version=DB_VERSION, app_version=APP_VERSION,
             prepare=lambda b: _prepare_incarnate_fields(b, ctx, res_cap),
             powers_by_set=POWERS, power_help=POWER_HELP,
-            thresholds=RATING_THRESHOLDS, include_matchups=include_matchups), None
+            thresholds=RATING_THRESHOLDS, include_matchups=include_matchups,
+            powersets=POWERSETS), None
     except ValueError as exc:
         return None, str(exc)
 

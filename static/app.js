@@ -9950,7 +9950,8 @@ function renderIdentityHtml(col) {
   const pools = (id.pools || []).map(name).filter(Boolean).join(", ");
   return `<div class="rt-id"><div class="rt-id-name">${escHtml(col.label)}</div>`
     + row("Archetype", escHtml(id.archetype || ""))
-    + row("Primary", name(id.primary)) + row("Secondary", name(id.secondary))
+    + row("Primary", [id.primary, ...(id.primary_also || [])].map(name).filter(Boolean).join(" + "))
+    + row("Secondary", [id.secondary, ...(id.secondary_also || [])].map(name).filter(Boolean).join(" + "))
     + row("Pools", pools || `<span class="muted">none</span>`)
     + row("Epic", name(id.epic) || `<span class="muted">none</span>`)
     + `</div>`;
@@ -9998,11 +9999,10 @@ function renderRatingHtml(cmp) {
   };
   const head = cols.map(c => {
     if (!c.ok) return `<th>${escHtml(c.label)}<div class="rt-refused">${escHtml(c.error)}</div></th>`;
-    // display names from the server's identity block, never internal names
+    // display names from the server's identity block, never internal names:
+    // with no identity the line stays empty rather than guess from them
     const id = c.identity || {};
-    const sets = [id.primary, id.secondary].filter(Boolean).map(s => s.display_name).join(" / ")
-      || [c.primary, c.secondary].filter(Boolean)
-        .map(x => String(x).split(".").pop().replace(/_/g, " ")).join(" / ");
+    const sets = [id.primary, id.secondary].filter(Boolean).map(s => s.display_name).join(" / ");
     const flags = [];
     if (!c.rated) flags.push(`Not rated: ${escHtml(c.not_rated_reason || "")}`);
     if (c.offense_complete === false) flags.push("Offense incomplete: a picked power deals damage the model does not read");

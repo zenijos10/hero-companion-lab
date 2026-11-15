@@ -73,30 +73,43 @@ def _exemplar_level(build):
 _SHARED_PREFIXES = ("Pool.", "Epic.", "Inherent.", "Incarnate.")
 
 
+def _picked_sets(powers):
+    """Every powerset the picks come from, in pick order (the one derivation:
+    a power's set is its full name less the last part)."""
+    out = []
+    for p in powers:
+        name = p.get("full_name") or ""
+        ps = name.rsplit(".", 1)[0] if "." in name else None
+        if ps and ps not in out:
+            out.append(ps)
+    return out
+
+
 def _picked_powersets(powers):
-    return sorted({p["full_name"].rsplit(".", 1)[0] for p in powers
-                   if "." in p["full_name"] and not p["full_name"].startswith(_SHARED_PREFIXES)})
+    return sorted(ps for ps in _picked_sets(powers) if not (ps + ".").startswith(_SHARED_PREFIXES))
 
 
-_POWERSET_NAMES = {}
+_POWERSET_FILE = {}
 
 
-def _powerset_catalogue():
-    """data/powersets.json once: {archetype: {primary/secondary/epic: [full names]}}
-    and {full name: display name} (the names the player sees, never internal)."""
-    if not _POWERSET_NAMES:
-        path = os.path.join(os.path.dirname(__file__), "..", "data", "powersets.json")
-        with open(path, encoding="utf-8") as f:
-            data = json.load(f)
-        names = {ps["full_name"]: ps.get("display_name") for ps in data.get("pools") or []}
-        groups = {}
-        for at, by_kind in (data.get("by_archetype") or {}).items():
-            groups[at] = {}
-            for kind, sets in by_kind.items():
-                groups[at][kind] = [ps["full_name"] for ps in sets]
-                names.update({ps["full_name"]: ps.get("display_name") for ps in sets})
-        _POWERSET_NAMES.update(names=names, groups=groups)
-    return _POWERSET_NAMES
+def _powerset_catalogue(powersets=None):
+    """{names: {full name: display name}, groups: {archetype: {primary/secondary/
+    epic: [full names]}}} from the powerset catalogue the server injects (its
+    POWERSETS, data/powersets.json as loaded), else that file read once."""
+    if powersets is None:
+        if "data" not in _POWERSET_FILE:
+            path = os.path.join(os.path.dirname(__file__), "..", "data", "powersets.json")
+            with open(path, encoding="utf-8") as f:
+                _POWERSET_FILE["data"] = json.load(f)
+        powersets = _POWERSET_FILE["data"]
+    names = {ps["full_name"]: ps.get("display_name") for ps in powersets.get("pools") or []}
+    groups = {}
+    for at, by_kind in (powersets.get("by_archetype") or {}).items():
+        groups[at] = {}
+        for kind, sets in by_kind.items():
+            groups[at][kind] = [ps["full_name"] for ps in sets]
+            names.update({ps["full_name"]: ps.get("display_name") for ps in sets})
+    return {"names": names, "groups": groups}
 
 
 def _set_ref(full, names):
@@ -108,25 +121,29 @@ def _set_ref(full, names):
             "display_name": names.get(full) or full.rsplit(".", 1)[-1].replace("_", " ")}
 
 
-def _identity(build, powers, archetype_record):
+def _identity(build, powers, archetype_record, powersets=None):
     """Which character this is (owner, 2026-11-14: "at the top we need to see the
     AT, the primary and secondary power sets, the pools and epic set if
-    applicable"): the request's primary/secondary, else the picked sets of that
-    kind; pools and the epic from the picks, in pick order."""
-    cat = _powerset_catalogue()
+    applicable"): the request's primary/secondary first, then every other picked
+    set of that kind (a VEAT picks from its base set AND a branch: both are
+    named); pools and the epic from the picks, in pick order."""
+    cat = _powerset_catalogue(powersets)
     names, groups = cat["names"], cat["groups"].get(build.get("archetype")) or {}
-    picked = []
-    for p in powers:
-        ps = p["full_name"].rsplit(".", 1)[0] if "." in p["full_name"] else None
-        if ps and ps not in picked:
-            picked.append(ps)
+    picked = _picked_sets(powers)
 
-    def first_of(kind):
-        return next((ps for ps in picked if ps in (groups.get(kind) or [])), None)
+    def of_kind(kind):
+        sets = [ps for ps in picked if ps in (groups.get(kind) or [])]
+        named = build.get(kind)
+        if named:
+            sets = [named] + [ps for ps in sets if ps != named]
+        return sets
+    primary, secondary = of_kind("primary"), of_kind("secondary")
     return {"archetype": (archetype_record or {}).get("display_name")
             or str(build.get("archetype") or "").replace("Class_", ""),
-            "primary": _set_ref(build.get("primary") or first_of("primary"), names),
-            "secondary": _set_ref(build.get("secondary") or first_of("secondary"), names),
+            "primary": _set_ref(primary[0] if primary else None, names),
+            "primary_also": [_set_ref(ps, names) for ps in primary[1:]],
+            "secondary": _set_ref(secondary[0] if secondary else None, names),
+            "secondary_also": [_set_ref(ps, names) for ps in secondary[1:]],
             "pools": [_set_ref(ps, names) for ps in picked if ps.startswith("Pool.")],
             "epic": _set_ref(next((ps for ps in picked if ps.startswith("Epic.")), None), names)}
 
@@ -423,7 +440,8 @@ def _confidence(powers, unsupported):
 
 def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
              db_name, db_version, app_version, prepare=None,
-             powers_by_set=None, power_help=None, thresholds=None, include_matchups=True):
+             powers_by_set=None, power_help=None, thresholds=None, include_matchups=True,
+             powersets=None):
     """Evaluate a build without optimization, rating or modifying player state.
 
     scenario must be a rating or registered scenario name. Context and game
@@ -531,7 +549,7 @@ def evaluate(build, scenario, *, ctx, set_bonuses, res_cap, archetype_record,
                      "scenario_fingerprint": _fingerprint(sc)},
         "inputs_normalized": normalized,
         "build": {"archetype": archetype, "primary": build.get("primary"),
-                  "identity": _identity(build, build_copy["powers"], archetype_record),
+                  "identity": _identity(build, build_copy["powers"], archetype_record, powersets),
                   "secondary": build.get("secondary"),
                   "power_count": len(build_copy["powers"]),
                   # picked powers that summon an entity (pets, pseudo-pets): from
