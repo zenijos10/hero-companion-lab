@@ -25,6 +25,7 @@ def _column(entry):
         "primary": (ev.get("build") or {}).get("primary"),
         "secondary": (ev.get("build") or {}).get("secondary"),
         "picked_powersets": (ev.get("build") or {}).get("picked_powersets"),
+        "identity": (ev.get("build") or {}).get("identity"),
         "rated": ratings.get("status") == "rated",
         "not_rated_reason": ratings.get("reason"),
         "offense_complete": (ev.get("confidence") or {}).get("offense_complete"),

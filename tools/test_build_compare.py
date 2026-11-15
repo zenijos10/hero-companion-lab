@@ -100,6 +100,53 @@ class CompareRuleTests(unittest.TestCase):
         self.assertTrue(any("No overall winner" in n for n in result["notes"]))
 
 
+class IdentityTests(unittest.TestCase):
+    """Which character is rated (owner, 2026-11-14): archetype, primary,
+    secondary, pools and epic, by the names the player sees."""
+
+    def test_identity_from_the_picks(self):
+        import build_evaluation as be
+        powers = [{"full_name": f} for f in (
+            "Blaster_Ranged.Fire_Blast.Flares", "Blaster_Support.Radiation_Manipulation.Electron_Shackles",
+            "Pool.Invisibility.Stealth", "Pool.Speed.Hasten", "Pool.Speed.Super_Speed",
+            "Epic.Blaster_Mace_Mastery.Body_Armor", "Inherent.Inherent.Sprint")]
+        ident = be._identity({"archetype": "Class_Blaster"}, powers, {"display_name": "Blaster"})
+        self.assertEqual(ident["archetype"], "Blaster")
+        self.assertEqual(ident["primary"]["display_name"], "Fire Blast")          # inferred from the picks
+        self.assertEqual(ident["secondary"]["display_name"], "Atomic Manipulation")  # never the internal name
+        self.assertEqual([p["display_name"] for p in ident["pools"]], ["Concealment", "Speed"])
+        self.assertEqual(ident["epic"]["display_name"], "Mace Mastery")
+        bare = be._identity({"archetype": "Class_Blaster"}, powers[:2], {"display_name": "Blaster"})
+        self.assertEqual((bare["pools"], bare["epic"]), ([], None))
+
+    def test_veat_names_base_set_and_branch(self):
+        import build_evaluation as be
+        powers = [{"full_name": "Arachnos_Soldiers.Arachnos_Soldier.Single_Shot"},
+                  {"full_name": "Arachnos_Soldiers.Crab_Spider_Soldier.Channelgun"},
+                  {"full_name": "Training_Gadgets.Crab_Spider_Training.Crab_Spider_Armor_Upgrade"}]
+        ident = be._identity({"archetype": "Class_Arachnos_Soldier"}, powers, {"display_name": "Arachnos Soldier"})
+        self.assertEqual(ident["primary"]["full_name"], "Arachnos_Soldiers.Arachnos_Soldier")
+        self.assertEqual([p["full_name"] for p in ident["primary_also"]],
+                         ["Arachnos_Soldiers.Crab_Spider_Soldier"])          # the branch is named too
+        named = be._identity({"archetype": "Class_Arachnos_Soldier",
+                              "primary": "Arachnos_Soldiers.Crab_Spider_Soldier"}, powers, {})
+        self.assertEqual(named["primary"]["full_name"], "Arachnos_Soldiers.Crab_Spider_Soldier")  # request first
+
+    def test_injected_catalogue_is_used(self):
+        import build_evaluation as be
+        cat = {"pools": [], "by_archetype": {"Class_Blaster": {"primary": [
+            {"full_name": "Blaster_Ranged.Fire_Blast", "display_name": "Injected Fire"}]}}}
+        ident = be._identity({"archetype": "Class_Blaster"}, [{"full_name": "Blaster_Ranged.Fire_Blast.Flares"}],
+                             {}, powersets=cat)
+        self.assertEqual(ident["primary"]["display_name"], "Injected Fire")
+
+    def test_picked_sets_is_the_one_derivation(self):
+        import build_evaluation as be
+        powers = [{"full_name": f} for f in ("B.Y.p", "Pool.Speed.Hasten", "A.X.q", "B.Y.r", "Epic.E.s")]
+        self.assertEqual(be._picked_sets(powers), ["B.Y", "Pool.Speed", "A.X", "Epic.E"])
+        self.assertEqual(be._picked_powersets(powers), ["A.X", "B.Y"])
+
+
 class CompareRouteTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

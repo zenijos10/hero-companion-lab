@@ -3623,6 +3623,12 @@ body.layout-mode .lay-target .lay-target .lay-target .lay-target::before { top: 
 .rt-plus li::marker { content: "+  "; color: var(--good, #22c55e); }
 .rt-minus li::marker { content: "-  "; color: var(--warn); }
 .rt-cats { margin-top: 4px; }
+/* which character is rated: one card per build, at the top of the Rating tab */
+.rt-ids { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin: 4px 0 12px; }
+.rt-id { border: 1px solid var(--accent); border-radius: 8px; padding: 8px 14px; }
+.rt-id-name { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+.rt-id-row { font-size: 14px; line-height: 1.6; }
+.rt-id-row .muted:first-child { display: inline-block; min-width: 84px; }
 .rt-reach { font-size: 14px; line-height: 1.55; margin: 4px 0 8px; }
 .rating-table .rt-section th { text-align: left; padding-top: 10px; font-size: 14px; color: var(--accent); border-bottom: 1px solid var(--border); }
 .rt-low { cursor: help; }

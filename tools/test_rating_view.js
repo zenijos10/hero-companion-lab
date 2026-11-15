@@ -30,7 +30,7 @@ const escStart = src.indexOf("const escHtml");
 const escEnd = src.slice(escStart).search(/;\r?\n/);
 const escSrc = src.slice(escStart, escStart + escEnd + 1);
 assert.ok(unitsSrc.length > 20 && escSrc.length > 20, "helpers not found");
-const make = new Function(`${escSrc}\n${unitsSrc}\n${lift("function renderStrengthsHtml")}\n${lift("function meleeReachLine")}\n${lift("function renderMatchupsHtml")}\n${lift("function renderRatingHtml")}\nreturn renderRatingHtml;`);
+const make = new Function(`${escSrc}\n${unitsSrc}\n${lift("function renderIdentityHtml")}\n${lift("function renderStrengthsHtml")}\n${lift("function meleeReachLine")}\n${lift("function renderMatchupsHtml")}\n${lift("function renderRatingHtml")}\nreturn renderRatingHtml;`);
 const render = make();
 
 const col = (label, extra = {}) => Object.assign({
@@ -166,6 +166,30 @@ ok(html.includes('rt-chip rt-lane-best') && html.includes("Weak to Psionic") && 
 html = render({ ok: true, mode: "scorecard", rows: [], notes: [], columns: [col("M", {
   strengths: { rated: false, reason: "recalibrate the thresholds" } })] });
 ok(html.includes("recalibrate the thresholds") && !html.includes("rt-lanes"), "not rated says why, no lanes");
+
+// 5f. which character: archetype, primary, secondary, pools, epic, by display name, escaped
+html = render({ ok: true, mode: "comparison", rows: [], notes: [], columns: [
+  col("Fire <b>me</b>", { identity: { archetype: "Blaster",
+    primary: { display_name: "Fire Blast", full_name: "Blaster_Ranged.Fire_Blast" },
+    secondary: { display_name: "Atomic Manipulation", full_name: "Blaster_Support.Radiation_Manipulation" },
+    pools: [{ display_name: "Concealment" }, { display_name: "Speed" }], epic: null } }),
+  col("Other", { identity: { archetype: "Tanker", primary: { display_name: "Invulnerability" },
+    secondary: { display_name: "Super Strength" }, pools: [], epic: { display_name: "Mace Mastery" } } })] });
+ok(html.indexOf("rt-ids") >= 0 && html.indexOf("rt-ids") < html.indexOf("rating-table"), "the character cards sit at the top");
+ok(html.includes("Fire &lt;b&gt;me&lt;/b&gt;") && !html.includes("<b>me</b>"), "the character name is escaped");
+ok(html.includes("Atomic Manipulation") && !html.includes("Radiation Manipulation"), "sets show their display name, never the internal one");
+ok(html.includes("Concealment, Speed") && html.includes("Mace Mastery") && (html.match(/rt-id-name/g) || []).length === 2,
+   "pools and epic are listed, one card per build");
+ok(html.includes('<span class="muted">Epic</span> <span class="muted">none</span>'), "no epic says none");
+html = render({ ok: true, mode: "scorecard", rows: [], notes: [], columns: [col("V", { identity: {
+  archetype: "Arachnos Soldier", primary: { display_name: "Arachnos Soldier" },
+  primary_also: [{ display_name: "Crab Spider Soldier" }], secondary: { display_name: "Training and Gadgets" },
+  secondary_also: [{ display_name: "Crab Spider Training" }], pools: [], epic: null } })] });
+ok(html.includes("Arachnos Soldier + Crab Spider Soldier") && html.includes("Training and Gadgets + Crab Spider Training"),
+   "a VEAT's base set and branch are both named");
+html = render({ ok: true, mode: "scorecard", rows: [], notes: [], columns: [col("No id",
+  { primary: "Blaster_Support.Radiation_Manipulation" })] });
+ok(!html.includes("Radiation Manipulation"), "with no identity the header never falls back to internal names");
 
 // 6. a row without cells never throws
 html = render({ ok: true, mode: "scorecard", columns: [col("Y")], rows: [{ label: "Defense", unit: "percent" }], notes: [] });
