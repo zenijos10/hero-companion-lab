@@ -133,7 +133,17 @@ out. Rules going forward:
   MVP is NOT import/export alone: rate an imported build per category, compare it, optimize to a
   Pareto frontier. M1 audit = `M1-TRACEABILITY-AUDIT.md` (its backlog replaces GitHub Issues,
   which are disabled). M2 = `/build/evaluate`, contract in `M2-EVALUATION-CONTRACT.md` (merged).
-- **⚠ 29 DAMAGING POWERS ARE CREDITED ZERO DAMAGE — owner: fix later, tracked** (KNOWN-GAPS.md,
+- **PULSING PATCHES ARE PRICED (v59, owner 2026-11-15: "archery doesnt have data? Go get it!").** 56 pickable powers deal damage
+  through a pseudo-pet that pulses with no animation (Rain of Arrows/Fire, Blizzard, Whirlpool, Ice Storm, Bonfire, Caltrops,
+  Lightning Rod, Shield Charge, Power Surge's crash...), so the pet chain (cast > 0 only) never priced them. City of Data
+  supplies what our data lacks: `tools/fetch_patch_pets.py` -> `data/patch_pets.json` (Create_Entity lifetime/delay/entity
+  class, redirects, Execute_Power; our pet record by full name, else by leaf INSIDE the summoner's own pet_powersets).
+  `engine.patch_damage`: one cast = every pulse the patch lives for, on the entity class's tables (the caster's for a
+  redirect), the summoner's slotting, the caster's buffs only where the game copies them (copy_creator_mods). 65 in the
+  census: Oil Slick (ignition) and Storm Cell (triggered) STATED, not priced. 515 of 2,865 champion contexts pick one:
+  stale canonicals until the recert Joel schedules. The max strike credits a patch only the share of its life inside the 10 s (`strike._in_window`).
+  `tools/test_patch_pets.py`.
+- **⚠ 26 DAMAGING POWERS ARE CREDITED ZERO DAMAGE (29 before v59) — owner: fix later, tracked** (KNOWN-GAPS.md,
   docs/EFFECTLESS-POWERS.md, `server/effectless.py`, pinned by `tools/test_effectless.py`). They
   need the client (next PATCH-WATCH export). Model change, moves scores. Until fixed: **no M4
   offense grade ships for a build whose `confidence.offense_complete` is false.** The two twin

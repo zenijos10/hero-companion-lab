@@ -22,8 +22,10 @@ import effectless  # noqa: E402
 # 2026-11-11 (backlog 2b, owner's pick): Burn's patch damage folded from its Fiery
 # Aura siblings (tools/patch_sibling_damage_folds.py), so it leaves the catalogue;
 # Ranged Shot is priced by the pet channel from its click twin (modeled_elsewhere).
-PINNED = {"effect_unread": 142, "mechanic": 100, "auto_granted": 49, "damaging_unread": 29,
-          "modeled_elsewhere": 15}
+# 2026-11-15 (v59): the three Rain of Arrows are pulsing patches priced from
+# data/patch_pets.json (engine.patch_damage), so they move to modeled_elsewhere.
+PINNED = {"effect_unread": 142, "mechanic": 100, "auto_granted": 49, "damaging_unread": 26,
+          "modeled_elsewhere": 18}
 
 
 class EffectlessTests(unittest.TestCase):
@@ -69,6 +71,12 @@ class EffectlessTests(unittest.TestCase):
         twin["cast_time"] = 1.0
         self.assertEqual(effectless.classify(rec, {"Pets.Patch": [twin]})["class"],
                          "modeled_elsewhere")
+
+    def test_rain_of_arrows_is_a_priced_patch(self):
+        for at in ("Blaster", "Defender", "Sentinel"):
+            row = self.by_power[f"{at}_Ranged.Archery.Rain_of_Arrows"]
+            self.assertEqual(row["class"], "modeled_elsewhere")
+            self.assertIn("patch_pets", row["evidence"])
 
     def test_burn_carries_its_siblings_fold(self):
         burn = next(r for r in self.powers["Blaster_Support.Fire_Manipulation"]

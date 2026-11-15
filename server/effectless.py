@@ -18,7 +18,9 @@ Evidence, in the order the rules apply (first match wins):
                       its pet_powersets: the engine's pet channel prices those
                       (engine._pet_damage_for_powerset; the v13 Redirects
                       convention, e.g. Blaster Archery's Ranged Shot ->
-                      Redirects.Blaster_Archery.Ranged_Shot_Normal).
+                      Redirects.Blaster_Archery.Ranged_Shot_Normal); or a
+                      pulsing patch the engine prices from data/patch_pets.json
+                      (engine.patch_damage, v59: Rain of Arrows).
   unread_twins        the power's pet_powersets name records IN OUR DATA that
                       carry the effects, but not as a click the pet channel
                       can chain (a pulsing patch: no cast time, no recharge).
@@ -34,6 +36,7 @@ Evidence, in the order the rules apply (first match wins):
 """
 import re
 
+import engine
 import first_principles
 
 EFFECT_KEYS = ("self_effects", "damage_effects", "strength_effects", "debuff_effects",
@@ -89,6 +92,9 @@ def classify(rec, records_by_set, help_entry=None, full_name=None):
     if is_mastermind_upgrade(fn, rec, records_by_set.get(rec.get("powerset_full_name")) or []):
         return {"class": "modeled_elsewhere",
                 "evidence": "Mastermind upgrade: priced by its re-cast time"}
+    if fn in engine.patch_pet_plan():
+        return {"class": "modeled_elsewhere",
+                "evidence": "pulsing patch priced by engine.patch_damage (data/patch_pets.json)"}
     twins = _twins(fn, rec, records_by_set)
     priced = [t for t in twins if (t.get("cast_time") or 0) > 0
               and any(d.get("pv_mode", 0) != 2 for d in t.get("damage_effects") or [])]

@@ -1203,6 +1203,81 @@ def aura_proc_dps_per_target(power, rec):
     return total
 
 
+_PATCH_PETS = None
+
+
+def patch_pet_plan():
+    """data/patch_pets.json (tools/fetch_patch_pets.py, from City of Data): for
+    each pickable power that deals its damage through a pulsing pseudo-pet,
+    which pet powers pulse, for how long, on which class's tables."""
+    global _PATCH_PETS
+    if _PATCH_PETS is None:
+        import json as _json
+        import sys as _sys
+        if getattr(_sys, "frozen", False):
+            base = getattr(_sys, "_MEIPASS", os.path.dirname(_sys.executable))
+        else:
+            base = os.path.join(os.path.dirname(__file__), "..")
+        try:
+            with open(os.path.join(base, "data", "patch_pets.json"), encoding="utf-8") as f:
+                _PATCH_PETS = _json.load(f).get("powers") or {}
+        except Exception:  # noqa: BLE001
+            _PATCH_PETS = {}
+    return _PATCH_PETS
+
+
+def patch_pulses(lifetime, period):
+    """How many times a patch pulses: on landing, then every period while it
+    lives (a 1 s Rain of Arrows at 0.4 s pulses at 0, 0.4 and 0.8: three)."""
+    if period <= 0:
+        return 1
+    return int(max(0.0, lifetime - 1e-6) // period) + 1
+
+
+def patch_seconds(summoner):
+    """Seconds from the cast until a patch's last pulse can land (delay +
+    lifetime of its damaging entities); 0 for anything else."""
+    plan = patch_pet_plan().get(summoner) or {}
+    return max(((e.get("delay") or 0.0) + (e.get("lifetime") or 0.0)
+                for e in plan.get("entities") or [] if e.get("pulse_powers")), default=0.0)
+
+
+def patch_damage(summoner, ctx, pvp=False):
+    """Base damage per target of one cast of a patch summoner (before
+    enhancement): (damage, damage types, takes the caster's buffs, pulse
+    records), or None when the power is not a patch summoner. An entity patch
+    prices on its class's tables and takes the caster's buffs only when the
+    game copies them (copy_creator_mods); a redirect patch runs on the
+    caster's tables and buffs."""
+    plan = patch_pet_plan().get(summoner)
+    if not plan:
+        return None
+    power_by_full, mod_tables = ctx["power_by_full"], ctx["modifier_tables"]
+    cols = ctx.get("class_columns") or {}
+    total, dtypes, buffs, recs = 0.0, set(), True, []
+    for ent in plan["entities"]:
+        col = cols.get(ent["class"]) if ent.get("class") else ctx.get("at_column")
+        if col is None or not ent["pulse_powers"]:
+            continue
+        if ent.get("class") and not ent.get("copy_creator_mods"):
+            buffs = False
+        for name in ent["pulse_powers"]:
+            rec = power_by_full.get(name)
+            if not rec:
+                continue
+            recs.append(rec)
+            pulses = 1 if ent.get("execute") else patch_pulses(
+                ent.get("lifetime") or 0.0, rec.get("activate_period") or 0.0)
+            for d in rec.get("damage_effects") or []:
+                row = mod_tables.get(d["modifier_table"])
+                if not _pv_ok(d.get("pv_mode", 0), pvp) or not row or col >= len(row):
+                    continue
+                total += abs(_resolve_mag(d, row, col)) * pulses
+                if d["damage_type"] not in ("None", "Special"):
+                    dtypes.add(d["damage_type"])
+    return (total, dtypes, buffs, recs) if total > 0 else None
+
+
 def resolve_patch_pet(rec, power_by_full):
     """A summoner power's pseudo-pet PATCH attack record, when we have one
     with real mechanics (the additive patcher backfills them from the client
@@ -1273,7 +1348,10 @@ def _offense(build, totals, ctx):
     attacks = []
     for power in build.get("powers", []):
         p = power_by_full.get(power.get("full_name"))
-        if not p or not p.get("damage_effects"):
+        if not p:
+            continue
+        patch = None if p.get("damage_effects") else patch_damage(p.get("full_name"), ctx, pvp)
+        if not p.get("damage_effects") and not patch:
             continue
         if power.get("_exemplar_off"):     # exemplar view: attack unusable at this level
             continue
@@ -1288,7 +1366,14 @@ def _offense(build, totals, ctx):
         # redirect pseudo-pets (Trip Mine) carry none and use the caster's (AT mods)
         pcol = ((ctx.get("class_columns") or {}).get(p["damage_class"], col)
                 if p.get("damage_class") else col)
-        for d in p["damage_effects"]:
+        if patch:
+            # v59 PULSING PATCHES (owner, 2026-11-15, "Go get it!"): the damage
+            # lives on a pseudo-pet that pulses with no animation, so the pet
+            # chain never priced it. One cast = every pulse the patch lives for
+            # (City of Data: lifetime, delay, the pet's class), enhanced by the
+            # summoner's own slotting as the game copies it.
+            base, dtypes = patch[0], set(patch[1])
+        for d in ([] if patch else p["damage_effects"]):
             if not _pv_ok(d.get("pv_mode", 0), pvp):
                 continue
             row = mod_tables.get(d["modifier_table"])
@@ -1309,7 +1394,9 @@ def _offense(build, totals, ctx):
                                  enh.get("Damage", 0.0), mult_ed)
         # an entity pet's blast (damage_class) takes the summon's slotting only, as
         # every entity pet does in _pet_offense - the caster's global +damage is his
-        dmg_boost = enh_dmg + (0.0 if p.get("damage_class") else global_dmg)
+        # a patch entity takes it only when the game copies the caster's buffs
+        own_tables = p.get("damage_class") or (patch and not patch[2])
+        dmg_boost = enh_dmg + (0.0 if own_tables else global_dmg)
         if dmg_cap is not None:
             dmg_boost = min(dmg_boost, dmg_cap)
         # v34 item 5, law 3 (GAME BOUNDARIES STATED, NOT SUPERSEDED): the
@@ -1383,7 +1470,7 @@ def _offense(build, totals, ctx):
                             "trade_set_dmg": round(base * (alt_boost - dmg_boost), 1)}
         # AoE vs single-target by the set categories the power accepts — no radius
         # field in the data, but a hit-many attack always accepts an AoE damage set.
-        is_aoe_hit = is_aoe(p)                  # real geometry: hits an area (radius/effect_area)
+        is_aoe_hit = is_aoe(p) or bool(patch and any(is_aoe(r) for r in patch[3]))
         attacks.append({
             "name": p.get("display_name"),
             "full_name": p.get("full_name"),
@@ -1406,6 +1493,8 @@ def _offense(build, totals, ctx):
             "proc_dmg": round(proc_add, 1),
             "proc_n": proc_n,
             "proc_per": proc_per,
+            # v59: a patch's damage lands over this many seconds after the cast
+            **({"patch_seconds": round(patch_seconds(fn), 2)} if patch else {}),
             **trade_fields,
         })
     # v31 PATCH SUMMONERS (Irradiated Ground, the poster case): the summoning
