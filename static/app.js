@@ -202,6 +202,10 @@ window.hasUnsavedWork = function () {
 // close ("Hero Companion (Not Responding)"). Telling the window whenever the
 // answer changes means the handler only ever reads a variable.
 let _BUILD_EPOCH = 0;   // bumped on every character swap (resetBuildScopedState)
+// the character the Rating tab last graded: a swap while the tab is open
+// re-rates it (field report 2026-11-15: loading a new character left the old
+// one's rating on screen until the tab was left and re-opened)
+let _RATED_EPOCH = -1;
 let _dirtyPushed = null;
 function pushDirty() {
   try {
@@ -7877,6 +7881,8 @@ async function recompute() {
   renderRoleOutput();             // per-job output — needs the FRESH totals above
   build._accoladeHp = (LAST_TOTALS && LAST_TOTALS.accolade_hp) || 0;  // v34: live accolade HP for the panel line
   loadAccolades().then(renderAccolades);   // (summary band deleted — its accolade sync stays)
+  // A different character is open while the Rating tab shows: grade the new one.
+  if (_RATED_EPOCH !== _BUILD_EPOCH && $("tab-rating") && !$("tab-rating").hidden) openRating();
   // Self-heal: picks the game never offers (auto-granted set mechanics like
   // Bio's Adaptation stances — saved by versions before the _pickable rule).
   // The game grants these for free, so dropping the pick loses nothing the
@@ -10092,6 +10098,10 @@ function _hasBuildToRate() {
 
 async function openRating() {
   _LAST_RATING = null;
+  // ⚠ only a character with powers counts as graded: a load recomputes while the
+  // new character is still empty, and marking THAT as rated left the tab on
+  // "nothing to rate" once the powers arrived (caught driving the real load path)
+  _RATED_EPOCH = _hasBuildToRate() ? _BUILD_EPOCH : -1;
   if (!_hasBuildToRate()) {
     _RATING_SEQ++;                         // drop any rating still in flight
     $("rating-compare-sel").innerHTML = "";
