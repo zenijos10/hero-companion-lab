@@ -328,5 +328,60 @@
     }
    }
   }
+ },
+ "Class_Blaster|Blaster_Ranged.Dual_Pistols|Blaster_Support.Gadgets|itrial": {
+  "picks": [
+   "Blaster_Ranged.Dual_Pistols.Empty_Clips",
+   "Blaster_Ranged.Dual_Pistols.Piercing_Rounds",
+   "Blaster_Ranged.Dual_Pistols.Pistols",
+   "Blaster_Support.Gadgets.Auto_Turret",
+   "Blaster_Support.Gadgets.Caltrops",
+   "Blaster_Support.Gadgets.Cloaking_Device",
+   "Blaster_Support.Gadgets.Smoke_Grenade",
+   "Blaster_Support.Gadgets.Targeting_Drone",
+   "Blaster_Support.Gadgets.Time_Bomb",
+   "Blaster_Support.Gadgets.Trip_Mine",
+   "Epic.Electrical_Mastery.Charged_Armor",
+   "Epic.Electrical_Mastery.Surge_of_Power",
+   "Inherent.Fitness.Health",
+   "Inherent.Fitness.Stamina",
+   "Pool.Fighting.Cross_Punch",
+   "Pool.Fighting.Tough",
+   "Pool.Fighting.Weave",
+   "Pool.Invisibility.Invisibility",
+   "Pool.Invisibility.Misdirection",
+   "Pool.Invisibility.Stealth",
+   "Pool.Leadership.Assault",
+   "Pool.Leadership.Defense",
+   "Pool.Speed.Flurry",
+   "Pool.Speed.Hasten",
+   "Pool.Speed.Super_Speed",
+   "Pool.Speed.Whirlwind"
+  ],
+  "score": 1978.7196999999999,
+  "model_version": 59,
+  "certificate": {
+   "sweeps": 29,
+   "converged": true,
+   "restarts_done": 6,
+   "budget_truncated": false,
+   "claim": "converged on the SEARCH objective (in-run scoring); canonical_score is the portable number and is NOT claimed optimal \u2014 see the one-objective work order",
+   "canonical_optimality_checked": false,
+   "primary_converged": true,
+   "picks_filled": 0,
+   "node_cap": {
+    "cap": 50000,
+    "capped_solves_floor": 0,
+    "final_resolve_delta": 9.09
+   },
+   "tie_arbitration": {
+    "winner": "plain",
+    "scores": {
+     "eps": 1969.63,
+     "lex": 1960.28,
+     "plain": 1978.72
+    }
+   }
+  }
  }
 }

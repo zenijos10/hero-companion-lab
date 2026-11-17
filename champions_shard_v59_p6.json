@@ -383,5 +383,60 @@
     }
    }
   }
+ },
+ "Class_Blaster|Blaster_Ranged.Electrical_Blast|Blaster_Support.Martial_Manipulation|itrial": {
+  "picks": [
+   "Blaster_Ranged.Electrical_Blast.Aim",
+   "Blaster_Ranged.Electrical_Blast.Lightning_Bolt",
+   "Blaster_Ranged.Electrical_Blast.Short_Circuit",
+   "Blaster_Support.Martial_Manipulation.Burst_of_Speed",
+   "Blaster_Support.Martial_Manipulation.Dragons_Tail",
+   "Blaster_Support.Martial_Manipulation.Ki_Push",
+   "Blaster_Support.Martial_Manipulation.Reaction_Time",
+   "Blaster_Support.Martial_Manipulation.Storm_Kick",
+   "Epic.Electrical_Mastery.Charged_Armor",
+   "Epic.Electrical_Mastery.Static_Discharge",
+   "Epic.Electrical_Mastery.Surge_of_Power",
+   "Inherent.Fitness.Health",
+   "Inherent.Fitness.Stamina",
+   "Pool.Fighting.Cross_Punch",
+   "Pool.Fighting.Tough",
+   "Pool.Fighting.Weave",
+   "Pool.Force_of_Will.Project_Will",
+   "Pool.Force_of_Will.Unleash_Potential",
+   "Pool.Force_of_Will.Wall_of_Force",
+   "Pool.Force_of_Will.Weaken_Resolve",
+   "Pool.Leadership.Assault",
+   "Pool.Leadership.Defense",
+   "Pool.Leadership.Vengeance",
+   "Pool.Leadership.Victory_Rush",
+   "Pool.Speed.Hasten",
+   "Pool.Speed.Super_Speed"
+  ],
+  "score": 432.306125,
+  "model_version": 59,
+  "certificate": {
+   "sweeps": 30,
+   "converged": true,
+   "restarts_done": 6,
+   "budget_truncated": false,
+   "claim": "converged on the SEARCH objective (in-run scoring); canonical_score is the portable number and is NOT claimed optimal \u2014 see the one-objective work order",
+   "canonical_optimality_checked": false,
+   "primary_converged": true,
+   "picks_filled": 1,
+   "node_cap": {
+    "cap": 50000,
+    "capped_solves_floor": 0,
+    "final_resolve_delta": 17.41
+   },
+   "tie_arbitration": {
+    "winner": "plain",
+    "scores": {
+     "eps": 414.9,
+     "lex": 405.62,
+     "plain": 432.31
+    }
+   }
+  }
  }
 }

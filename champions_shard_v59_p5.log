@@ -320,3 +320,7 @@ Loading game data...
       sweep  16 r3 best=297.6 cur=297.6 solves=4106/25000
       sweep  17 r4 best=297.6 cur=258.1 solves=4382/25000
       sweep  18 r4 best=297.6 cur=273.3 solves=4658/25000
+      sweep  19 r4 best=375.1 cur=375.1 solves=4917/25000
+      sweep  20 r4 best=510.7 cur=510.7 solves=5192/25000
+      sweep  21 r4 best=538.7 cur=538.7 solves=5450/25000
+      sweep  22 r4 best=569.8 cur=569.8 solves=5760/25000

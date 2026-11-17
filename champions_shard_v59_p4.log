@@ -343,3 +343,6 @@ Loading game data...
       sweep   5 r0 best=798.7 cur=798.7 solves=1662/25000
       sweep   6 r0 best=866.6 cur=866.6 solves=1953/25000
       sweep   7 r0 best=923.3 cur=923.3 solves=2224/25000
+      sweep   8 r0 best=996.2 cur=996.2 solves=2532/25000
+      sweep   9 r1 best=996.2 cur=771.3 solves=2894/25000
+      sweep  10 r1 best=996.2 cur=885.7 solves=3184/25000

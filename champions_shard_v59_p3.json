@@ -383,5 +383,60 @@
     }
    }
   }
+ },
+ "Class_Blaster|Blaster_Ranged.Electrical_Blast|Blaster_Support.Fire_Manipulation|itrial": {
+  "picks": [
+   "Blaster_Ranged.Electrical_Blast.Ball_Lightning",
+   "Blaster_Ranged.Electrical_Blast.Charged_Bolts",
+   "Blaster_Ranged.Electrical_Blast.Short_Circuit",
+   "Blaster_Support.Fire_Manipulation.Blazing_Aura",
+   "Blaster_Support.Fire_Manipulation.Burn",
+   "Blaster_Support.Fire_Manipulation.Combustion",
+   "Blaster_Support.Fire_Manipulation.Fire_Sword_Circle",
+   "Blaster_Support.Fire_Manipulation.Hot_Feet",
+   "Blaster_Support.Fire_Manipulation.Ring_of_Fire",
+   "Epic.Electrical_Mastery.Charged_Armor",
+   "Epic.Electrical_Mastery.Surge_of_Power",
+   "Inherent.Fitness.Health",
+   "Inherent.Fitness.Stamina",
+   "Pool.Fighting.Boxing",
+   "Pool.Fighting.Cross_Punch",
+   "Pool.Fighting.Kick",
+   "Pool.Fighting.Tough",
+   "Pool.Fighting.Weave",
+   "Pool.Flight.Combat_Flight",
+   "Pool.Flight.Evasive_Maneuvers",
+   "Pool.Flight.Fly",
+   "Pool.Leadership.Assault",
+   "Pool.Leadership.Defense",
+   "Pool.Leadership.Vengeance",
+   "Pool.Speed.Hasten",
+   "Pool.Speed.Super_Speed"
+  ],
+  "score": 688.3190999999999,
+  "model_version": 59,
+  "certificate": {
+   "sweeps": 34,
+   "converged": true,
+   "restarts_done": 6,
+   "budget_truncated": false,
+   "claim": "converged on the SEARCH objective (in-run scoring); canonical_score is the portable number and is NOT claimed optimal \u2014 see the one-objective work order",
+   "canonical_optimality_checked": false,
+   "primary_converged": true,
+   "picks_filled": 0,
+   "node_cap": {
+    "cap": 50000,
+    "capped_solves_floor": 0,
+    "final_resolve_delta": 0.0
+   },
+   "tie_arbitration": {
+    "winner": "eps",
+    "scores": {
+     "eps": 688.32,
+     "lex": 560.88,
+     "plain": 632.76
+    }
+   }
+  }
  }
 }

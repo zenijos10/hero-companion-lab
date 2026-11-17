@@ -358,3 +358,10 @@ Loading game data...
       sweep  14 r1 best=640.3 cur=640.3 solves=4406/25000
       sweep  15 r2 best=640.3 cur=448.1 solves=4722/25000
       sweep  16 r2 best=640.3 cur=640.3 solves=4722/25000
+      sweep  17 r3 best=640.3 cur=348.1 solves=5069/25000
+      sweep  18 r3 best=640.3 cur=592.8 solves=5372/25000
+      sweep  19 r3 best=640.3 cur=640.3 solves=5372/25000
+      sweep  20 r4 best=640.3 cur=452.6 solves=5642/25000
+      sweep  21 r4 best=640.3 cur=573.6 solves=5919/25000
+      sweep  22 r4 best=640.3 cur=586.9 solves=6181/25000
+      sweep  23 r4 best=640.3 cur=589.2 solves=6458/25000

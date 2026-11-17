@@ -313,3 +313,6 @@ Loading game data...
       sweep  12 r1 best=571.4 cur=316.6 solves=3939/25000
       sweep  13 r1 best=571.4 cur=480.5 solves=4193/25000
       sweep  14 r1 best=571.4 cur=571.4 solves=4193/25000
+      sweep  15 r2 best=571.4 cur=383.0 solves=4466/25000
+      sweep  16 r2 best=571.4 cur=571.4 solves=4466/25000
+      sweep  17 r3 best=571.4 cur=332.1 solves=4721/25000

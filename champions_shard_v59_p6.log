@@ -319,3 +319,22 @@ Loading game data...
       sweep  23 r4 best=430.6 cur=430.5 solves=6893/25000
       sweep  24 r4 best=439.3 cur=439.3 solves=7166/25000
       sweep  25 r5 best=439.3 cur=331.6 solves=7476/25000
+      sweep  26 r5 best=439.3 cur=425.2 solves=7753/25000
+      sweep  27 r5 best=439.3 cur=433.2 solves=8046/25000
+      sweep  28 r6 best=439.3 cur=341.0 solves=8392/25000
+      sweep  29 r6 best=439.3 cur=391.5 solves=8687/25000
+      sweep  30 r6 best=439.3 cur=433.2 solves=8687/25000
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+   -> score 432.3  solves 8687  certificate: {'sweeps': 30, 'converged': True, 'restarts_done': 6, 'budget_truncated': False, 'claim': 'converged on the SEARCH objective (in-run scoring); canonical_score is the portable number and is NOT claimed optimal — see the one-objective work order', 'canonical_optimality_checked': False, 'primary_converged': True, 'picks_filled': 1, 'node_cap': {'cap': 50000, 'capped_solves_floor': 0, 'final_resolve_delta': 17.41}, 'tie_arbitration': {'winner': 'plain', 'scores': {'eps': 414.9, 'lex': 405.62, 'plain': 432.31}}}
+[ 763.6m] Class_Blaster|Blaster_Ranged.Energy_Blast|Blaster_Support.Electricity_Manipulation|itrial
+      sweep   1 r0 best=109.3 cur=109.3 solves=371/25000
+      sweep   2 r0 best=173.9 cur=173.9 solves=718/25000
+      sweep   3 r0 best=204.9 cur=204.9 solves=1033/25000
