@@ -162,6 +162,15 @@ def _usable(attack, records):
             and records.get(attack.get("full_name")) is not None)
 
 
+def _in_window(attack, window):
+    """A patch whose pulses outlast the window credits only the share of its
+    life that fits (cast at the start: the most it can land inside)."""
+    seconds = attack.get("patch_seconds") or 0.0
+    if seconds <= window:
+        return attack
+    return dict(attack, damage=(attack.get("damage") or 0.0) * window / seconds)
+
+
 def _summary(picked, used, exact, factor, records, running=0.0):
     damage = sum((a.get("damage") or 0.0) for a in picked) * factor + running
     names = []
@@ -198,7 +207,7 @@ def strike(build_powers, totals, sc, records, recalculate, pet_dps=0.0):
         buffed = totals
     window = STRIKE_SECONDS
     rows = (buffed.get("offense") or {}).get("attacks") or []
-    attacks = [a for a in rows if _usable(a, records)]
+    attacks = [_in_window(a, window) for a in rows if _usable(a, records)]
     hit, factor = _factor(buffed, sc)
     pets = (pet_dps or 0.0) * window
     run_st = sum((a.get("dps_spam") or 0.0) for a in rows if _running(a)) * window * factor

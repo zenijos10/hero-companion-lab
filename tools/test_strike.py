@@ -149,6 +149,12 @@ class RouteTests(unittest.TestCase):
         self.assertGreater(pet_dps, 0)
         self.assertGreaterEqual(st["running_damage"], round(pet_dps * strike.STRIKE_SECONDS, 1) - 0.1)
 
+    def test_a_long_patch_credits_only_its_life_inside_the_window(self):
+        blizzard = dict(attack("Blizzard", 400, 2.0, 170.0, aoe=True), patch_seconds=20.0)
+        self.assertEqual(strike._in_window(blizzard, 10.0)["damage"], 200.0)
+        quick = dict(attack("Rain", 300, 2.0, 60.0, aoe=True), patch_seconds=2.8)
+        self.assertIs(strike._in_window(quick, 10.0), quick)
+
     def test_running_rows_never_enter_the_chain(self):
         aura = dict(attack("Aura", 20, 1.0, 0.0), host_type=2, dps_spam=10.0)
         patch = dict(attack("Patch", 5, 1.0, 1.0), cast_time=0.0, dpa=None, dps_spam=5.0)

@@ -31,6 +31,9 @@ on:
       - "tools/test_matchups.py"
       - "tools/test_strike.py"
       - "tools/test_strengths.py"
+      - "tools/test_patch_pets.py"
+      - "tools/fetch_patch_pets.py"
+      - "data/patch_pets.json"
       - "tools/fetch_critter_data.py"
       - ".github/workflows/build-evaluation.yml"
   workflow_dispatch:
@@ -80,6 +83,8 @@ jobs:
         run: python tools/test_strike.py
       - name: Strengths, weaknesses and lane (rules + route)
         run: python tools/test_strengths.py
+      - name: Pulsing patch damage (City of Data lifetimes, route + negative control)
+        run: python tools/test_patch_pets.py
       - name: S-F ratings (rules + shipped thresholds current)
         run: python tools/test_build_ratings.py
       - name: Build compare route + rules (M5)

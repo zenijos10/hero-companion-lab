@@ -3209,55 +3209,55 @@
      "amplified": 3.7,
      "availability": 0.091,
      "contribution": 4.3,
-     "my_dps": 18.4,
-     "prevented": 25.0,
+     "my_dps": 18.1,
+     "prevented": 24.8,
      "ttl": 23.7
     },
     "farm_active": {
-     "amplified": 7.7,
+     "amplified": 8.1,
      "availability": 0.282,
-     "contribution": 1224.4,
-     "my_dps": 62.8,
+     "contribution": 1228.1,
+     "my_dps": 66.2,
      "prevented": 1153.9,
      "ttl": 6.8
     },
     "farm_afk": {
      "amplified": 1.1,
      "availability": 0.004,
-     "contribution": 7.7,
-     "my_dps": 9.4,
-     "prevented": 1926.8,
+     "contribution": 7.6,
+     "my_dps": 9.2,
+     "prevented": 1911.8,
      "ttl": 2.4
     },
     "fire_farm": {
-     "amplified": 7.7,
+     "amplified": 8.1,
      "availability": 0.282,
-     "contribution": 345.5,
-     "my_dps": 62.8,
+     "contribution": 346.5,
+     "my_dps": 66.2,
      "prevented": 1153.9,
      "ttl": 6.8
     },
     "general": {
-     "amplified": 17.1,
+     "amplified": 17.2,
      "availability": 0.662,
-     "contribution": 342.0,
-     "my_dps": 74.9,
+     "contribution": 342.3,
+     "my_dps": 75.4,
      "prevented": 424.5,
      "ttl": 35.1
     },
     "itrial": {
-     "amplified": 375.9,
+     "amplified": 376.3,
      "availability": 0.133,
-     "contribution": 257.1,
-     "my_dps": 74.9,
+     "contribution": 257.5,
+     "my_dps": 77.1,
      "prevented": 1478.8,
      "ttl": 4.6
     },
     "team": {
-     "amplified": 227.4,
+     "amplified": 227.9,
      "availability": 0.368,
-     "contribution": 432.0,
-     "my_dps": 98.5,
+     "contribution": 433.0,
+     "my_dps": 100.8,
      "prevented": 848.6,
      "ttl": 12.2
     }
@@ -4267,5 +4267,5 @@
    ]
   }
  ],
- "model_version": 58
+ "model_version": 59
 }

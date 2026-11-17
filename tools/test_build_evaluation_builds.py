@@ -27,7 +27,8 @@ import server as srv  # noqa: E402
 CONTRACT = ROOT / "_sidekick_contract_fixture"
 UNSTOPPABLE = "Brute_Defense.Invulnerability.Unstoppable"
 RANGED_SHOT = "Blaster_Ranged.Archery.Ranged_Shot"      # priced via its click twin
-RAIN_OF_ARROWS = "Blaster_Ranged.Archery.Rain_of_Arrows"  # damage nothing reads
+RAIN_OF_ARROWS = "Blaster_Ranged.Archery.Rain_of_Arrows"  # a pulsing patch, priced since v59
+ENFLAME = "Pool.Sorcery.Enflame"                         # damage nothing reads
 
 CASES = {
     "mastermind": ("Class_Mastermind", "Mastermind_Summon.Mercenaries",
@@ -79,7 +80,7 @@ class RealBuildEvaluationTests(unittest.TestCase):
         if BENUMB not in {p["full_name"] for p in cold["powers"]}:
             cold["powers"].append({"full_name": BENUMB, "slots": [None]})
         archer = cls.builds["archer"]
-        for name in (RANGED_SHOT, RAIN_OF_ARROWS):
+        for name in (RANGED_SHOT, RAIN_OF_ARROWS, ENFLAME):
             if name not in {p["full_name"] for p in archer["powers"]}:
                 archer["powers"].append({"full_name": name, "slots": [None]})
 
@@ -177,10 +178,13 @@ class RealBuildEvaluationTests(unittest.TestCase):
     def test_unread_damage_is_disclosed_and_redirects_are_priced(self):
         data = self.evaluate(self.builds["archer"])
         reasons = {(u["power"], u["reason"]) for u in data["unsupported"]["powers"]}
-        self.assertIn((RAIN_OF_ARROWS, "damaging_unread"), reasons)
-        # Ranged Shot's damage is chained by the pet channel from its click twin
+        self.assertIn((ENFLAME, "damaging_unread"), reasons)
+        # Ranged Shot's damage is chained by the pet channel from its click twin;
+        # Rain of Arrows is a pulsing patch priced by engine.patch_damage (v59)
         elsewhere = {m["power"] for m in data["unsupported"]["modeled_without_effect_rows"]}
         self.assertIn(RANGED_SHOT, elsewhere)
+        self.assertIn(RAIN_OF_ARROWS, elsewhere)
+        self.assertNotIn(RAIN_OF_ARROWS, {p for p, _r in reasons})
         self.assertNotIn(RANGED_SHOT, {p for p, _r in reasons})
         conf = data["confidence"]
         self.assertLess(conf["powers_read"]["value"], conf["powers_total"])

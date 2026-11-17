@@ -219,15 +219,26 @@ class ShippedThresholdTests(unittest.TestCase):
             if row["grade"] in tuple("SABCDF"):
                 self.assertIsNotNone(row["value"])
 
+    def grade_with(self, archetype, primary, secondary, extra):
+        build = self.build(archetype, primary, secondary)
+        if extra not in {p["full_name"] for p in build["powers"]}:
+            build["powers"].append({"full_name": extra, "slots": [None]})
+        return self.client.post("/build/evaluate", json={"build": build}).get_json()["ratings"]["categories"]
+
     def test_incomplete_offense_is_never_graded(self):
-        build = self.build("Class_Blaster", "Blaster_Ranged.Archery", "Blaster_Support.Tactical_Arrow")
-        names = {p["full_name"] for p in build["powers"]}
-        # Rain of Arrows: damage the model does not read (docs/EFFECTLESS-POWERS.md)
-        if "Blaster_Ranged.Archery.Rain_of_Arrows" not in names:
-            build["powers"].append({"full_name": "Blaster_Ranged.Archery.Rain_of_Arrows", "slots": [None]})
-        cats = self.client.post("/build/evaluate", json={"build": build}).get_json()["ratings"]["categories"]
+        # Suppressive Fire: damage the model does not read (docs/EFFECTLESS-POWERS.md)
+        cats = self.grade_with("Class_Blaster", "Blaster_Ranged.Dual_Pistols",
+                               "Blaster_Support.Tactical_Arrow",
+                               "Blaster_Ranged.Dual_Pistols.Suppressive_Fire")
         self.assertEqual(cats["single_target_damage"]["grade"], "Unknown")
         self.assertEqual(cats["aoe_damage"]["grade"], "Unknown")
+
+    def test_rain_of_arrows_is_graded_since_v59(self):
+        # a pulsing patch priced from City of Data (engine.patch_damage)
+        cats = self.grade_with("Class_Blaster", "Blaster_Ranged.Archery",
+                               "Blaster_Support.Tactical_Arrow",
+                               "Blaster_Ranged.Archery.Rain_of_Arrows")
+        self.assertIn(cats["aoe_damage"]["grade"], tuple("SABCDF"))
 
 
 if __name__ == "__main__":

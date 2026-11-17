@@ -1,0 +1,913 @@
+{
+ "fetched": "2026-11-15",
+ "method": "Fetch how each damage patch lives, from City of Data (the game's own records).\n\n    python tools/fetch_patch_pets.py [--refresh]\n\nOwner, 2026-11-15 (\"archery doesnt have data? Go get it!\"): 65 pickable powers\ndeal their damage through a pulsing pseudo-pet (Rain of Arrows, Rain of Fire,\nBlizzard, Whirlpool, Lightning Rod, Shield Charge...), and the pet's pulse has\nno animation time, so the engine's pet chain never priced it: every one was\ncredited zero damage.\n\nFor each such power (the census: a pickable record with no damage rows of its\nown whose pet_powersets hold a pulsing damage record) this walks the power's\nCoD record to every Create_Entity effect (child effects included): which entity\nit creates, after what delay and for how long, then the entity's own record for\nits class and power list. Written to data/patch_pets.json:\n\n  {\"powers\": {summoner: {\"entities\": [{\"entity\", \"delay\", \"lifetime\", \"class\",\n                                        \"pulse_powers\": [our pet records],\n                                        \"redirect\": true when the patch has no\n                                        entity of its own (class None: the\n                                        caster's tables)}]}},\n   \"missing\": {summoner: reason}, \"source\", \"revision\", \"fetched\"}\n\nAn entity whose powers carry no damage in our data (a visual) is recorded with\nan empty pulse_powers list, so the engine prices exactly the damage entity. The\ndamage itself stays OUR data's rows (the same rows the pet channel reads);\nCoD supplies only what our data lacks: lifetimes, delays and the mapping.",
+ "missing": {
+  "Blaster_Ranged.Storm_Blast.Storm_Cell": "no created entity carries a pulsing damage power in our data",
+  "Blaster_Support.Tactical_Arrow.Oil_Slick_Arrow": "no City of Data record",
+  "Controller_Buff.Trick_Arrow.Oil_Slick_Arrow": "no created entity carries a pulsing damage power in our data",
+  "Corruptor_Buff.Trick_Arrow.Oil_Slick_Arrow": "no created entity carries a pulsing damage power in our data",
+  "Corruptor_Ranged.Storm_Blast.Storm_Cell": "no created entity carries a pulsing damage power in our data",
+  "Defender_Buff.Trick_Arrow.Oil_Slick_Arrow": "no created entity carries a pulsing damage power in our data",
+  "Defender_Ranged.Storm_Blast.Storm_Cell": "no created entity carries a pulsing damage power in our data",
+  "Mastermind_Buff.Trick_Arrow.Oil_Slick_Arrow": "no created entity carries a pulsing damage power in our data",
+  "Sentinel_Ranged.Storm_Blast.Storm_Cell": "no created entity carries a pulsing damage power in our data"
+ },
+ "powers": {
+  "Blaster_Ranged.Archery.Rain_of_Arrows": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.0,
+     "entity": "Pets_RainofArrows_Visual",
+     "lifetime": 3.0,
+     "pulse_powers": []
+    },
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 1.8,
+     "entity": "Pets_RainofArrows",
+     "lifetime": 1.0,
+     "pulse_powers": [
+      "Pets.RainofArrows.RainofArrows"
+     ]
+    }
+   ]
+  },
+  "Blaster_Ranged.Fire_Blast.Rain_of_Fire": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.0,
+     "entity": "Pets_RainofFire",
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Pets.RainofFire.RainofFire"
+     ]
+    }
+   ]
+  },
+  "Blaster_Ranged.Ice_Blast.Blizzard": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.0,
+     "entity": "Pets_Blizzard",
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Pets.Blizzard.Blizzard"
+     ]
+    }
+   ]
+  },
+  "Blaster_Ranged.Ice_Blast.Freezing_Rain": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.0,
+     "entity": "Pets_IceStorm",
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Pets.IceStorm.IceStorm"
+     ]
+    }
+   ]
+  },
+  "Blaster_Ranged.Storm_Blast.Category_Five": {
+   "entities": [
+    {
+     "class": null,
+     "delay": 0.0,
+     "entity": "Category Five",
+     "execute": false,
+     "lifetime": 30.0,
+     "pulse_powers": [
+      "Redirects.Storm_Blast.Category_Five"
+     ],
+     "redirect": true
+    },
+    {
+     "class": null,
+     "delay": 3.0,
+     "entity": "Category Five Eye",
+     "execute": false,
+     "lifetime": 25.0,
+     "pulse_powers": [
+      "Redirects.Storm_Blast.Nukenado_Pulse"
+     ],
+     "redirect": true
+    }
+   ]
+  },
+  "Blaster_Ranged.Water_Blast.Whirlpool": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.0,
+     "entity": "Pets_Whirlpool_Blaster",
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Pets.Whirlpool_Blaster.Whirlpool"
+     ]
+    }
+   ]
+  },
+  "Blaster_Support.Gadgets.Caltrops": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": false,
+     "delay": 0.0,
+     "entity": "Pets_Caltrops",
+     "lifetime": 45.0,
+     "pulse_powers": [
+      "Pets.Caltrops.Caltrops"
+     ]
+    }
+   ]
+  },
+  "Blaster_Support.Martial_Manipulation.Burst_of_Speed": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": -0.2,
+     "entity": "Pets_Burst_of_Speed",
+     "lifetime": 2.0,
+     "pulse_powers": [
+      "Pets.Martial_Manipulation_Burst.Burst_of_Speed"
+     ]
+    }
+   ]
+  },
+  "Blaster_Support.Tactical_Arrow.Glue_Arrow": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.0,
+     "entity": "Pets_StickyArrow_Blaster",
+     "lifetime": 0.0,
+     "pulse_powers": [
+      "Pets.StickyArrow_Blaster.StickyToxin"
+     ]
+    }
+   ]
+  },
+  "Brute_Defense.Electric_Armor.Power_Surge": {
+   "entities": [
+    {
+     "class": null,
+     "delay": 30.0,
+     "entity": null,
+     "execute": true,
+     "lifetime": 0.0,
+     "pulse_powers": [
+      "Villain_Pets.Power_Surge.EM_Pulse"
+     ],
+     "redirect": true
+    }
+   ]
+  },
+  "Brute_Defense.Shield_Defense.Shield_Charge": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.625,
+     "entity": "Pets_Shield_Charge_Brute",
+     "lifetime": 4.0,
+     "pulse_powers": [
+      "Villain_Pets.Shield_Charge_AoE.Shield_Charge_AoE_Brute"
+     ]
+    }
+   ]
+  },
+  "Controller_Buff.Cold_Domination.Sleet": {
+   "entities": [
+    {
+     "class": null,
+     "delay": 0.0,
+     "entity": "Sleet",
+     "execute": false,
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Villain_Pets.Sleet.Sleet"
+     ],
+     "redirect": true
+    }
+   ]
+  },
+  "Controller_Buff.Storm_Summoning.Fog": {
+   "entities": [
+    {
+     "class": null,
+     "delay": 0.0,
+     "entity": "Freezing Rain",
+     "execute": false,
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Pets.FreezingRain_Controller.FreezingRain"
+     ],
+     "redirect": true
+    }
+   ]
+  },
+  "Controller_Control.Fire_Control.Bonfire": {
+   "entities": [
+    {
+     "class": null,
+     "delay": 0.0,
+     "entity": "Bonfire",
+     "execute": false,
+     "lifetime": 45.0,
+     "pulse_powers": [
+      "Pets.Bonfire.Bonfire"
+     ],
+     "redirect": true
+    }
+   ]
+  },
+  "Controller_Control.Ice_Control.Ice_Slick": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.0,
+     "entity": "Pets_IceSlick",
+     "lifetime": 30.0,
+     "pulse_powers": [
+      "Pets.IceSlick.IceSlick"
+     ]
+    }
+   ]
+  },
+  "Corruptor_Buff.Cold_Domination.Sleet": {
+   "entities": [
+    {
+     "class": null,
+     "delay": 0.0,
+     "entity": "Sleet",
+     "execute": false,
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Villain_Pets.Sleet.Sleet"
+     ],
+     "redirect": true
+    }
+   ]
+  },
+  "Corruptor_Buff.Storm_Summoning.Freezing_Rain": {
+   "entities": [
+    {
+     "class": null,
+     "delay": 0.0,
+     "entity": "Freezing Rain",
+     "execute": false,
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Pets.FreezingRain_Controller.FreezingRain"
+     ],
+     "redirect": true
+    }
+   ]
+  },
+  "Corruptor_Ranged.Fire_Blast.Rain_of_Fire": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.0,
+     "entity": "Pets_Corruptor_RainofFire",
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Pets.Corruptor_RainofFire.RainofFire"
+     ]
+    }
+   ]
+  },
+  "Corruptor_Ranged.Ice_Blast.Blizzard": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.0,
+     "entity": "Pets_Corruptor_Blizzard",
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Pets.Corruptor_Blizzard.Blizzard"
+     ]
+    }
+   ]
+  },
+  "Corruptor_Ranged.Ice_Blast.Ice_Storm": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.0,
+     "entity": "Pets_Corruptor_IceStorm",
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Pets.Corruptor_IceStorm.IceStorm"
+     ]
+    }
+   ]
+  },
+  "Corruptor_Ranged.Storm_Blast.Category_Five": {
+   "entities": [
+    {
+     "class": null,
+     "delay": 0.0,
+     "entity": "Category Five",
+     "execute": false,
+     "lifetime": 30.0,
+     "pulse_powers": [
+      "Redirects.Storm_Blast.Category_Five"
+     ],
+     "redirect": true
+    },
+    {
+     "class": null,
+     "delay": 3.0,
+     "entity": "Category Five Eye",
+     "execute": false,
+     "lifetime": 25.0,
+     "pulse_powers": [
+      "Redirects.Storm_Blast.Nukenado_Pulse"
+     ],
+     "redirect": true
+    }
+   ]
+  },
+  "Corruptor_Ranged.Water_Blast.Whirlpool": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.0,
+     "entity": "Pets_Whirlpool_Corruptor",
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Pets.Whirlpool_Corruptor.Whirlpool"
+     ]
+    }
+   ]
+  },
+  "Defender_Buff.Cold_Domination.Sleet": {
+   "entities": [
+    {
+     "class": null,
+     "delay": 0.0,
+     "entity": "Sleet",
+     "execute": false,
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Villain_Pets.Sleet.Sleet"
+     ],
+     "redirect": true
+    }
+   ]
+  },
+  "Defender_Buff.Storm_Summoning.Fog": {
+   "entities": [
+    {
+     "class": null,
+     "delay": 0.0,
+     "entity": "Freezing Rain",
+     "execute": false,
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Pets.FreezingRain.FreezingRain"
+     ],
+     "redirect": true
+    }
+   ]
+  },
+  "Defender_Ranged.Archery.Rain_of_Arrows": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.0,
+     "entity": "Pets_RainofArrows_Visual",
+     "lifetime": 3.0,
+     "pulse_powers": []
+    },
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 1.8,
+     "entity": "Pets_RainofArrows_Defender",
+     "lifetime": 1.0,
+     "pulse_powers": [
+      "Pets.RainofArrows_Defender.RainofArrows"
+     ]
+    }
+   ]
+  },
+  "Defender_Ranged.Fire_Blast.Rain_of_Fire": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.0,
+     "entity": "Pets_Defender_RainofFire",
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Pets.Defender_RainofFire.RainofFire"
+     ]
+    }
+   ]
+  },
+  "Defender_Ranged.Ice_Blast.Freezing_Rain": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.0,
+     "entity": "Pets_IceStorm_Defender",
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Pets.IceStorm_Defender.IceStorm"
+     ]
+    }
+   ]
+  },
+  "Defender_Ranged.Storm_Blast.Category_Five": {
+   "entities": [
+    {
+     "class": null,
+     "delay": 0.0,
+     "entity": "Category Five",
+     "execute": false,
+     "lifetime": 30.0,
+     "pulse_powers": [
+      "Redirects.Storm_Blast.Category_Five"
+     ],
+     "redirect": true
+    },
+    {
+     "class": null,
+     "delay": 3.0,
+     "entity": "Category Five Eye",
+     "execute": false,
+     "lifetime": 25.0,
+     "pulse_powers": [
+      "Redirects.Storm_Blast.Nukenado_Pulse"
+     ],
+     "redirect": true
+    }
+   ]
+  },
+  "Defender_Ranged.Water_Blast.Whirlpool": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.0,
+     "entity": "Pets_Whirlpool_Defender",
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Pets.Whirlpool_Defender.Whirlpool"
+     ]
+    }
+   ]
+  },
+  "Dominator_Assault.Thorny_Assault.Thorntrops": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": false,
+     "delay": 0.0,
+     "entity": "Pets_Thorntrops",
+     "lifetime": 45.0,
+     "pulse_powers": [
+      "Villain_Pets.Thorntrops.Thorntrops"
+     ]
+    }
+   ]
+  },
+  "Dominator_Control.Fire_Control.Bonfire": {
+   "entities": [
+    {
+     "class": null,
+     "delay": 0.0,
+     "entity": "Bonfire",
+     "execute": false,
+     "lifetime": 45.0,
+     "pulse_powers": [
+      "Pets.Bonfire.Bonfire"
+     ],
+     "redirect": true
+    }
+   ]
+  },
+  "Dominator_Control.Ice_Control.Ice_Slick": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.0,
+     "entity": "Pets_IceSlick",
+     "lifetime": 30.0,
+     "pulse_powers": [
+      "Pets.IceSlick.IceSlick"
+     ]
+    }
+   ]
+  },
+  "Epic.Arctic_Mastery.Ice_Storm": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.0,
+     "entity": "Pets_IceStorm",
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Pets.IceStorm.IceStorm"
+     ]
+    },
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.0,
+     "entity": "Pets_Embraced_IceStorm",
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Pets.Embraced_IceStorm.IceStorm"
+     ]
+    }
+   ]
+  },
+  "Epic.Fire_Mastery_Dominator.Fire_Blast": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.0,
+     "entity": "Pets_RainofFire",
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Pets.RainofFire.RainofFire"
+     ]
+    }
+   ]
+  },
+  "Epic.Flame_Mastery.Bonfire": {
+   "entities": [
+    {
+     "class": null,
+     "delay": 0.0,
+     "entity": "Bonfire",
+     "execute": false,
+     "lifetime": 45.0,
+     "pulse_powers": [
+      "Pets.Bonfire.Bonfire"
+     ],
+     "redirect": true
+    }
+   ]
+  },
+  "Epic.Flame_Mastery.Rise_of_the_Phoenix": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.0,
+     "entity": "Pets_Phoenix",
+     "lifetime": 5.0,
+     "pulse_powers": [
+      "Pets.Phoenix.Phoenix"
+     ]
+    }
+   ]
+  },
+  "Epic.Ice_Mastery.Ice_Storm": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.0,
+     "entity": "Pets_Epic_IceStorm",
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Pets.Epic_IceStorm.IceStorm"
+     ]
+    }
+   ]
+  },
+  "Epic.Ice_Mastery_Dominator.Ice_Blast": {
+   "entities": [
+    {
+     "class": null,
+     "delay": 0.0,
+     "entity": "Sleet",
+     "execute": false,
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Pets.Sleet_Defender.Sleet"
+     ],
+     "redirect": true
+    }
+   ]
+  },
+  "Epic.Ice_Mastery_Dominator.Ice_Storm": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.0,
+     "entity": "Pets_Epic_IceStorm",
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Pets.Epic_IceStorm.IceStorm"
+     ]
+    }
+   ]
+  },
+  "Mastermind_Buff.Storm_Summoning.Freezing_Rain": {
+   "entities": [
+    {
+     "class": null,
+     "delay": 0.0,
+     "entity": "Freezing Rain",
+     "execute": false,
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Pets.FreezingRain_Controller.FreezingRain"
+     ],
+     "redirect": true
+    }
+   ]
+  },
+  "Pool.Leaping.Spring_Attack": {
+   "entities": [
+    {
+     "class": null,
+     "delay": 1.3,
+     "entity": null,
+     "execute": true,
+     "lifetime": 0.0,
+     "pulse_powers": [
+      "Redirects.Spring_Attack.Spring_Attack"
+     ],
+     "redirect": true
+    }
+   ]
+  },
+  "Scrapper_Defense.Electric_Armor.Power_Surge": {
+   "entities": [
+    {
+     "class": null,
+     "delay": 30.0,
+     "entity": null,
+     "execute": true,
+     "lifetime": 0.0,
+     "pulse_powers": [
+      "Villain_Pets.Power_Surge.EM_Pulse"
+     ],
+     "redirect": true
+    }
+   ]
+  },
+  "Scrapper_Defense.Shield_Defense.Shield_Charge": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.625,
+     "entity": "Pets_Shield_Charge_Scrapper",
+     "lifetime": 4.0,
+     "pulse_powers": [
+      "Villain_Pets.Shield_Charge_AoE3.Shield_Charge_AoE_Scrapper"
+     ]
+    }
+   ]
+  },
+  "Scrapper_Melee.Electrical_Melee.Lightning_Rod": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.625,
+     "entity": "Pets_Lightning_Rod_Scrapper",
+     "lifetime": 4.0,
+     "pulse_powers": [
+      "Pets.Lightning_Rod_Scrapper.Lightning_Rod"
+     ]
+    },
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.625,
+     "entity": "Pets_Embraced_Lightning_Rod_Scrapper",
+     "lifetime": 4.0,
+     "pulse_powers": [
+      "Pets.Embraced_Lightning_Rod_Scrapper.Lightning_Rod"
+     ]
+    }
+   ]
+  },
+  "Sentinel_Defense.Electric_Armor.Power_Surge": {
+   "entities": [
+    {
+     "class": null,
+     "delay": 30.0,
+     "entity": null,
+     "execute": true,
+     "lifetime": 0.0,
+     "pulse_powers": [
+      "Villain_Pets.Power_Surge.EM_Pulse"
+     ],
+     "redirect": true
+    }
+   ]
+  },
+  "Sentinel_Ranged.Archery.Rain_of_Arrows": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.0,
+     "entity": "Pets_RainofArrows_Visual",
+     "lifetime": 3.0,
+     "pulse_powers": []
+    },
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 1.8,
+     "entity": "Pets_RainofArrows_Sentinel",
+     "lifetime": 1.0,
+     "pulse_powers": [
+      "Pets.RainofArrows_Sentinel.RainofArrows"
+     ]
+    }
+   ]
+  },
+  "Sentinel_Ranged.Fire_Blast.Rain_of_Fire": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.0,
+     "entity": "Pets_RainofFire_Sentinel",
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Pets.RainofFire.RainofFire"
+     ]
+    }
+   ]
+  },
+  "Sentinel_Ranged.Ice_Blast.Blizzard": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.0,
+     "entity": "Pets_Blizzard_Sentinel",
+     "lifetime": 8.0,
+     "pulse_powers": [
+      "Pets.Blizzard_Sentinel.Blizzard"
+     ]
+    }
+   ]
+  },
+  "Sentinel_Ranged.Ice_Blast.Ice_Storm": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.0,
+     "entity": "Pets_IceStorm_Sentinel",
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Pets.IceStorm_Sentinel.IceStorm"
+     ]
+    }
+   ]
+  },
+  "Sentinel_Ranged.Storm_Blast.Category_Five": {
+   "entities": [
+    {
+     "class": null,
+     "delay": 0.0,
+     "entity": "Category Five",
+     "execute": false,
+     "lifetime": 20.0,
+     "pulse_powers": [
+      "Redirects.Storm_Blast.Category_Five_Sentinel"
+     ],
+     "redirect": true
+    },
+    {
+     "class": null,
+     "delay": 3.0,
+     "entity": "Category Five Eye",
+     "execute": false,
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Redirects.Storm_Blast.Nukenado_Pulse_Sentinel"
+     ],
+     "redirect": true
+    }
+   ]
+  },
+  "Sentinel_Ranged.Water_Blast.Whirlpool": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.0,
+     "entity": "Pets_Whirlpool_Sentinel",
+     "lifetime": 15.0,
+     "pulse_powers": [
+      "Pets.Whirlpool_Sentinel.Whirlpool"
+     ]
+    }
+   ]
+  },
+  "Stalker_Defense.Electric_Armor.Power_Surge": {
+   "entities": [
+    {
+     "class": null,
+     "delay": 30.0,
+     "entity": null,
+     "execute": true,
+     "lifetime": 0.0,
+     "pulse_powers": [
+      "Villain_Pets.Power_Surge.EM_Pulse"
+     ],
+     "redirect": true
+    }
+   ]
+  },
+  "Stalker_Melee.Electrical_Melee.Lightning_Rod": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.625,
+     "entity": "Pets_Lightning_Rod_Stalker",
+     "lifetime": 4.0,
+     "pulse_powers": [
+      "Villain_Pets.Lightning_Rod_Stalker.Lightning_Rod"
+     ]
+    }
+   ]
+  },
+  "Tanker_Defense.Electric_Armor.Power_Surge": {
+   "entities": [
+    {
+     "class": null,
+     "delay": 30.0,
+     "entity": null,
+     "execute": true,
+     "lifetime": 0.0,
+     "pulse_powers": [
+      "Villain_Pets.Power_Surge.EM_Pulse"
+     ],
+     "redirect": true
+    }
+   ]
+  },
+  "Tanker_Defense.Shield_Defense.Shield_Charge": {
+   "entities": [
+    {
+     "class": "Class_Minion_Pets",
+     "copy_creator_mods": true,
+     "delay": 0.625,
+     "entity": "Pets_Shield_Charge_Tanker",
+     "lifetime": 4.0,
+     "pulse_powers": [
+      "Villain_Pets.Shield_Charge_AoE2.Shield_Charge_AoE_Tanker"
+     ]
+    }
+   ]
+  },
+  "Tanker_Melee.Electrical_Melee.Lightning_Rod": {
+   "entities": [
+    {
+     "class": null,
+     "delay": 0.625,
+     "entity": null,
+     "execute": true,
+     "lifetime": 0.0,
+     "pulse_powers": [
+      "Pets.Lightning_Rod_Tanker.Lightning_Rod"
+     ],
+     "redirect": true
+    }
+   ]
+  }
+ },
+ "revision": "homecoming-20251209_7415",
+ "source": "City of Data (cod.uberguy.net), the game's own power and entity records"
+}
