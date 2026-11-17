@@ -7,8 +7,11 @@ def parse(arg):
     """The keys an --keys argument names, in order, without blanks."""
     text = arg or ""
     if text.startswith("@"):
-        with open(text[1:], encoding="utf-8") as f:
-            text = f.read()
+        try:
+            with open(text[1:], encoding="utf-8") as f:
+                text = f.read()
+        except OSError as exc:
+            raise SystemExit(f"--keys {arg}: cannot read the key file ({exc.strerror})")
     return [k.strip() for k in text.replace("\n", ",").split(",") if k.strip()]
 
 

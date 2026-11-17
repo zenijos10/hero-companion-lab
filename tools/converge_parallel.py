@@ -185,6 +185,12 @@ def main():
         keys = context_keys.parse(args.keys)
         if not keys:
             raise SystemExit("--recert requires explicit --keys")
+        # a recert re-converges CERTIFIED movers: a key naming no champion is a
+        # typo or an unread file (an old "@file" became one literal key), never work
+        unknown = [k for k in keys if k not in certified]
+        if unknown:
+            raise SystemExit(f"--recert: {len(unknown)} of {len(keys)} key(s) name no "
+                             f"certified champion, first: {unknown[0]!r}")
     elif args.keys:
         keys = context_keys.parse(args.keys)
         already = [k for k in keys if k in certified]
