@@ -34,6 +34,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 sys.path.insert(0, os.path.join(ROOT, "server"))
 import server as srv  # noqa: E402
+import context_keys  # noqa: E402  (tools/, the script's own folder)
 
 # Armor ATs first (the v30-reshaped region), then the rest. One context per
 # missing archetype, each anchoring mechanically DISTINCT territory —
@@ -111,7 +112,7 @@ def main():
                          "pair with HC_CHAMPIONS_PATH so workers never share "
                          "a write file)")
     ap.add_argument("--keys", default="",
-                    help="comma-separated EXACT context keys — finer-grained "
+                    help="comma-separated EXACT context keys, or @file — finer-grained "
                          "than --only (used by tools/converge_parallel.py to "
                          "partition arbitrarily); overrides --only")
     ap.add_argument("--recert", action="store_true",
@@ -129,7 +130,7 @@ def main():
                          "the normal shard-union skip still gives resume.")
     args = ap.parse_args()
     only = {s.strip() for s in args.only.split(",") if s.strip()}
-    keys = {s.strip() for s in args.keys.split(",") if s.strip()}
+    keys = set(context_keys.parse(args.keys))
     if args.recert and not keys:
         raise SystemExit("--recert requires explicit --keys (never re-certify "
                          "by wildcard)")
