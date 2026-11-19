@@ -143,6 +143,13 @@ out. Rules going forward:
   census: Oil Slick (ignition) and Storm Cell (triggered) STATED, not priced. 515 of 2,865 champion contexts pick one:
   stale canonicals until the recert Joel schedules. The max strike credits a patch only the share of its life inside the 10 s (`strike._in_window`).
   `tools/test_patch_pets.py`.
+- **v59 RECERT, CLOSED BY THE OWNER'S RULING (2026-11-17/18): no full wave** ("Im not running a job for 4 days"). evaluate_first
+  found 1,897 of 2,865 movers (median 1.7%; most is old v44-v56 drift, not v59). ALL 2,865 RE-SCORED at model 59 (canonical,
+  picks unchanged; run on his machine); the 81 builds a stopped 10-worker wave finished were verdicted (78 supersede, 0 illegal,
+  median +63%) and MERGED (PR #37). ⚠ So the stored lab roster sits well BELOW what a full search finds; a rating or champion
+  claim must not call these optimal. Do not re-propose the wave without a new ruling. `--keys @file`
+  (`tools/context_keys.py`) exists because 1,897 keys overran Windows' command line. Open, pre-existing on master:
+  12 SLOT-DRIFT (2,853/2,865 served) and test_champion_slotting check 11 (farm_afk layer gate).
 - **⚠ 26 DAMAGING POWERS ARE CREDITED ZERO DAMAGE (29 before v59) — owner: fix later, tracked** (KNOWN-GAPS.md,
   docs/EFFECTLESS-POWERS.md, `server/effectless.py`, pinned by `tools/test_effectless.py`). They
   need the client (next PATCH-WATCH export). Model change, moves scores. Until fixed: **no M4
