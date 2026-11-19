@@ -32,6 +32,8 @@ import subprocess
 import sys
 import time
 
+import context_keys  # tools/, the script's own folder
+
 sys.stdout.reconfigure(encoding="utf-8")
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PY = sys.executable
@@ -103,7 +105,8 @@ def pending_contexts(certified):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--workers", type=int, default=3)
-    ap.add_argument("--keys", default="", help="explicit context keys (comma-separated)")
+    ap.add_argument("--keys", default="",
+                    help="explicit context keys: comma-separated, or @file (one per line)")
     ap.add_argument("--pending", action="store_true",
                     help="run every NEW_CONTEXTS entry not yet certified")
     ap.add_argument("--max-solves", type=int, default=25000)
@@ -179,11 +182,17 @@ def main():
     certified, srcs = certified_union()
     print("certified sources: " + ", ".join(f"{k} ({v})" for k, v in srcs.items()))
     if args.recert:
-        keys = [s.strip() for s in args.keys.split(",") if s.strip()]
+        keys = context_keys.parse(args.keys)
         if not keys:
             raise SystemExit("--recert requires explicit --keys")
+        # a recert re-converges CERTIFIED movers: a key naming no champion is a
+        # typo or an unread file (an old "@file" became one literal key), never work
+        unknown = [k for k in keys if k not in certified]
+        if unknown:
+            raise SystemExit(f"--recert: {len(unknown)} of {len(keys)} key(s) name no "
+                             f"certified champion, first: {unknown[0]!r}")
     elif args.keys:
-        keys = [s.strip() for s in args.keys.split(",") if s.strip()]
+        keys = context_keys.parse(args.keys)
         already = [k for k in keys if k in certified]
         for k in already:
             print(f"already certified (main or shard), skipping: {k}")
@@ -209,7 +218,9 @@ def main():
         env = dict(os.environ, HC_CHAMPIONS_PATH=shard,
                    HC_SWEEP_WORKERS=str(sweep),
                    HC_SWEEP_BACKEND=args.sweep_backend)
-        cmd = [PY, BUILDOUT, "--keys", ",".join(sl),
+        keyfile = os.path.join(ROOT, f"{args.shard_prefix}_p{i}.keys")
+        context_keys.write(keyfile, sl)     # a long slice overruns Windows' command line
+        cmd = [PY, BUILDOUT, "--keys", "@" + keyfile,
                "--max-solves", str(args.max_solves),
                "--restarts", str(args.restarts)] \
             + (["--recert"] if args.recert else []) \

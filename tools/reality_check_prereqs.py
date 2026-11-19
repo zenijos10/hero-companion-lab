@@ -48,6 +48,15 @@ DISPOSITIONS = os.path.join(ROOT, "tools", "prereq_unmatched_dispositions.json")
 
 def main():
     idx, by_set = ppc.client_index()
+    if not idx:
+        # nothing to compare against: the export is gitignored and lives only on
+        # the machine that made it (a lab clone has none). Still a failure, but
+        # named for what it is, not 467 phantom disagreements.
+        print(f"PREREQ REALITY CHECK — no client export at {ppc.OUT_FULL}\n"
+              "  0 client pool/epic records: nothing can be compared on this machine.\n"
+              "  Run on the machine holding the Bin Crawler export, or pass\n"
+              "  --skip-reality-check to converge_parallel and say why.")
+        sys.exit(1)
     bridge = ppc.set_bridge()
     disp = (json.load(open(DISPOSITIONS, encoding="utf-8"))
             if os.path.exists(DISPOSITIONS) else {})

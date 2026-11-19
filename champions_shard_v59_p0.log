@@ -1,0 +1,360 @@
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+190 of 190 contexts to converge [RECERT]
+[   0.0m] Class_Arachnos_Soldier|Arachnos_Soldiers.Arachnos_Soldier|Training_Gadgets.Crab_Spider_Training|itrial
+      sweep   1 r0 best=209.2 cur=209.2 solves=426/25000
+      sweep   2 r0 best=402.2 cur=402.2 solves=809/25000
+      sweep   3 r0 best=614.2 cur=614.2 solves=1175/25000
+      sweep   4 r0 best=794.3 cur=794.3 solves=1576/25000
+      sweep   5 r0 best=995.9 cur=995.9 solves=1941/25000
+      sweep   6 r0 best=1106.7 cur=1106.7 solves=2308/25000
+      sweep   7 r0 best=1155.0 cur=1155.0 solves=2621/25000
+      sweep   8 r1 best=1155.0 cur=864.8 solves=3002/25000
+      sweep   9 r1 best=1155.0 cur=1075.9 solves=3318/25000
+      sweep  10 r1 best=1168.7 cur=1168.7 solves=3630/25000
+      sweep  11 r2 best=1168.7 cur=1069.3 solves=4013/25000
+      sweep  12 r2 best=1168.7 cur=1126.3 solves=4355/25000
+      sweep  13 r2 best=1168.7 cur=1145.9 solves=4591/25000
+      sweep  14 r2 best=1168.7 cur=1168.7 solves=4591/25000
+      sweep  15 r3 best=1168.7 cur=870.0 solves=5008/25000
+      sweep  16 r3 best=1168.7 cur=1045.3 solves=5354/25000
+      sweep  17 r3 best=1168.7 cur=1092.7 solves=5682/25000
+      sweep  18 r3 best=1168.7 cur=1112.4 solves=6009/25000
+      sweep  19 r3 best=1168.7 cur=1128.9 solves=6370/25000
+      sweep  20 r4 best=1168.7 cur=755.9 solves=6804/25000
+      sweep  21 r4 best=1168.7 cur=1027.2 solves=7162/25000
+      sweep  22 r4 best=1168.7 cur=1129.0 solves=7520/25000
+      sweep  23 r4 best=1168.7 cur=1146.1 solves=7832/25000
+      sweep  24 r5 best=1168.7 cur=597.5 solves=8216/25000
+      sweep  25 r5 best=1168.7 cur=946.0 solves=8918/25000
+      sweep  26 r5 best=1168.7 cur=1049.0 solves=9193/25000
+      sweep  27 r5 best=1168.7 cur=1103.5 solves=9496/25000
+      sweep  28 r5 best=1201.8 cur=1201.8 solves=9764/25000
+      sweep  29 r5 best=1255.3 cur=1255.3 solves=10031/25000
+      sweep  30 r5 best=1273.4 cur=1273.4 solves=10280/25000
+      sweep  31 r5 best=1290.2 cur=1290.2 solves=10531/25000
+      sweep  32 r5 best=1304.0 cur=1304.0 solves=10819/25000
+      sweep  33 r6 best=1304.0 cur=539.8 solves=11199/25000
+      sweep  34 r6 best=1304.0 cur=1290.0 solves=11469/25000
+      sweep  35 r6 best=1329.9 cur=1329.9 solves=11753/25000
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+   -> score 1329.9  solves 11753  certificate: {'sweeps': 35, 'converged': True, 'restarts_done': 6, 'budget_truncated': False, 'claim': 'converged on the SEARCH objective (in-run scoring); canonical_score is the portable number and is NOT claimed optimal — see the one-objective work order', 'canonical_optimality_checked': False, 'primary_converged': True, 'picks_filled': 0, 'node_cap': {'cap': 50000, 'capped_solves_floor': 0, 'final_resolve_delta': 0.0}, 'tie_arbitration': {'winner': 'eps', 'scores': {'eps': 1329.9, 'lex': 1303.13, 'plain': 1303.13}}}
+[ 154.5m] Class_Blaster|Blaster_Ranged.Archery|Blaster_Support.Darkness_Manipulation|itrial
+      sweep   1 r0 best=142.5 cur=142.5 solves=371/25000
+      sweep   2 r0 best=348.0 cur=348.0 solves=688/25000
+      sweep   3 r0 best=588.5 cur=588.5 solves=1035/25000
+      sweep   4 r0 best=748.8 cur=748.8 solves=1379/25000
+      sweep   5 r0 best=882.8 cur=882.8 solves=1726/25000
+      sweep   6 r0 best=912.1 cur=912.1 solves=2041/25000
+      sweep   7 r0 best=1042.9 cur=1042.9 solves=2314/25000
+      sweep   8 r0 best=1155.9 cur=1155.9 solves=2622/25000
+      sweep   9 r0 best=1169.7 cur=1169.7 solves=2900/25000
+      sweep  10 r0 best=1193.5 cur=1193.5 solves=3194/25000
+      sweep  11 r1 best=1193.5 cur=761.8 solves=3522/25000
+      sweep  12 r1 best=1193.5 cur=1057.1 solves=3752/25000
+      sweep  13 r1 best=1193.5 cur=1169.7 solves=3752/25000
+      sweep  14 r1 best=1193.5 cur=1193.5 solves=3752/25000
+      sweep  15 r2 best=1193.5 cur=644.7 solves=4081/25000
+      sweep  16 r2 best=1193.5 cur=1009.9 solves=4339/25000
+      sweep  17 r2 best=1193.5 cur=1193.5 solves=4339/25000
+      sweep  18 r3 best=1193.5 cur=716.3 solves=4596/25000
+      sweep  19 r3 best=1193.5 cur=897.2 solves=4839/25000
+      sweep  20 r3 best=1193.5 cur=957.4 solves=5048/25000
+      sweep  21 r3 best=1193.5 cur=1193.5 solves=5048/25000
+      sweep  22 r4 best=1193.5 cur=826.1 solves=5355/25000
+      sweep  23 r4 best=1193.5 cur=1141.5 solves=5583/25000
+      sweep  24 r4 best=1193.5 cur=1193.5 solves=5583/25000
+      sweep  25 r5 best=1193.5 cur=733.7 solves=5849/25000
+      sweep  26 r5 best=1193.5 cur=1029.9 solves=6015/25000
+      sweep  27 r5 best=1193.5 cur=1193.5 solves=6015/25000
+      sweep  28 r6 best=1193.5 cur=515.5 solves=6288/25000
+      sweep  29 r6 best=1193.5 cur=952.8 solves=6494/25000
+      sweep  30 r6 best=1193.5 cur=1193.5 solves=6494/25000
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+   -> score 1193.5  solves 6494  certificate: {'sweeps': 30, 'converged': True, 'restarts_done': 6, 'budget_truncated': False, 'claim': 'converged on the SEARCH objective (in-run scoring); canonical_score is the portable number and is NOT claimed optimal — see the one-objective work order', 'canonical_optimality_checked': False, 'primary_converged': True, 'picks_filled': 0, 'node_cap': {'cap': 50000, 'capped_solves_floor': 0, 'final_resolve_delta': 0.0}, 'tie_arbitration': {'winner': 'eps', 'scores': {'eps': 1193.47, 'lex': 995.88, 'plain': 1193.47}}}
+[ 235.9m] Class_Blaster|Blaster_Ranged.Archery|Blaster_Support.Temporal_Manipulation|itrial
+      sweep   1 r0 best=93.0 cur=93.0 solves=371/25000
+      sweep   2 r0 best=212.7 cur=212.7 solves=735/25000
+      sweep   3 r0 best=349.1 cur=349.1 solves=1081/25000
+      sweep   4 r0 best=384.6 cur=384.6 solves=1380/25000
+      sweep   5 r0 best=392.9 cur=392.9 solves=1650/25000
+      sweep   6 r0 best=395.4 cur=395.4 solves=1889/25000
+      sweep   7 r0 best=403.5 cur=403.5 solves=2130/25000
+      sweep   8 r1 best=403.5 cur=353.7 solves=2492/25000
+      sweep   9 r1 best=403.5 cur=402.2 solves=2788/25000
+      sweep  10 r1 best=406.1 cur=406.1 solves=3089/25000
+      sweep  11 r2 best=406.1 cur=311.2 solves=3392/25000
+      sweep  12 r2 best=406.1 cur=406.1 solves=3392/25000
+      sweep  13 r3 best=406.1 cur=260.0 solves=3688/25000
+      sweep  14 r3 best=406.1 cur=342.2 solves=3932/25000
+      sweep  15 r3 best=406.1 cur=366.9 solves=4206/25000
+      sweep  16 r3 best=531.3 cur=531.3 solves=4428/25000
+      sweep  17 r3 best=622.6 cur=622.6 solves=4662/25000
+      sweep  18 r3 best=664.0 cur=664.0 solves=4932/25000
+      sweep  19 r3 best=674.7 cur=674.7 solves=5207/25000
+      sweep  20 r3 best=695.9 cur=695.9 solves=5448/25000
+      sweep  21 r4 best=695.9 cur=521.7 solves=5714/25000
+      sweep  22 r4 best=695.9 cur=668.4 solves=5948/25000
+      sweep  23 r4 best=695.9 cur=686.7 solves=6180/25000
+      sweep  24 r4 best=715.4 cur=715.4 solves=6390/25000
+      sweep  25 r4 best=728.3 cur=728.3 solves=6635/25000
+      sweep  26 r5 best=728.3 cur=455.5 solves=6977/25000
+      sweep  27 r5 best=728.3 cur=657.6 solves=7251/25000
+      sweep  28 r5 best=728.3 cur=728.3 solves=7251/25000
+      sweep  29 r6 best=728.3 cur=192.8 solves=7607/25000
+      sweep  30 r6 best=728.3 cur=388.9 solves=7928/25000
+      sweep  31 r6 best=728.3 cur=724.8 solves=8232/25000
+      sweep  32 r6 best=728.3 cur=728.3 solves=8500/25000
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+   -> score 728.3  solves 8500  certificate: {'sweeps': 32, 'converged': True, 'restarts_done': 6, 'budget_truncated': False, 'claim': 'converged on the SEARCH objective (in-run scoring); canonical_score is the portable number and is NOT claimed optimal — see the one-objective work order', 'canonical_optimality_checked': False, 'primary_converged': True, 'picks_filled': 0, 'node_cap': {'cap': 50000, 'capped_solves_floor': 0, 'final_resolve_delta': 0.0}, 'tie_arbitration': {'winner': 'eps', 'scores': {'eps': 728.35, 'lex': 613.96, 'plain': 613.96}}}
+[ 332.5m] Class_Blaster|Blaster_Ranged.Assault_Rifle|Blaster_Support.Radiation_Manipulation|itrial
+      sweep   1 r0 best=134.2 cur=134.2 solves=371/25000
+      sweep   2 r0 best=167.4 cur=167.4 solves=705/25000
+      sweep   3 r0 best=204.9 cur=204.9 solves=1021/25000
+      sweep   4 r0 best=266.5 cur=266.5 solves=1336/25000
+      sweep   5 r0 best=331.1 cur=331.1 solves=1650/25000
+      sweep   6 r0 best=387.2 cur=387.2 solves=1966/25000
+      sweep   7 r0 best=438.4 cur=438.4 solves=2282/25000
+      sweep   8 r0 best=462.7 cur=462.7 solves=2613/25000
+      sweep   9 r1 best=462.7 cur=309.8 solves=2973/25000
+      sweep  10 r1 best=462.7 cur=418.8 solves=3261/25000
+      sweep  11 r1 best=462.7 cur=436.3 solves=3550/25000
+      sweep  12 r1 best=462.7 cur=458.0 solves=3771/25000
+      sweep  13 r1 best=463.3 cur=463.3 solves=3958/25000
+      sweep  14 r2 best=463.3 cur=371.1 solves=4299/25000
+      sweep  15 r2 best=463.3 cur=420.0 solves=4519/25000
+      sweep  16 r2 best=463.3 cur=463.3 solves=4519/25000
+      sweep  17 r3 best=463.3 cur=358.1 solves=4769/25000
+      sweep  18 r3 best=463.3 cur=421.2 solves=4964/25000
+      sweep  19 r3 best=463.3 cur=463.3 solves=4964/25000
+      sweep  20 r4 best=463.3 cur=244.9 solves=5181/25000
+      sweep  21 r4 best=463.3 cur=373.4 solves=5342/25000
+      sweep  22 r4 best=463.3 cur=463.3 solves=5342/25000
+      sweep  23 r5 best=463.3 cur=382.8 solves=5625/25000
+      sweep  24 r5 best=463.3 cur=400.1 solves=5915/25000
+      sweep  25 r5 best=463.3 cur=419.6 solves=6170/25000
+      sweep  26 r5 best=463.3 cur=430.0 solves=6437/25000
+      sweep  27 r5 best=463.3 cur=440.2 solves=6740/25000
+      sweep  28 r5 best=463.3 cur=455.4 solves=7032/25000
+      sweep  29 r6 best=463.3 cur=172.4 solves=7354/25000
+      sweep  30 r6 best=463.3 cur=325.1 solves=7594/25000
+      sweep  31 r6 best=463.3 cur=455.4 solves=7594/25000
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+   -> score 463.3  solves 7594  certificate: {'sweeps': 31, 'converged': True, 'restarts_done': 6, 'budget_truncated': False, 'claim': 'converged on the SEARCH objective (in-run scoring); canonical_score is the portable number and is NOT claimed optimal — see the one-objective work order', 'canonical_optimality_checked': False, 'primary_converged': True, 'picks_filled': 0, 'node_cap': {'cap': 50000, 'capped_solves_floor': 0, 'final_resolve_delta': 0.0}, 'tie_arbitration': {'winner': 'eps', 'scores': {'eps': 463.29, 'lex': 430.98, 'plain': 420.9}}}
+[ 396.9m] Class_Blaster|Blaster_Ranged.Beam_Rifle|Blaster_Support.Temporal_Manipulation|itrial
+      sweep   1 r0 best=143.0 cur=143.0 solves=371/25000
+      sweep   2 r0 best=224.6 cur=224.6 solves=735/25000
+      sweep   3 r0 best=288.0 cur=288.0 solves=1098/25000
+      sweep   4 r0 best=333.9 cur=333.9 solves=1444/25000
+      sweep   5 r0 best=429.6 cur=429.6 solves=1758/25000
+      sweep   6 r0 best=465.8 cur=465.8 solves=2074/25000
+      sweep   7 r0 best=474.6 cur=474.6 solves=2342/25000
+      sweep   8 r1 best=474.6 cur=294.8 solves=2659/25000
+      sweep   9 r1 best=474.6 cur=458.7 solves=2906/25000
+      sweep  10 r1 best=474.6 cur=474.6 solves=2906/25000
+      sweep  11 r2 best=474.6 cur=352.3 solves=3183/25000
+      sweep  12 r2 best=477.2 cur=477.2 solves=3405/25000
+      sweep  13 r2 best=483.0 cur=483.0 solves=3663/25000
+      sweep  14 r2 best=489.2 cur=489.2 solves=3919/25000
+      sweep  15 r2 best=495.1 cur=495.1 solves=4141/25000
+      sweep  16 r2 best=503.9 cur=503.9 solves=4365/25000
+      sweep  17 r3 best=503.9 cur=249.7 solves=4620/25000
+      sweep  18 r3 best=503.9 cur=336.3 solves=4894/25000
+      sweep  19 r3 best=503.9 cur=384.9 solves=5128/25000
+      sweep  20 r3 best=503.9 cur=448.6 solves=5320/25000
+      sweep  21 r3 best=503.9 cur=503.9 solves=5320/25000
+      sweep  22 r4 best=503.9 cur=344.5 solves=5552/25000
+      sweep  23 r4 best=503.9 cur=492.1 solves=5703/25000
+      sweep  24 r4 best=503.9 cur=495.1 solves=5703/25000
+      sweep  25 r4 best=503.9 cur=503.9 solves=5703/25000
+      sweep  26 r5 best=503.9 cur=334.0 solves=5923/25000
+      sweep  27 r5 best=503.9 cur=431.6 solves=6118/25000
+      sweep  28 r5 best=503.9 cur=503.9 solves=6118/25000
+      sweep  29 r6 best=503.9 cur=293.1 solves=6353/25000
+      sweep  30 r6 best=503.9 cur=377.6 solves=6569/25000
+      sweep  31 r6 best=503.9 cur=471.4 solves=6764/25000
+      sweep  32 r6 best=503.9 cur=489.9 solves=6985/25000
+      sweep  33 r6 best=503.9 cur=503.5 solves=7172/25000
+      sweep  34 r6 best=506.2 cur=506.2 solves=7407/25000
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+   -> score 506.2  solves 7407  certificate: {'sweeps': 34, 'converged': True, 'restarts_done': 6, 'budget_truncated': False, 'claim': 'converged on the SEARCH objective (in-run scoring); canonical_score is the portable number and is NOT claimed optimal — see the one-objective work order', 'canonical_optimality_checked': False, 'primary_converged': True, 'picks_filled': 0, 'node_cap': {'cap': 50000, 'capped_solves_floor': 0, 'final_resolve_delta': 0.0}, 'tie_arbitration': {'winner': 'eps', 'scores': {'eps': 506.22, 'lex': 495.07, 'plain': 500.98}}}
+[ 456.9m] Class_Blaster|Blaster_Ranged.Dark_Blast|Blaster_Support.Ninja_Training|itrial
+      sweep   1 r0 best=134.0 cur=134.0 solves=371/25000
+      sweep   2 r0 best=204.1 cur=204.1 solves=735/25000
+      sweep   3 r0 best=266.9 cur=266.9 solves=1081/25000
+      sweep   4 r0 best=302.9 cur=302.9 solves=1428/25000
+      sweep   5 r0 best=445.4 cur=445.4 solves=1727/25000
+      sweep   6 r0 best=539.1 cur=539.1 solves=1996/25000
+      sweep   7 r0 best=580.8 cur=580.8 solves=2267/25000
+      sweep   8 r0 best=592.4 cur=592.4 solves=2520/25000
+      sweep   9 r1 best=592.4 cur=372.5 solves=2785/25000
+      sweep  10 r1 best=592.4 cur=561.0 solves=2994/25000
+      sweep  11 r1 best=592.4 cur=592.4 solves=2994/25000
+      sweep  12 r2 best=592.4 cur=418.0 solves=3232/25000
+      sweep  13 r2 best=592.4 cur=592.4 solves=3232/25000
+      sweep  14 r3 best=592.4 cur=338.8 solves=3566/25000
+      sweep  15 r3 best=592.4 cur=425.4 solves=3834/25000
+      sweep  16 r3 best=592.4 cur=498.5 solves=4074/25000
+      sweep  17 r3 best=592.4 cur=592.4 solves=4074/25000
+      sweep  18 r4 best=592.4 cur=525.5 solves=4356/25000
+      sweep  19 r4 best=592.4 cur=592.4 solves=4356/25000
+      sweep  20 r5 best=592.4 cur=282.9 solves=4643/25000
+      sweep  21 r5 best=592.4 cur=421.5 solves=4891/25000
+      sweep  22 r5 best=710.0 cur=710.0 solves=5124/25000
+      sweep  23 r5 best=843.9 cur=843.9 solves=5359/25000
+      sweep  24 r5 best=854.6 cur=854.6 solves=5621/25000
+      sweep  25 r6 best=854.6 cur=301.5 solves=5948/25000
+      sweep  26 r6 best=854.6 cur=641.2 solves=6206/25000
+      sweep  27 r6 best=854.6 cur=854.6 solves=6206/25000
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+   -> score 854.7  solves 6206  certificate: {'sweeps': 27, 'converged': True, 'restarts_done': 6, 'budget_truncated': False, 'claim': 'converged on the SEARCH objective (in-run scoring); canonical_score is the portable number and is NOT claimed optimal — see the one-objective work order', 'canonical_optimality_checked': False, 'primary_converged': True, 'picks_filled': 0, 'node_cap': {'cap': 50000, 'capped_solves_floor': 0, 'final_resolve_delta': 0.08}, 'tie_arbitration': {'winner': 'lex', 'scores': {'eps': 854.61, 'lex': 854.69, 'plain': 582.28}}}
+[ 548.3m] Class_Blaster|Blaster_Ranged.Dual_Pistols|Blaster_Support.Fire_Manipulation|itrial
+      sweep   1 r0 best=171.6 cur=171.6 solves=371/25000
+      sweep   2 r0 best=268.9 cur=268.9 solves=718/25000
+      sweep   3 r0 best=356.1 cur=356.1 solves=1065/25000
+      sweep   4 r0 best=432.0 cur=432.0 solves=1380/25000
+      sweep   5 r0 best=500.1 cur=500.1 solves=1694/25000
+      sweep   6 r0 best=568.6 cur=568.6 solves=2010/25000
+      sweep   7 r0 best=592.3 cur=592.3 solves=2321/25000
+      sweep   8 r0 best=643.4 cur=643.4 solves=2648/25000
+      sweep   9 r1 best=643.4 cur=437.5 solves=2975/25000
+      sweep  10 r1 best=643.4 cur=552.0 solves=3298/25000
+      sweep  11 r1 best=643.4 cur=606.3 solves=3572/25000
+      sweep  12 r1 best=643.4 cur=643.4 solves=3572/25000
+      sweep  13 r2 best=643.4 cur=441.2 solves=3929/25000
+      sweep  14 r2 best=643.4 cur=608.8 solves=4232/25000
+      sweep  15 r2 best=643.4 cur=643.4 solves=4232/25000
+      sweep  16 r3 best=643.4 cur=489.8 solves=4557/25000
+      sweep  17 r3 best=643.4 cur=562.4 solves=4796/25000
+      sweep  18 r3 best=643.4 cur=616.7 solves=5037/25000
+      sweep  19 r3 best=643.4 cur=624.0 solves=5283/25000
+      sweep  20 r3 best=643.4 cur=632.4 solves=5529/25000
+      sweep  21 r3 best=653.7 cur=653.7 solves=5740/25000
+      sweep  22 r4 best=653.7 cur=419.3 solves=6036/25000
+      sweep  23 r4 best=653.7 cur=621.5 solves=6266/25000
+      sweep  24 r4 best=653.7 cur=653.7 solves=6266/25000
+      sweep  25 r5 best=653.7 cur=396.8 solves=6525/25000
+      sweep  26 r5 best=653.7 cur=546.4 solves=6785/25000
+      sweep  27 r5 best=653.7 cur=609.5 solves=7044/25000
+      sweep  28 r5 best=653.7 cur=617.8 solves=7272/25000
+      sweep  29 r5 best=653.7 cur=653.7 solves=7272/25000
+      sweep  30 r6 best=653.7 cur=389.6 solves=7550/25000
+      sweep  31 r6 best=653.7 cur=541.3 solves=7770/25000
+      sweep  32 r6 best=653.7 cur=632.4 solves=7770/25000
+      sweep  33 r6 best=653.7 cur=653.7 solves=7770/25000
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+   -> score 653.7  solves 7770  certificate: {'sweeps': 33, 'converged': True, 'restarts_done': 6, 'budget_truncated': False, 'claim': 'converged on the SEARCH objective (in-run scoring); canonical_score is the portable number and is NOT claimed optimal — see the one-objective work order', 'canonical_optimality_checked': False, 'primary_converged': True, 'picks_filled': 0, 'node_cap': {'cap': 50000, 'capped_solves_floor': 0, 'final_resolve_delta': 0.0}, 'tie_arbitration': {'winner': 'eps', 'scores': {'eps': 653.66, 'lex': 592.78, 'plain': 653.66}}}
+[ 661.4m] Class_Blaster|Blaster_Ranged.Electrical_Blast|Blaster_Support.Earth_Manipulation|itrial
+      sweep   1 r0 best=97.4 cur=97.4 solves=371/25000
+      sweep   2 r0 best=158.2 cur=158.2 solves=735/25000
+      sweep   3 r0 best=203.9 cur=203.9 solves=1066/25000
+      sweep   4 r0 best=229.5 cur=229.5 solves=1384/25000
+      sweep   5 r0 best=263.4 cur=263.4 solves=1718/25000
+      sweep   6 r0 best=270.9 cur=270.9 solves=2081/25000
+      sweep   7 r1 best=270.9 cur=228.7 solves=2430/25000
+      sweep   8 r1 best=270.9 cur=270.9 solves=2430/25000
+      sweep   9 r2 best=270.9 cur=134.6 solves=2773/25000
+      sweep  10 r2 best=270.9 cur=196.9 solves=3111/25000
+      sweep  11 r2 best=270.9 cur=259.3 solves=3434/25000
+      sweep  12 r3 best=270.9 cur=167.8 solves=3777/25000
+      sweep  13 r3 best=270.9 cur=225.8 solves=4032/25000
+      sweep  14 r3 best=270.9 cur=259.3 solves=4032/25000
+      sweep  15 r4 best=270.9 cur=164.9 solves=4393/25000
+      sweep  16 r4 best=270.9 cur=244.4 solves=4683/25000
+      sweep  17 r4 best=270.9 cur=259.3 solves=4683/25000
+      sweep  18 r5 best=270.9 cur=203.5 solves=4989/25000
+      sweep  19 r5 best=270.9 cur=251.0 solves=5266/25000
+      sweep  20 r5 best=270.9 cur=270.6 solves=5542/25000
+      sweep  21 r5 best=312.0 cur=312.0 solves=5834/25000
+      sweep  22 r5 best=334.4 cur=334.4 solves=6126/25000
+      sweep  23 r5 best=342.4 cur=342.4 solves=6416/25000
+      sweep  24 r5 best=345.5 cur=345.5 solves=6741/25000
+      sweep  25 r6 best=345.5 cur=257.4 solves=7101/25000
+      sweep  26 r6 best=345.5 cur=296.4 solves=7391/25000
+      sweep  27 r6 best=345.5 cur=345.5 solves=7391/25000
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at C:\Users\nowak\.local\bin\claude.EXE
+   -> score 345.5  solves 7391  certificate: {'sweeps': 27, 'converged': True, 'restarts_done': 6, 'budget_truncated': False, 'claim': 'converged on the SEARCH objective (in-run scoring); canonical_score is the portable number and is NOT claimed optimal — see the one-objective work order', 'canonical_optimality_checked': False, 'primary_converged': True, 'picks_filled': 0, 'node_cap': {'cap': 50000, 'capped_solves_floor': 0, 'final_resolve_delta': 0.0}, 'tie_arbitration': {'winner': 'eps', 'scores': {'eps': 345.47, 'lex': 322.23, 'plain': 322.23}}}
+[ 723.0m] Class_Blaster|Blaster_Ranged.Electrical_Blast|Blaster_Support.Radiation_Manipulation|itrial
+      sweep   1 r0 best=91.9 cur=91.9 solves=371/25000
+      sweep   2 r0 best=144.7 cur=144.7 solves=735/25000
+      sweep   3 r0 best=197.2 cur=197.2 solves=1098/25000
+      sweep   4 r0 best=241.3 cur=241.3 solves=1476/25000
+      sweep   5 r0 best=287.2 cur=287.2 solves=1805/25000
+      sweep   6 r0 best=316.1 cur=316.1 solves=2122/25000
+      sweep   7 r0 best=342.8 cur=342.8 solves=2408/25000
+      sweep   8 r0 best=360.5 cur=360.5 solves=2666/25000
+      sweep   9 r1 best=360.5 cur=265.9 solves=2987/25000
+      sweep  10 r1 best=360.5 cur=342.3 solves=3215/25000
+      sweep  11 r1 best=360.5 cur=360.5 solves=3215/25000
+      sweep  12 r2 best=360.5 cur=160.4 solves=3520/25000
+      sweep  13 r2 best=360.5 cur=297.9 solves=3748/25000
+      sweep  14 r2 best=360.5 cur=313.4 solves=3987/25000
+      sweep  15 r2 best=360.5 cur=349.4 solves=4228/25000
+      sweep  16 r2 best=382.7 cur=382.7 solves=4520/25000
+      sweep  17 r2 best=456.5 cur=456.5 solves=4812/25000
+      sweep  18 r3 best=456.5 cur=191.8 solves=5108/25000

@@ -1,0 +1,171 @@
+Loading game data...
+  15 playable archetypes, 3659 powersets of powers, 227 enhancement sets.
+  AI: no API token — using slow `claude -p` CLI at /opt/node22/bin/claude
+verdict gate under model 59 (fresh-process canonical vs canonical, EPS 0.05)
+
+  SUPERSEDE  incumbent     824.7 vs recert     989.4 (Δ   +164.7)  Arachnos_Soldier/Crab_Spider_Training
+      run: 35 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     515.7 vs recert     977.6 (Δ   +461.9)  Archery/Darkness_Manipulation
+      run: 30 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     295.9 vs recert     633.1 (Δ   +337.2)  Archery/Temporal_Manipulation
+      run: 32 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     282.6 vs recert     444.9 (Δ   +162.3)  Assault_Rifle/Radiation_Manipulation
+      run: 31 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     309.4 vs recert     466.0 (Δ   +156.7)  Beam_Rifle/Temporal_Manipulation
+      run: 34 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     267.7 vs recert     510.3 (Δ   +242.6)  Dark_Blast/Ninja_Training
+      run: 27 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     393.3 vs recert     456.1 (Δ    +62.8)  Dual_Pistols/Fire_Manipulation
+      run: 33 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     246.7 vs recert     358.8 (Δ   +112.1)  Electrical_Blast/Earth_Manipulation
+      run: 27 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     464.6 vs recert    1371.5 (Δ   +906.9)  Bane_Spider_Soldier/Bane_Spider_Training
+      run: 40 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     271.5 vs recert     437.6 (Δ   +166.1)  Archery/Earth_Manipulation
+      run: 26 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     485.6 vs recert     708.9 (Δ   +223.3)  Assault_Rifle/Darkness_Manipulation
+      run: 32 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     263.9 vs recert     404.0 (Δ   +140.1)  Assault_Rifle/Tactical_Arrow
+      run: 37 sweeps · solves n/a (no log) · 6 restarts · converged
+  KEEP       incumbent     659.9 vs recert     651.9 (Δ     -8.0)  Dark_Blast/Darkness_Manipulation
+      run: 35 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     284.0 vs recert     617.0 (Δ   +333.0)  Dark_Blast/Plant_Manipulation
+      run: 30 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     989.6 vs recert    1396.1 (Δ   +406.6)  Dual_Pistols/Gadgets
+      run: 29 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     489.1 vs recert    1332.6 (Δ   +843.5)  Bane_Spider_Soldier/Crab_Spider_Training
+      run: 32 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     242.2 vs recert     369.1 (Δ   +127.0)  Archery/Electricity_Manipulation
+      run: 33 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     293.5 vs recert     352.7 (Δ    +59.1)  Assault_Rifle/Earth_Manipulation
+      run: 24 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     314.0 vs recert     509.7 (Δ   +195.7)  Beam_Rifle/Electricity_Manipulation
+      run: 35 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     286.6 vs recert     641.6 (Δ   +355.0)  Dark_Blast/Earth_Manipulation
+      run: 35 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     330.1 vs recert     939.5 (Δ   +609.5)  Dark_Blast/Radiation_Manipulation
+      run: 35 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     281.0 vs recert     541.5 (Δ   +260.5)  Dual_Pistols/Ice_Manipulation
+      run: 27 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     201.4 vs recert     231.6 (Δ    +30.3)  Electrical_Blast/Energy_Manipulation
+      run: 30 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     757.7 vs recert    1378.2 (Δ   +620.5)  Crab_Spider_Soldier/Bane_Spider_Training
+      run: 35 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     203.8 vs recert     348.3 (Δ   +144.5)  Archery/Energy_Manipulation
+      run: 33 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     254.4 vs recert     288.1 (Δ    +33.7)  Assault_Rifle/Electricity_Manipulation
+      run: 26 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     259.2 vs recert     361.7 (Δ   +102.5)  Beam_Rifle/Energy_Manipulation
+      run: 32 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     272.8 vs recert     523.2 (Δ   +250.5)  Dark_Blast/Electricity_Manipulation
+      run: 32 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     375.8 vs recert     604.0 (Δ   +228.1)  Dark_Blast/Sonic_Manipulation
+      run: 30 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     363.7 vs recert     394.9 (Δ    +31.2)  Dual_Pistols/Martial_Manipulation
+      run: 27 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     299.8 vs recert     390.9 (Δ    +91.1)  Electrical_Blast/Fire_Manipulation
+      run: 34 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     511.1 vs recert     530.5 (Δ    +19.4)  Fortunata_Training/Teamwork
+      run: 33 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     266.4 vs recert     368.3 (Δ   +101.8)  Archery/Martial_Manipulation
+      run: 33 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     239.7 vs recert     281.5 (Δ    +41.8)  Assault_Rifle/Energy_Manipulation
+      run: 29 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     258.4 vs recert     498.3 (Δ   +239.9)  Beam_Rifle/Ice_Manipulation
+      run: 32 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     271.5 vs recert     382.7 (Δ   +111.2)  Dark_Blast/Energy_Manipulation
+      run: 32 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     415.6 vs recert    1125.0 (Δ   +709.4)  Dark_Blast/Tactical_Arrow
+      run: 30 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     401.2 vs recert     507.8 (Δ   +106.7)  Dual_Pistols/Mental_Manipulation
+      run: 28 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     615.6 vs recert    1119.0 (Δ   +503.3)  Electrical_Blast/Gadgets
+      run: 28 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     488.0 vs recert    1178.8 (Δ   +690.7)  Night_Widow_Training/Fortunata_Teamwork
+      run: 34 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     343.4 vs recert     485.7 (Δ   +142.3)  Archery/Mental_Manipulation
+      run: 30 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     311.1 vs recert     489.5 (Δ   +178.4)  Assault_Rifle/Fire_Manipulation
+      run: 34 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     364.6 vs recert     491.0 (Δ   +126.4)  Beam_Rifle/Martial_Manipulation
+      run: 34 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     232.6 vs recert     704.2 (Δ   +471.6)  Dark_Blast/Fire_Manipulation
+      run: 31 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     323.9 vs recert     432.5 (Δ   +108.6)  Dark_Blast/Temporal_Manipulation
+      run: 28 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     423.8 vs recert     560.4 (Δ   +136.5)  Dual_Pistols/Ninja_Training
+      run: 31 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     596.7 vs recert     981.7 (Δ   +385.0)  Night_Widow_Training/Teamwork
+      run: 36 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     229.5 vs recert     406.4 (Δ   +177.0)  Archery/Ninja_Training
+      run: 29 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     945.2 vs recert    1399.4 (Δ   +454.2)  Assault_Rifle/Gadgets
+      run: 28 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     271.5 vs recert     531.7 (Δ   +260.2)  Beam_Rifle/Mental_Manipulation
+      run: 30 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     962.0 vs recert    2374.2 (Δ  +1412.2)  Dark_Blast/Gadgets
+      run: 32 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     483.8 vs recert     766.8 (Δ   +283.0)  Dual_Pistols/Darkness_Manipulation
+      run: 30 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     304.4 vs recert     574.3 (Δ   +269.9)  Dual_Pistols/Plant_Manipulation
+      run: 29 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     272.3 vs recert     384.6 (Δ   +112.3)  Electrical_Blast/Martial_Manipulation
+      run: 30 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     647.2 vs recert     881.8 (Δ   +234.6)  Widow_Training/Fortunata_Teamwork
+      run: 31 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     326.9 vs recert     717.0 (Δ   +390.1)  Archery/Radiation_Manipulation
+      run: 36 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     244.9 vs recert     420.4 (Δ   +175.4)  Assault_Rifle/Ice_Manipulation
+      run: 23 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     189.7 vs recert     577.6 (Δ   +387.8)  Beam_Rifle/Plant_Manipulation
+      run: 28 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     253.9 vs recert     622.6 (Δ   +368.7)  Dark_Blast/Ice_Manipulation
+      run: 32 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     305.0 vs recert     361.8 (Δ    +56.8)  Dual_Pistols/Earth_Manipulation
+      run: 30 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     335.7 vs recert     760.7 (Δ   +425.0)  Dual_Pistols/Radiation_Manipulation
+      run: 30 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     227.4 vs recert     475.0 (Δ   +247.5)  Electrical_Blast/Mental_Manipulation
+      run: 28 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     173.7 vs recert     253.3 (Δ    +79.6)  Energy_Blast/Energy_Manipulation
+      run: 31 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     181.1 vs recert     517.2 (Δ   +336.0)  Energy_Blast/Tactical_Arrow
+      run: 31 sweeps · solves n/a (no log) · 6 restarts · converged
+  KEEP       incumbent     585.8 vs recert     336.6 (Δ   -249.2)  Widow_Training/Teamwork
+      run: 30 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     403.2 vs recert     502.3 (Δ    +99.2)  Archery/Sonic_Manipulation
+      run: 29 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     319.7 vs recert     409.4 (Δ    +89.8)  Assault_Rifle/Mental_Manipulation
+      run: 32 sweeps · solves n/a (no log) · 6 restarts · converged
+  KEEP       incumbent     491.9 vs recert     455.5 (Δ    -36.4)  Beam_Rifle/Sonic_Manipulation
+      run: 25 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     356.0 vs recert     650.2 (Δ   +294.3)  Dark_Blast/Martial_Manipulation
+      run: 33 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     304.8 vs recert     460.4 (Δ   +155.6)  Dual_Pistols/Electricity_Manipulation
+      run: 27 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     361.8 vs recert     528.3 (Δ   +166.5)  Dual_Pistols/Tactical_Arrow
+      run: 27 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     213.3 vs recert     404.0 (Δ   +190.7)  Electrical_Blast/Ninja_Training
+      run: 31 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     267.9 vs recert     622.6 (Δ   +354.7)  Energy_Blast/Fire_Manipulation
+      run: 32 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     284.2 vs recert     527.8 (Δ   +243.7)  Energy_Blast/Temporal_Manipulation
+      run: 36 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     603.0 vs recert     983.1 (Δ   +380.1)  Widow_Training/Widow_Teamwork
+      run: 27 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     283.5 vs recert     494.3 (Δ   +210.8)  Archery/Tactical_Arrow
+      run: 32 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     281.1 vs recert     449.8 (Δ   +168.7)  Assault_Rifle/Ninja_Training
+      run: 29 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     257.1 vs recert     654.4 (Δ   +397.3)  Beam_Rifle/Tactical_Arrow
+      run: 34 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     284.0 vs recert     543.7 (Δ   +259.7)  Dark_Blast/Mental_Manipulation
+      run: 36 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     246.9 vs recert     411.0 (Δ   +164.1)  Dual_Pistols/Energy_Manipulation
+      run: 30 sweeps · solves n/a (no log) · 6 restarts · converged
+  SUPERSEDE  incumbent     359.0 vs recert     651.1 (Δ   +292.1)  Electrical_Blast/Darkness_Manipulation
+      run: 31 sweeps · solves n/a (no log) · 6 restarts · converged
+
+=== VERDICTS: 78 supersede, 3 keep, of 81 ===
+written: /home/user/hero-companion-lab/recert_verdicts.json  (2026-11-17 20:26)
+TABLE GOES TO JOEL BEFORE champions.json COMMITS (standing order).

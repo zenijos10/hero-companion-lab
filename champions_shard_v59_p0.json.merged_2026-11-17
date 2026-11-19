@@ -1,0 +1,442 @@
+{
+ "Class_Arachnos_Soldier|Arachnos_Soldiers.Arachnos_Soldier|Training_Gadgets.Crab_Spider_Training|itrial": {
+  "picks": [
+   "Arachnos_Soldiers.Arachnos_Soldier.Frag_Grenade",
+   "Arachnos_Soldiers.Arachnos_Soldier.Pummel",
+   "Arachnos_Soldiers.Arachnos_Soldier.Venom_Grenade",
+   "Arachnos_Soldiers.Arachnos_Soldier.WS_Wide_Area_Web_Grenade",
+   "Epic.VEAT_Soul_Mastery.Darkest_Night",
+   "Epic.VEAT_Soul_Mastery.Gloom",
+   "Inherent.Fitness.Health",
+   "Inherent.Fitness.Stamina",
+   "Pool.Fighting.Cross_Punch",
+   "Pool.Fighting.Tough",
+   "Pool.Fighting.Weave",
+   "Pool.Force_of_Will.Project_Will",
+   "Pool.Force_of_Will.Wall_of_Force",
+   "Pool.Force_of_Will.Weaken_Resolve",
+   "Pool.Leadership.Defense",
+   "Pool.Leadership.Tactics",
+   "Pool.Leadership.Vengeance",
+   "Pool.Speed.Hasten",
+   "Pool.Speed.Super_Speed",
+   "Training_Gadgets.Crab_Spider_Training.Crab_Spider_Armor",
+   "Training_Gadgets.Crab_Spider_Training.Fortification",
+   "Training_Gadgets.Training_and_Gadgets.Combat_Training:_Defensive",
+   "Training_Gadgets.Training_and_Gadgets.Mental_Training",
+   "Training_Gadgets.Training_and_Gadgets.Tactical_Training:_Assault",
+   "Training_Gadgets.Training_and_Gadgets.Tactical_Training:_Maneuvers",
+   "Training_Gadgets.Training_and_Gadgets.Wolf_Spider_Armor"
+  ],
+  "score": 1329.895875,
+  "model_version": 59,
+  "certificate": {
+   "sweeps": 35,
+   "converged": true,
+   "restarts_done": 6,
+   "budget_truncated": false,
+   "claim": "converged on the SEARCH objective (in-run scoring); canonical_score is the portable number and is NOT claimed optimal \u2014 see the one-objective work order",
+   "canonical_optimality_checked": false,
+   "primary_converged": true,
+   "picks_filled": 0,
+   "node_cap": {
+    "cap": 50000,
+    "capped_solves_floor": 0,
+    "final_resolve_delta": 0.0
+   },
+   "tie_arbitration": {
+    "winner": "eps",
+    "scores": {
+     "eps": 1329.9,
+     "lex": 1303.13,
+     "plain": 1303.13
+    }
+   }
+  }
+ },
+ "Class_Blaster|Blaster_Ranged.Archery|Blaster_Support.Darkness_Manipulation|itrial": {
+  "picks": [
+   "Blaster_Ranged.Archery.Aim",
+   "Blaster_Ranged.Archery.Aimed_Shot",
+   "Blaster_Ranged.Archery.Fistful_of_Arrows",
+   "Blaster_Ranged.Archery.Snap_Shot",
+   "Blaster_Support.Darkness_Manipulation.Death_Shroud",
+   "Blaster_Support.Darkness_Manipulation.Penumbral_Grasp",
+   "Blaster_Support.Darkness_Manipulation.Shadow_Maul",
+   "Blaster_Support.Darkness_Manipulation.Soul_Drain",
+   "Blaster_Support.Darkness_Manipulation.Touch_of_Fear",
+   "Epic.Electrical_Mastery.Charged_Armor",
+   "Epic.Electrical_Mastery.EM_Pulse",
+   "Epic.Electrical_Mastery.Static_Discharge",
+   "Epic.Electrical_Mastery.Surge_of_Power",
+   "Inherent.Fitness.Health",
+   "Inherent.Fitness.Stamina",
+   "Pool.Fighting.Cross_Punch",
+   "Pool.Fighting.Tough",
+   "Pool.Fighting.Weave",
+   "Pool.Invisibility.Invisibility",
+   "Pool.Invisibility.Misdirection",
+   "Pool.Invisibility.Stealth",
+   "Pool.Leadership.Defense",
+   "Pool.Leadership.Tactics",
+   "Pool.Leadership.Vengeance",
+   "Pool.Speed.Hasten",
+   "Pool.Speed.Super_Speed"
+  ],
+  "score": 1193.471,
+  "model_version": 59,
+  "certificate": {
+   "sweeps": 30,
+   "converged": true,
+   "restarts_done": 6,
+   "budget_truncated": false,
+   "claim": "converged on the SEARCH objective (in-run scoring); canonical_score is the portable number and is NOT claimed optimal \u2014 see the one-objective work order",
+   "canonical_optimality_checked": false,
+   "primary_converged": true,
+   "picks_filled": 0,
+   "node_cap": {
+    "cap": 50000,
+    "capped_solves_floor": 0,
+    "final_resolve_delta": 0.0
+   },
+   "tie_arbitration": {
+    "winner": "eps",
+    "scores": {
+     "eps": 1193.47,
+     "lex": 995.88,
+     "plain": 1193.47
+    }
+   }
+  }
+ },
+ "Class_Blaster|Blaster_Ranged.Archery|Blaster_Support.Temporal_Manipulation|itrial": {
+  "picks": [
+   "Blaster_Ranged.Archery.Aim",
+   "Blaster_Ranged.Archery.Aimed_Shot",
+   "Blaster_Ranged.Archery.Explosive_Arrow",
+   "Blaster_Ranged.Archery.Fistful_of_Arrows",
+   "Blaster_Ranged.Archery.Rain_of_Arrows",
+   "Blaster_Support.Temporal_Manipulation.Chronological_Selection",
+   "Blaster_Support.Temporal_Manipulation.End_of_Time",
+   "Blaster_Support.Temporal_Manipulation.Temporal_Healing",
+   "Blaster_Support.Temporal_Manipulation.Time_Lord",
+   "Blaster_Support.Temporal_Manipulation.Time_Wall",
+   "Epic.Electrical_Mastery.Charged_Armor",
+   "Epic.Electrical_Mastery.Static_Discharge",
+   "Inherent.Fitness.Health",
+   "Inherent.Fitness.Stamina",
+   "Pool.Fighting.Cross_Punch",
+   "Pool.Fighting.Tough",
+   "Pool.Fighting.Weave",
+   "Pool.Flight.Combat_Flight",
+   "Pool.Flight.Evasive_Maneuvers",
+   "Pool.Flight.Fly",
+   "Pool.Leadership.Assault",
+   "Pool.Leadership.Defense",
+   "Pool.Leadership.Vengeance",
+   "Pool.Leadership.Victory_Rush",
+   "Pool.Speed.Hasten",
+   "Pool.Speed.Super_Speed"
+  ],
+  "score": 728.346,
+  "model_version": 59,
+  "certificate": {
+   "sweeps": 32,
+   "converged": true,
+   "restarts_done": 6,
+   "budget_truncated": false,
+   "claim": "converged on the SEARCH objective (in-run scoring); canonical_score is the portable number and is NOT claimed optimal \u2014 see the one-objective work order",
+   "canonical_optimality_checked": false,
+   "primary_converged": true,
+   "picks_filled": 0,
+   "node_cap": {
+    "cap": 50000,
+    "capped_solves_floor": 0,
+    "final_resolve_delta": 0.0
+   },
+   "tie_arbitration": {
+    "winner": "eps",
+    "scores": {
+     "eps": 728.35,
+     "lex": 613.96,
+     "plain": 613.96
+    }
+   }
+  }
+ },
+ "Class_Blaster|Blaster_Ranged.Assault_Rifle|Blaster_Support.Radiation_Manipulation|itrial": {
+  "picks": [
+   "Blaster_Ranged.Assault_Rifle.Buckshot",
+   "Blaster_Ranged.Assault_Rifle.Burst",
+   "Blaster_Ranged.Assault_Rifle.Flamethrower",
+   "Blaster_Ranged.Assault_Rifle.Full_Auto",
+   "Blaster_Ranged.Assault_Rifle.Ignite",
+   "Blaster_Ranged.Assault_Rifle.M30_Grenade",
+   "Blaster_Support.Radiation_Manipulation.Atom_Smasher",
+   "Blaster_Support.Radiation_Manipulation.Beta_Decay",
+   "Blaster_Support.Radiation_Manipulation.Electron_Shackles",
+   "Blaster_Support.Radiation_Manipulation.Ionize",
+   "Blaster_Support.Radiation_Manipulation.Metabolic_Acceleration",
+   "Epic.Electrical_Mastery.Charged_Armor",
+   "Epic.Electrical_Mastery.Surge_of_Power",
+   "Inherent.Fitness.Health",
+   "Inherent.Fitness.Stamina",
+   "Pool.Fighting.Cross_Punch",
+   "Pool.Fighting.Tough",
+   "Pool.Fighting.Weave",
+   "Pool.Leadership.Defense",
+   "Pool.Leadership.Vengeance",
+   "Pool.Leadership.Victory_Rush",
+   "Pool.Leaping.Combat_Jumping",
+   "Pool.Leaping.Long_Jump",
+   "Pool.Leaping.Spring_Attack",
+   "Pool.Speed.Hasten",
+   "Pool.Speed.Super_Speed"
+  ],
+  "score": 463.28700000000003,
+  "model_version": 59,
+  "certificate": {
+   "sweeps": 31,
+   "converged": true,
+   "restarts_done": 6,
+   "budget_truncated": false,
+   "claim": "converged on the SEARCH objective (in-run scoring); canonical_score is the portable number and is NOT claimed optimal \u2014 see the one-objective work order",
+   "canonical_optimality_checked": false,
+   "primary_converged": true,
+   "picks_filled": 0,
+   "node_cap": {
+    "cap": 50000,
+    "capped_solves_floor": 0,
+    "final_resolve_delta": 0.0
+   },
+   "tie_arbitration": {
+    "winner": "eps",
+    "scores": {
+     "eps": 463.29,
+     "lex": 430.98,
+     "plain": 420.9
+    }
+   }
+  }
+ },
+ "Class_Blaster|Blaster_Ranged.Beam_Rifle|Blaster_Support.Temporal_Manipulation|itrial": {
+  "picks": [
+   "Blaster_Ranged.Beam_Rifle.Aim",
+   "Blaster_Ranged.Beam_Rifle.Cutting_Beam",
+   "Blaster_Ranged.Beam_Rifle.Overcharge",
+   "Blaster_Ranged.Beam_Rifle.Piercing_Beam",
+   "Blaster_Ranged.Beam_Rifle.Single_Shot",
+   "Blaster_Support.Temporal_Manipulation.End_of_Time",
+   "Blaster_Support.Temporal_Manipulation.Temporal_Healing",
+   "Blaster_Support.Temporal_Manipulation.Time_Lord",
+   "Blaster_Support.Temporal_Manipulation.Time_Wall",
+   "Epic.Electrical_Mastery.Charged_Armor",
+   "Epic.Electrical_Mastery.EM_Pulse",
+   "Epic.Electrical_Mastery.Static_Discharge",
+   "Inherent.Fitness.Health",
+   "Inherent.Fitness.Stamina",
+   "Pool.Fighting.Cross_Punch",
+   "Pool.Fighting.Tough",
+   "Pool.Fighting.Weave",
+   "Pool.Leadership.Assault",
+   "Pool.Leadership.Defense",
+   "Pool.Leadership.Vengeance",
+   "Pool.Leadership.Victory_Rush",
+   "Pool.Leaping.Combat_Jumping",
+   "Pool.Leaping.Long_Jump",
+   "Pool.Leaping.Spring_Attack",
+   "Pool.Speed.Hasten",
+   "Pool.Speed.Super_Speed"
+  ],
+  "score": 506.2155000000001,
+  "model_version": 59,
+  "certificate": {
+   "sweeps": 34,
+   "converged": true,
+   "restarts_done": 6,
+   "budget_truncated": false,
+   "claim": "converged on the SEARCH objective (in-run scoring); canonical_score is the portable number and is NOT claimed optimal \u2014 see the one-objective work order",
+   "canonical_optimality_checked": false,
+   "primary_converged": true,
+   "picks_filled": 0,
+   "node_cap": {
+    "cap": 50000,
+    "capped_solves_floor": 0,
+    "final_resolve_delta": 0.0
+   },
+   "tie_arbitration": {
+    "winner": "eps",
+    "scores": {
+     "eps": 506.22,
+     "lex": 495.07,
+     "plain": 500.98
+    }
+   }
+  }
+ },
+ "Class_Blaster|Blaster_Ranged.Dark_Blast|Blaster_Support.Ninja_Training|itrial": {
+  "picks": [
+   "Blaster_Ranged.Dark_Blast.Abyssal_Gaze",
+   "Blaster_Ranged.Dark_Blast.Aim",
+   "Blaster_Ranged.Dark_Blast.Blackstar",
+   "Blaster_Ranged.Dark_Blast.Dark_Blast",
+   "Blaster_Ranged.Dark_Blast.Gloom",
+   "Blaster_Ranged.Dark_Blast.Life_Drain",
+   "Blaster_Ranged.Dark_Blast.Tenebrous_Tentacles",
+   "Blaster_Ranged.Dark_Blast.Umbral_Torrent",
+   "Blaster_Support.Ninja_Training.Blinding_Powder",
+   "Blaster_Support.Ninja_Training.Golden_Dragonfly",
+   "Blaster_Support.Ninja_Training.Kyokan",
+   "Blaster_Support.Ninja_Training.Sting_of_the_Wasp",
+   "Epic.Electrical_Mastery.Charged_Armor",
+   "Epic.Electrical_Mastery.EM_Pulse",
+   "Epic.Electrical_Mastery.Static_Discharge",
+   "Inherent.Fitness.Health",
+   "Inherent.Fitness.Stamina",
+   "Pool.Fighting.Cross_Punch",
+   "Pool.Fighting.Tough",
+   "Pool.Fighting.Weave",
+   "Pool.Invisibility.Grant_Invisibility",
+   "Pool.Invisibility.Stealth",
+   "Pool.Leadership.Defense",
+   "Pool.Leadership.Tactics",
+   "Pool.Leadership.Vengeance",
+   "Pool.Speed.Super_Speed"
+  ],
+  "score": 854.6883750000001,
+  "model_version": 59,
+  "certificate": {
+   "sweeps": 27,
+   "converged": true,
+   "restarts_done": 6,
+   "budget_truncated": false,
+   "claim": "converged on the SEARCH objective (in-run scoring); canonical_score is the portable number and is NOT claimed optimal \u2014 see the one-objective work order",
+   "canonical_optimality_checked": false,
+   "primary_converged": true,
+   "picks_filled": 0,
+   "node_cap": {
+    "cap": 50000,
+    "capped_solves_floor": 0,
+    "final_resolve_delta": 0.08
+   },
+   "tie_arbitration": {
+    "winner": "lex",
+    "scores": {
+     "eps": 854.61,
+     "lex": 854.69,
+     "plain": 582.28
+    }
+   }
+  }
+ },
+ "Class_Blaster|Blaster_Ranged.Dual_Pistols|Blaster_Support.Fire_Manipulation|itrial": {
+  "picks": [
+   "Blaster_Ranged.Dual_Pistols.Dual_Wield",
+   "Blaster_Ranged.Dual_Pistols.Empty_Clips",
+   "Blaster_Ranged.Dual_Pistols.Hail_of_Bullets",
+   "Blaster_Ranged.Dual_Pistols.Piercing_Rounds",
+   "Blaster_Support.Fire_Manipulation.Blazing_Aura",
+   "Blaster_Support.Fire_Manipulation.Build_Up",
+   "Blaster_Support.Fire_Manipulation.Burn",
+   "Blaster_Support.Fire_Manipulation.Combustion",
+   "Blaster_Support.Fire_Manipulation.Consume",
+   "Blaster_Support.Fire_Manipulation.Fire_Sword_Circle",
+   "Blaster_Support.Fire_Manipulation.Ring_of_Fire",
+   "Epic.Electrical_Mastery.Charged_Armor",
+   "Epic.Electrical_Mastery.Surge_of_Power",
+   "Inherent.Fitness.Health",
+   "Inherent.Fitness.Stamina",
+   "Pool.Fighting.Cross_Punch",
+   "Pool.Fighting.Tough",
+   "Pool.Fighting.Weave",
+   "Pool.Invisibility.Invisibility",
+   "Pool.Invisibility.Stealth",
+   "Pool.Leadership.Assault",
+   "Pool.Leadership.Defense",
+   "Pool.Leadership.Vengeance",
+   "Pool.Speed.Burnout",
+   "Pool.Speed.Hasten",
+   "Pool.Speed.Super_Speed"
+  ],
+  "score": 653.6649,
+  "model_version": 59,
+  "certificate": {
+   "sweeps": 33,
+   "converged": true,
+   "restarts_done": 6,
+   "budget_truncated": false,
+   "claim": "converged on the SEARCH objective (in-run scoring); canonical_score is the portable number and is NOT claimed optimal \u2014 see the one-objective work order",
+   "canonical_optimality_checked": false,
+   "primary_converged": true,
+   "picks_filled": 0,
+   "node_cap": {
+    "cap": 50000,
+    "capped_solves_floor": 0,
+    "final_resolve_delta": 0.0
+   },
+   "tie_arbitration": {
+    "winner": "eps",
+    "scores": {
+     "eps": 653.66,
+     "lex": 592.78,
+     "plain": 653.66
+    }
+   }
+  }
+ },
+ "Class_Blaster|Blaster_Ranged.Electrical_Blast|Blaster_Support.Earth_Manipulation|itrial": {
+  "picks": [
+   "Blaster_Ranged.Electrical_Blast.Aim",
+   "Blaster_Ranged.Electrical_Blast.Ball_Lightning",
+   "Blaster_Ranged.Electrical_Blast.Charged_Bolts",
+   "Blaster_Ranged.Electrical_Blast.Short_Circuit",
+   "Blaster_Support.Earth_Manipulation.Build_Up",
+   "Blaster_Support.Earth_Manipulation.Mud_Bath",
+   "Blaster_Support.Earth_Manipulation.Stone_Prison",
+   "Blaster_Support.Earth_Manipulation.Tremor",
+   "Epic.Electrical_Mastery.Charged_Armor",
+   "Epic.Electrical_Mastery.Static_Discharge",
+   "Epic.Electrical_Mastery.Surge_of_Power",
+   "Inherent.Fitness.Health",
+   "Inherent.Fitness.Stamina",
+   "Pool.Fighting.Boxing",
+   "Pool.Fighting.Cross_Punch",
+   "Pool.Fighting.Tough",
+   "Pool.Fighting.Weave",
+   "Pool.Leadership.Assault",
+   "Pool.Leadership.Defense",
+   "Pool.Leadership.Vengeance",
+   "Pool.Leadership.Victory_Rush",
+   "Pool.Leaping.Combat_Jumping",
+   "Pool.Leaping.Long_Jump",
+   "Pool.Leaping.Spring_Attack",
+   "Pool.Speed.Hasten",
+   "Pool.Speed.Super_Speed"
+  ],
+  "score": 345.46540000000005,
+  "model_version": 59,
+  "certificate": {
+   "sweeps": 27,
+   "converged": true,
+   "restarts_done": 6,
+   "budget_truncated": false,
+   "claim": "converged on the SEARCH objective (in-run scoring); canonical_score is the portable number and is NOT claimed optimal \u2014 see the one-objective work order",
+   "canonical_optimality_checked": false,
+   "primary_converged": true,
+   "picks_filled": 0,
+   "node_cap": {
+    "cap": 50000,
+    "capped_solves_floor": 0,
+    "final_resolve_delta": 0.0
+   },
+   "tie_arbitration": {
+    "winner": "eps",
+    "scores": {
+     "eps": 345.47,
+     "lex": 322.23,
+     "plain": 322.23
+    }
+   }
+  }
+ }
+}
